@@ -13,29 +13,7 @@ MODS = {'R':(0,1),
        '2U':(-2,0)}
 CORNER = 'X'
 
-def right(board, row, column):
-    return board[row][column + 1]
 
-def two_right(board, row, column):
-    return board[row][column + 2]
-
-def left(board, row, column):
-    return board[row][column - 1]
-
-def two_left(board, row, column):
-    return board[row][column - 2]
-
-def down(board, row, column):
-    return board[row + 1][column]
-
-def two_down(board, row, column):
-    return board[row + 2][column]
-
-def up(board, row, column):
-    return board[row - 1][column]
-
-def two_up(board, row, column):
-    return board[row - 2][column]
 
 def move(board, row, col, dir):
     return board[row + MODS[dir][0]][col + MODS[dir][1]]
@@ -107,13 +85,13 @@ def isDeadEnd(board, rowNum, colNum, rowEnd, colEnd):
     if rowNum == rowEnd and colNum == colEnd:
         return False
     if rowNum + 1 < 8 and rowNum - 1 >= 0:
-        if down(board, rowNum, colNum) == BLACK or down(board, rowNum, colNum) == CORNER:
-            if up(board, rowNum, colNum) == BLACK or up(board, rowNum, colNum) == CORNER:
+        if move(board, rowNum, colNum, 'D') == BLACK or move(board, rowNum, colNum, 'D') == CORNER:
+            if move(board, rowNum, colNum, 'U') == BLACK or move(board, rowNum, colNum, 'U') == CORNER:
                 return True;
-
+            
     if colNum + 1 < 8 and colNum - 1 >= 0:
-        if right(board, rowNum, colNum) == BLACK or right(board, rowNum, colNum) == CORNER:
-            if left(board, rowNum, colNum) == BLACK or left(board, rowNum, colNum) == CORNER:
+        if move(board, rowNum, colNum, 'R') == BLACK or move(board, rowNum, colNum, 'R') == CORNER:
+            if move(board, rowNum, colNum, 'L') == BLACK or move(board, rowNum, colNum, 'L') == CORNER:
                 return True;
 
     return False
@@ -136,42 +114,42 @@ def createTree(board, rowStart, colStart, rowEnd, colEnd):
             if (symbol == UNOCC or (row == rowStart and col == colStart)) and not isDeadEnd(board, row, col, rowEnd, colEnd):
 
                 if row + 1 < 8:
-                    if down(board, row, col) == unoccupied and not isDeadEnd(board, row + 1, col, rowEnd, colEnd):
+                    if move(board, row, col, 'D') == unoccupied and not isDeadEnd(board, row + 1, col, rowEnd, colEnd):
                         graph[str(row) + str(col)].append(str(row + 1) + str(col))
 
-                    elif down(board, row, col) == white or down(board, row, col) == black:
+                    elif move(board, row, col, 'D') == white or move(board, row, col, 'D') == black:
                         if row + 2 < 8 and not isDeadEnd(board, row + 2, col, rowEnd, colEnd):
-                            if two_down(board, row, col) == unoccupied:
+                            if move(board, row, col, '2D') == unoccupied:
                                 graph[str(row) + str(col)].append(str(row + 2) + str(col))
 
 
                 if row - 1 >= 0:
-                    if up(board, row, col) == unoccupied and not isDeadEnd(board, row - 1, col, rowEnd, colEnd):
+                    if move(board, row, col, 'U') == unoccupied and not isDeadEnd(board, row - 1, col, rowEnd, colEnd):
                         graph[str(row) + str(col)].append(str(row - 1) + str(col))
 
-                    elif up(board, row, col) == white or up(board, row, col) == black:
+                    elif move(board, row, col, 'U') == white or move(board, row, col, 'U') == black:
                         if row - 2 >= 0 and not isDeadEnd(board, row - 2, col, rowEnd, colEnd):
-                            if two_up(board, row, col) == unoccupied:
+                            if move(board, row, col, '2U') == unoccupied:
                                 graph[str(row) + str(col)].append(str(row - 2) + str(col))
 
 
                 if col + 1 < 8 and not isDeadEnd(board, row, col + 1, rowEnd, colEnd):
-                    if right(board, row, col) == unoccupied:
+                    if move(board, row, col, 'R') == unoccupied:
                         graph[str(row) + str(col)].append(str(row) + str(col + 1))
 
-                    elif right(board, row, col) == white or right(board, row, col) == black:
+                    elif move(board, row, col, 'R') == white or move(board, row, col, 'R') == black:
                         if col + 2 < 8 and not isDeadEnd(board, row, col + 2, rowEnd, colEnd):
-                            if two_right(board, row, col) == unoccupied:
+                            if move(board, row, col, '2R') == unoccupied:
                                 graph[str(row) + str(col)].append(str(row) + str(col + 2))
 
 
                 if col - 1 >= 0 and not isDeadEnd(board, row, col - 1, rowEnd, colEnd):
-                    if left(board, row, col) == unoccupied:
+                    if move(board, row, col, 'L') == unoccupied:
                         graph[str(row) + str(col)].append(str(row) + str(col - 1))
 
-                    elif left(board, row, col) == white or left(board, row, col) == black:
+                    elif move(board, row, col, 'L') == white or move(board, row, col, 'L') == black:
                         if col - 2 >= 0 and not isDeadEnd(board, row, col - 2, rowEnd, colEnd):
-                            if two_left(board, row, col) == unoccupied:
+                            if move(board, row, col, '2L') == unoccupied:
                                 graph[str(row) + str(col)].append(str(row) + str(col - 2))
 
 
