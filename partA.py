@@ -1,3 +1,4 @@
+#test chirag
 from collections import defaultdict
 BLACK = '@'
 WHITE = 'O'
@@ -109,12 +110,12 @@ def isDeadEnd(board, rowNum, colNum, rowEnd, colEnd):
     if rowNum + 1 < 8 and rowNum - 1 >= 0:
         if down(board, rowNum, colNum) == BLACK or down(board, rowNum, colNum) == CORNER:
             if up(board, rowNum, colNum) == BLACK or up(board, rowNum, colNum) == CORNER:
-                return True; 
-            
+                return True;
+
     if colNum + 1 < 8 and colNum - 1 >= 0:
         if right(board, rowNum, colNum) == BLACK or right(board, rowNum, colNum) == CORNER:
             if left(board, rowNum, colNum) == BLACK or left(board, rowNum, colNum) == CORNER:
-                return True; 
+                return True;
 
     return False
 
@@ -125,8 +126,8 @@ def createTree(board, rowStart, colStart, rowEnd, colEnd):
     unoccupied = '-'
     graph = defaultdict(list)
     row = 0
-    
-    
+
+
     # builds an adjacency matrix of unoccupied spaces, it excludes unoccupied deadends unless its the goal area, as it would
     # result in the white piece getting eliminated
     # it treats the starting position as unoccupied space it needs to know where it can move to from the starting position
@@ -134,47 +135,47 @@ def createTree(board, rowStart, colStart, rowEnd, colEnd):
         col = 0
         for symbol in line:
             if (symbol == UNOCC or (row == rowStart and col == colStart)) and not isDeadEnd(board, row, col, rowEnd, colEnd):
-                
+
                 if row + 1 < 8:
                     if down(board, row, col) == unoccupied and not isDeadEnd(board, row + 1, col, rowEnd, colEnd):
                         graph[str(row) + str(col)].append(str(row + 1) + str(col))
-                
+
                     elif down(board, row, col) == white or down(board, row, col) == black:
                         if row + 2 < 8 and not isDeadEnd(board, row + 2, col, rowEnd, colEnd):
                             if two_down(board, row, col) == unoccupied:
                                 graph[str(row) + str(col)].append(str(row + 2) + str(col))
-                
-                
+
+
                 if row - 1 >= 0:
                     if up(board, row, col) == unoccupied and not isDeadEnd(board, row - 1, col, rowEnd, colEnd):
                         graph[str(row) + str(col)].append(str(row - 1) + str(col))
-        
+
                     elif up(board, row, col) == white or up(board, row, col) == black:
                         if row - 2 >= 0 and not isDeadEnd(board, row - 2, col, rowEnd, colEnd):
                             if two_up(board, row, col) == unoccupied:
-                                graph[str(row) + str(col)].append(str(row - 2) + str(col))  
-                
-                
+                                graph[str(row) + str(col)].append(str(row - 2) + str(col))
+
+
                 if col + 1 < 8 and not isDeadEnd(board, row, col + 1, rowEnd, colEnd):
                     if right(board, row, col) == unoccupied:
                         graph[str(row) + str(col)].append(str(row) + str(col + 1))
-        
+
                     elif right(board, row, col) == white or right(board, row, col) == black:
                         if col + 2 < 8 and not isDeadEnd(board, row, col + 2, rowEnd, colEnd):
                             if two_right(board, row, col) == unoccupied:
                                 graph[str(row) + str(col)].append(str(row) + str(col + 2))
-                                    
-                
+
+
                 if col - 1 >= 0 and not isDeadEnd(board, row, col - 1, rowEnd, colEnd):
                     if left(board, row, col) == unoccupied:
                         graph[str(row) + str(col)].append(str(row) + str(col - 1))
-        
+
                     elif left(board, row, col) == white or left(board, row, col) == black:
                         if col - 2 >= 0 and not isDeadEnd(board, row, col - 2, rowEnd, colEnd):
                             if two_left(board, row, col) == unoccupied:
                                 graph[str(row) + str(col)].append(str(row) + str(col - 2))
-                
-            
+
+
             col += 1
         row += 1
 
@@ -184,19 +185,19 @@ def createTree(board, rowStart, colStart, rowEnd, colEnd):
 # this function assumes that the provided position must have a solution
 def choosePosition(board, row, col):
     target = []
-    
-    # if the piece lies on the wall, then it can only be eliminated in one 
+
+    # if the piece lies on the wall, then it can only be eliminated in one
     # direction.
     if row == 7 or row == 0:
         if col == 1:
             target.append(str(row) + '2')
             return target
-            
+
         if col == 6:
             target.append(str(row) + '5')
             return target
-        
-        # if one of the sides is a deadend, add the other one first, because the order of 
+
+        # if one of the sides is a deadend, add the other one first, because the order of
         # moving the white piece will matter in this case
         if isDeadEnd(board, row, col - 1, row, col):
             target.append(str(row) + str(col + 1))
@@ -205,17 +206,17 @@ def choosePosition(board, row, col):
             target.append(str(row) + str(col - 1))
             target.append(str(row) + str(col + 1))
         return target
-    
+
     elif col == 7 or col == 0:
-        
+
         if row == 1:
             target.append('2' + str(col))
             return target
-            
+
         if row == 6:
             target.append('5' + str(col))
             return target
-        
+
         if isDeadEnd(board, row - 1, col, row, col):
             target.append(str(row + 1) + str(col))
             target.append(str(row - 1) + str(col))
@@ -223,7 +224,7 @@ def choosePosition(board, row, col):
             target.append(str(row - 1) + str(col))
             target.append(str(row + 1) + str(col))
         return target
-    
+
     else:
         # this checks if the two opposite are both deadends, if they are, then return the other pair as the
         # chosen position, as the function assumes there is a solution
@@ -235,16 +236,16 @@ def choosePosition(board, row, col):
                 target.append(str(row - 1) + str(col))
                 target.append(str(row + 1) + str(col))
             return target
-        
+
         if isDeadEnd(board, row - 1, col, row, col) and isDeadEnd(board, row + 1, col, row, col):
             if isDeadEnd(board, row, col - 1, row, col):
                 target.append(str(row) + str(col + 1))
                 target.append(str(row) + str(col - 1))
             else:
                 target.append(str(row) + str(col - 1))
-                target.append(str(row) + str(col + 1))  
+                target.append(str(row) + str(col + 1))
             return target
-        
+
         # check if there's a black piece around the point, if there is, choose the sides
         # that doesn't have a black piece, as it is impossible to eliminate with a black
         # piece taking up the slot
@@ -256,7 +257,7 @@ def choosePosition(board, row, col):
                 target.append(str(row) + str(col - 1))
                 target.append(str(row) + str(col + 1))
             return target
-        
+
         if move(board, row, col, 'R') == BLACK or move(board, row, col, 'L') == BLACK:
             if isDeadEnd(board, row - 1, col, row, col):
                 target.append(str(row + 1) + str(col))
@@ -265,11 +266,11 @@ def choosePosition(board, row, col):
                 target.append(str(row - 1) + str(col))
                 target.append(str(row + 1) + str(col))
             return target
-        
+
         # after all these checks, the 4 directions should all be either empty or contains a white piece
         # if there's already a white piece, only return one target position
- 
-        
+
+
         # the very last case is there's nothing surrounding the current position, in this case
         # simply choose the top and bottom as the target, as due to the restriction to the placing
         # phase, the y coordinates would be closer to the middle, creating better pathing
@@ -280,8 +281,8 @@ def choosePosition(board, row, col):
             target.append(str(row - 1) + str(col))
             target.append(str(row + 1) + str(col))
         return target
-        
-    return target   
+
+    return target
 
 
 
@@ -292,8 +293,8 @@ def eliminationList(board):
     for line in board:
         col = 0
         for value in line:
-            if board[row][col] == BLACK:  
-                order[str(row) + str(col)] = NumOfSurroundingBlack(board, row, col)           
+            if board[row][col] == BLACK:
+                order[str(row) + str(col)] = NumOfSurroundingBlack(board, row, col)
             col += 1
         row += 1
     return sorted(order, key = order.get)
@@ -306,7 +307,7 @@ def chooseWhite(board, targetRow, targetCol, excludeRow, excludeCol):
         col = 0
         for value in line:
             if board[row][col] == WHITE and row != excludeRow and col != excludeCol:
-                order[str(row) + str(col)] = abs(targetRow - row) + abs(targetCol - col)   
+                order[str(row) + str(col)] = abs(targetRow - row) + abs(targetCol - col)
             col += 1
         row += 1
     result = sorted(order, key = order.get)
@@ -331,7 +332,7 @@ def bfs(graph, start, end):
             new_path = list(path)
             new_path.append(adjacent)
             queue.append(new_path)
-    
+
 
 
 def Massacre(board):
@@ -345,12 +346,12 @@ def Massacre(board):
             startAt = str(rowStart) + str(colStart)
             usedWhite = t
             tree = createTree(board, rowStart, colStart, int(t[0]), int(t[1]))
-            
+
             final = bfs(tree, startAt, t)
             formatResult(final)
             board = movePiece(board, WHITE, startAt, t)
         board = remove(board, black)
-        
+
 def formatResult(result):
     print(result)
     row = 0
@@ -358,13 +359,13 @@ def formatResult(result):
     counter = 0
     if len(result) > 1:
         for coordinate in result:
-            
+
             if counter > 0:
                 print('({}, {}) -> ({}, {})'.format(row, col, coordinate[0], coordinate[1]))
             row = coordinate[0]
             col = coordinate[1]
             counter +=1
-   
+
 def main():
     gameState = []
 
@@ -381,7 +382,7 @@ def main():
     else:
         print('invlid mode')
 
- 
+
 
 main()
 
