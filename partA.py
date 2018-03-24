@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-# test1
-# test daniel
-=======
-#test chirag
->>>>>>> d5f3c52a8910788b7d17d9b7a48bdf2dd3da35ee
 from collections import defaultdict
 BLACK = '@'
 WHITE = 'O'
