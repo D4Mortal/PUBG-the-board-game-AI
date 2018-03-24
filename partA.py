@@ -41,7 +41,7 @@ def move(board, row, col, dir):
     return board[row + MODS[dir][0]][col + MODS[dir][1]]
 
 
-
+# helper function to count the number of black pieces around the current position
 def NumOfSurroundingBlack(board, row, col):
     count = 0
     checkCond = {'D':[row+1 < SIZE],
