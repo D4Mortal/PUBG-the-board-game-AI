@@ -291,7 +291,9 @@ def choosePosition(board, row, col):
 
 
 
-
+# craete a list of black pieces that needs to be eliminated
+# order is determined by the number of surrounding black pieces
+# in increasing order
 def eliminationList(board):
     order = defaultdict(int)
     row = 0
@@ -304,7 +306,8 @@ def eliminationList(board):
         row += 1
     return sorted(order, key = order.get)
 
-
+# choose the closest white piece but exclude the white piece that was 
+# used for the oppposite direction
 def chooseWhite(board, targetRow, targetCol, excludeRow, excludeCol):
     order = defaultdict(int)
     row = 0
@@ -339,24 +342,6 @@ def bfs(graph, start, end):
             queue.append(new_path)
 
 
-
-def Massacre(board):
-    eliminationOrder = eliminationList(board)
-    for black in eliminationOrder:
-        usedWhite = '00'
-        targets = []
-        targets = choosePosition(board, int(black[0]), int(black[1]))
-        for t in targets:
-            rowStart, colStart = chooseWhite(board, int(t[0]), int(t[1]), int(usedWhite[0]), int(usedWhite[1]))
-            startAt = str(rowStart) + str(colStart)
-            usedWhite = t
-            tree = createTree(board, rowStart, colStart, int(t[0]), int(t[1]))
-
-            final = bfs(tree, startAt, t)
-            formatResult(final)
-            board = movePiece(board, WHITE, startAt, t)
-        board = remove(board, black)
-
 def formatResult(result):
     print(result)
     row = 0
@@ -370,6 +355,25 @@ def formatResult(result):
             row = coordinate[0]
             col = coordinate[1]
             counter +=1
+            
+            
+def Massacre(board):
+    eliminationOrder = eliminationList(board)
+    for black in eliminationOrder:
+        usedWhite = '00'
+        targets = []
+        targets = choosePosition(board, int(black[0]), int(black[1]))
+        for t in targets:
+            rowStart, colStart = chooseWhite(board, int(t[0]), int(t[1]), int(usedWhite[0]), int(usedWhite[1]))
+            startAt = str(rowStart) + str(colStart)
+            usedWhite = t
+            tree = createTree(board, rowStart, colStart, int(t[0]), int(t[1]))
+            final = bfs(tree, startAt, t)
+            formatResult(final)
+            board = movePiece(board, WHITE, startAt, t)
+        board = remove(board, black)
+
+
 
 def main():
     gameState = []
