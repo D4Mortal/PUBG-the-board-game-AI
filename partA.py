@@ -1,7 +1,9 @@
 from collections import defaultdict
+
 BLACK = '@'
 WHITE = 'O'
 UNOCC = '-'
+CORNER = 'X'
 SIZE = 8
 MODS = {'R':(0,1),
        '2R':(0,2),
@@ -11,21 +13,26 @@ MODS = {'R':(0,1),
        '2D':(2,0),
        'U':(-1,0),
        '2U':(-2,0)}
-CORNER = 'X'
+
 
 
 
 def move(board, row, col, dir):
+    '''
+    '''
     return board[row + MODS[dir][0]][col + MODS[dir][1]]
 
 
-# helper function to count the number of black pieces around the current position
-def NumOfSurroundingBlack(board, row, col):
+
+def numOfSurrBlack(board, row, col):
+    '''
+    count black pieces surrounding current position
+    '''
     count = 0
     checkCond = {'D':[row+1 < SIZE],
-               'U':[row-1 >= 0],
-               'R':[col+1 < SIZE],
-               'L':[col-1 >= 0]}
+                 'U':[row-1 >= 0],
+                 'R':[col+1 < SIZE],
+                 'L':[col-1 >= 0]}
 
     for m in checkCond:
         if checkCond[m][0]:
@@ -36,11 +43,13 @@ def NumOfSurroundingBlack(board, row, col):
 
 
 def checkSurr(board, row, col):
+    '''
+    '''
     availMoves = 0
     checkCond = {'D':[row+1 < SIZE, row+2 < SIZE],
-               'U':[row-1 >= 0, row-2 >= 0],
-               'R':[col+1 < SIZE, col+2 < SIZE],
-               'L':[col-1 >= 0, col-2 >= 0]}
+                 'U':[row-1 >= 0, row-2 >= 0],
+                 'R':[col+1 < SIZE, col+2 < SIZE],
+                 'L':[col-1 >= 0, col-2 >= 0]}
 
     for m in checkCond:
         if checkCond[m][0]:
@@ -50,20 +59,27 @@ def checkSurr(board, row, col):
                 if checkCond[m][1]:
                     posCheck2 = move(board,row,col,'2' + m)
                     if posCheck2 == UNOCC: availMoves += 1
+
     return availMoves
 
 
 
 def movePiece(board, colour, start, end):
+    '''
+    '''
     board[int(start[0])][int(start[1])] = UNOCC
     board[int(end[0])][int(end[1])] = colour
     return board
 
 def remove(board, position):
+    '''
+    '''
     board[int(position[0])][int(position[1])] = UNOCC
     return board
 
 def testMoves(gameState):
+    '''
+    '''
     whiteMoves = 0
     blackMoves = 0
     row = 0
@@ -80,16 +96,21 @@ def testMoves(gameState):
     return whiteMoves, blackMoves
 
 
-# a deadend is a slot where if a white piece moves into it, it will be instantly eliminated
 def isDeadEnd(board, rowNum, colNum, rowEnd, colEnd):
+    '''
+    detects deadends: if a white piece moves into a deadend
+                        it will be instantly eliminated
+    '''
+
     if rowNum == rowEnd and colNum == colEnd:
         return False
-    if rowNum + 1 < 8 and rowNum - 1 >= 0:
+
+    if rowNum + 1 < SIZE and rowNum - 1 >= 0:
         if move(board, rowNum, colNum, 'D') == BLACK or move(board, rowNum, colNum, 'D') == CORNER:
             if move(board, rowNum, colNum, 'U') == BLACK or move(board, rowNum, colNum, 'U') == CORNER:
                 return True;
-            
-    if colNum + 1 < 8 and colNum - 1 >= 0:
+
+    if colNum + 1 < SIZE and colNum - 1 >= 0:
         if move(board, rowNum, colNum, 'R') == BLACK or move(board, rowNum, colNum, 'R') == CORNER:
             if move(board, rowNum, colNum, 'L') == BLACK or move(board, rowNum, colNum, 'L') == CORNER:
                 return True;
@@ -98,58 +119,59 @@ def isDeadEnd(board, rowNum, colNum, rowEnd, colEnd):
 
 
 def createTree(board, rowStart, colStart, rowEnd, colEnd):
-    black = '@'
-    white = 'O'
-    unoccupied = '-'
-    graph = defaultdict(list)
+    '''
+    - build an adjacency matrix of unoccupied spaces
+    - excludes unoccupied deadends unless its the goal area,
+        since white piece would be eliminated
+    - starting position treated as unoccupied space as it needs to know where
+        it can move to from the starting position
+    '''
+
     row = 0
+    graph = defaultdict(list)
 
-
-    # builds an adjacency matrix of unoccupied spaces, it excludes unoccupied deadends unless its the goal area, as it would
-    # result in the white piece getting eliminated
-    # it treats the starting position as unoccupied space it needs to know where it can move to from the starting position
     for line in board:
         col = 0
         for symbol in line:
             if (symbol == UNOCC or (row == rowStart and col == colStart)) and not isDeadEnd(board, row, col, rowEnd, colEnd):
 
-                if row + 1 < 8:
-                    if move(board, row, col, 'D') == unoccupied and not isDeadEnd(board, row + 1, col, rowEnd, colEnd):
+                if row + 1 < SIZE:
+                    if move(board, row, col, 'D') == UNOCC and not isDeadEnd(board, row + 1, col, rowEnd, colEnd):
                         graph[str(row) + str(col)].append(str(row + 1) + str(col))
 
-                    elif move(board, row, col, 'D') == white or move(board, row, col, 'D') == black:
-                        if row + 2 < 8 and not isDeadEnd(board, row + 2, col, rowEnd, colEnd):
-                            if move(board, row, col, '2D') == unoccupied:
+                    elif move(board, row, col, 'D') == WHITE or move(board, row, col, 'D') == BLACK:
+                        if row + 2 < SIZE and not isDeadEnd(board, row + 2, col, rowEnd, colEnd):
+                            if move(board, row, col, '2D') == UNOCC:
                                 graph[str(row) + str(col)].append(str(row + 2) + str(col))
 
 
                 if row - 1 >= 0:
-                    if move(board, row, col, 'U') == unoccupied and not isDeadEnd(board, row - 1, col, rowEnd, colEnd):
+                    if move(board, row, col, 'U') == UNOCC and not isDeadEnd(board, row - 1, col, rowEnd, colEnd):
                         graph[str(row) + str(col)].append(str(row - 1) + str(col))
 
-                    elif move(board, row, col, 'U') == white or move(board, row, col, 'U') == black:
+                    elif move(board, row, col, 'U') == WHITE or move(board, row, col, 'U') == BLACK:
                         if row - 2 >= 0 and not isDeadEnd(board, row - 2, col, rowEnd, colEnd):
-                            if move(board, row, col, '2U') == unoccupied:
+                            if move(board, row, col, '2U') == UNOCC:
                                 graph[str(row) + str(col)].append(str(row - 2) + str(col))
 
 
-                if col + 1 < 8 and not isDeadEnd(board, row, col + 1, rowEnd, colEnd):
-                    if move(board, row, col, 'R') == unoccupied:
+                if col + 1 < SIZE and not isDeadEnd(board, row, col + 1, rowEnd, colEnd):
+                    if move(board, row, col, 'R') == UNOCC:
                         graph[str(row) + str(col)].append(str(row) + str(col + 1))
 
-                    elif move(board, row, col, 'R') == white or move(board, row, col, 'R') == black:
-                        if col + 2 < 8 and not isDeadEnd(board, row, col + 2, rowEnd, colEnd):
-                            if move(board, row, col, '2R') == unoccupied:
+                    elif move(board, row, col, 'R') == WHITE or move(board, row, col, 'R') == BLACK:
+                        if col + 2 < SIZE and not isDeadEnd(board, row, col + 2, rowEnd, colEnd):
+                            if move(board, row, col, '2R') == UNOCC:
                                 graph[str(row) + str(col)].append(str(row) + str(col + 2))
 
 
                 if col - 1 >= 0 and not isDeadEnd(board, row, col - 1, rowEnd, colEnd):
-                    if move(board, row, col, 'L') == unoccupied:
+                    if move(board, row, col, 'L') == UNOCC:
                         graph[str(row) + str(col)].append(str(row) + str(col - 1))
 
-                    elif move(board, row, col, 'L') == white or move(board, row, col, 'L') == black:
+                    elif move(board, row, col, 'L') == WHITE or move(board, row, col, 'L') == BLACK:
                         if col - 2 >= 0 and not isDeadEnd(board, row, col - 2, rowEnd, colEnd):
-                            if move(board, row, col, '2L') == unoccupied:
+                            if move(board, row, col, '2L') == UNOCC:
                                 graph[str(row) + str(col)].append(str(row) + str(col - 2))
 
 
@@ -159,8 +181,11 @@ def createTree(board, rowStart, colStart, rowEnd, colEnd):
     return graph
 
 
-# this function assumes that the provided position must have a solution
+
 def choosePosition(board, row, col):
+    '''
+    assumes the provided position must have a solution
+    '''
     target = []
 
     # if the piece lies on the wall, then it can only be eliminated in one
@@ -263,55 +288,65 @@ def choosePosition(board, row, col):
 
 
 
-# craete a list of black pieces that needs to be eliminated
-# order is determined by the number of surrounding black pieces
-# in increasing order
+
 def eliminationList(board):
-    order = defaultdict(int)
+    '''
+    - generate list of black pieces to be eliminated
+    - list order determined by the number of surrounding black pieces
+        , in increasing order
+    '''
     row = 0
+    order = defaultdict(int)
+
     for line in board:
         col = 0
         for value in line:
             if board[row][col] == BLACK:
-                order[str(row) + str(col)] = NumOfSurroundingBlack(board, row, col)
+                order[str(row) + str(col)] = numOfSurrBlack(board, row, col)
             col += 1
         row += 1
+
     return sorted(order, key = order.get)
 
-# choose the closest white piece but exclude the white piece that was 
-# used for the oppposite direction
+
+
+
 def chooseWhite(board, targetRow, targetCol, excludeRow, excludeCol):
-    order = defaultdict(int)
+    '''
+    choose the closest white piece but exclude the white piece that was
+    used for the oppposite direction
+    '''
     row = 0
+    order = defaultdict(int)
+
     for line in board:
         col = 0
+
         for value in line:
             if board[row][col] == WHITE and row != excludeRow and col != excludeCol:
                 order[str(row) + str(col)] = abs(targetRow - row) + abs(targetCol - col)
             col += 1
         row += 1
+
     result = sorted(order, key = order.get)
     position = result[0]
     return int(position[0]), int(position[1])
 
+
 def bfs(graph, start, end):
-    # maintain a queue of paths
-    queue = []
-    # push the first path into the queue
-    queue.append([start])
+    queue = []  # maintain a queue of paths
+    queue.append([start])  # push first path into queue
+
     while queue:
-        # get the first path from the queue
-        path = queue.pop(0)
-        # get the last node from the path
-        node = path[-1]
-        # path found
-        if node == end:
-            return path
-        # enumerate all adjacent nodes, construct a new path and push it into the queue
+        path = queue.pop(0)  # get first path from queue
+        node = path[-1]  # get  last node from  path
+        if node == end: return path   # path found
+        # enumerate all adjacent nodes, construct a new path
+            # and push it into the queue
         for adjacent in graph.get(node, []):
-            new_path = list(path)
-            new_path.append(adjacent)
-            queue.append(new_path)
+            newPath = list(path)
+            newPath.append(adjacent)
+            queue.append(newPath)
 
 
 def formatResult(result):
@@ -319,22 +354,25 @@ def formatResult(result):
     row = 0
     col = 0
     counter = 0
-    if len(result) > 1:
-        for coordinate in result:
 
+    if len(result) > 1:
+        for pos in result:
             if counter > 0:
-                print('({}, {}) -> ({}, {})'.format(row, col, coordinate[0], coordinate[1]))
-            row = coordinate[0]
-            col = coordinate[1]
-            counter +=1
-            
-            
-def Massacre(board):
+                print('({}, {}) -> ({}, {})'.format(row, col, pos[0], pos[1]))
+
+            row = pos[0]
+            col = pos[1]
+            counter += 1
+
+
+def massacre(board):
     eliminationOrder = eliminationList(board)
+
     for black in eliminationOrder:
         usedWhite = '00'
         targets = []
         targets = choosePosition(board, int(black[0]), int(black[1]))
+
         for t in targets:
             rowStart, colStart = chooseWhite(board, int(t[0]), int(t[1]), int(usedWhite[0]), int(usedWhite[1]))
             startAt = str(rowStart) + str(colStart)
@@ -343,6 +381,7 @@ def Massacre(board):
             final = bfs(tree, startAt, t)
             formatResult(final)
             board = movePiece(board, WHITE, startAt, t)
+
         board = remove(board, black)
 
 
@@ -358,10 +397,10 @@ def main():
     if task == 'Moves':
         whiteMoves, blackMoves = testMoves(gameState)
         print('{}\n{} moves'.format(whiteMoves, blackMoves))
-    elif task == 'Massacre':
-        Massacre(gameState)
-    else:
-        print('invlid mode')
+
+    elif task == 'Massacre': massacre(gameState)
+
+    else: print('Invalid mode')
 
 
 
