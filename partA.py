@@ -358,7 +358,7 @@ def formatResult(result):
     if len(result) > 1:
         for pos in result:
             if counter > 0:
-                print('({}, {}) -> ({}, {})'.format(row, col, pos[0], pos[1]))
+                print('({}, {}) -> ({}, {})'.format(col, row, pos[1], pos[0]))
 
             row = pos[0]
             col = pos[1]
