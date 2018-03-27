@@ -381,11 +381,16 @@ def massacre(board):
             final = bfs(tree, startAt, t)
             formatResult(final)
             board = movePiece(board, WHITE, startAt, t)
+            printBoard(board)
 
         board = remove(board, black)
 
 
-
+def printBoard(board):
+    for rows in board:
+        print(rows)
+        
+        
 def main():
     gameState = []
 
