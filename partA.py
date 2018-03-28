@@ -323,7 +323,7 @@ def chooseWhite(board, targetRow, targetCol, excludeRow, excludeCol):
         col = 0
 
         for value in line:
-            if board[row][col] == WHITE and row != excludeRow and col != excludeCol:
+            if board[row][col] == WHITE and (str(row) + str(col) != str(excludeRow) + str(excludeCol)):
                 order[str(row) + str(col)] = abs(targetRow - row) + abs(targetCol - col)
             col += 1
         row += 1
@@ -347,7 +347,25 @@ def bfs(graph, start, end):
             newPath = list(path)
             newPath.append(adjacent)
             queue.append(newPath)
-
+        
+    
+def isDead(board, row, col):
+    if row == 0 or row == 7:
+        if move(board, row, col, "L") == BLACK or  move(board, row, col, "L") == CORNER:
+            if move(board, row, col, "R") == BLACK or  move(board, row, col, "R") == CORNER:
+                return True
+    if col == 0 or row == 7:
+        if move(board, row, col, "U") == BLACK or  move(board, row, col, "U") == CORNER:
+            if move(board, row, col, "D") == BLACK or  move(board, row, col, "D") == CORNER:
+                return True
+    else:
+        if move(board, row, col, "L") == BLACK or  move(board, row, col, "L") == CORNER:
+            if move(board, row, col, "R") == BLACK or  move(board, row, col, "R") == CORNER:
+                return True
+        if move(board, row, col, "U") == BLACK or  move(board, row, col, "U") == CORNER:
+            if move(board, row, col, "D") == BLACK or  move(board, row, col, "D") == CORNER:
+                return True
+    return False
 
 def formatResult(result):
     print(result)
@@ -373,18 +391,20 @@ def massacre(board):
         targets = []
         targets = choosePosition(board, int(black[0]), int(black[1]))
 
+
         for t in targets:
             rowStart, colStart = chooseWhite(board, int(t[0]), int(t[1]), int(usedWhite[0]), int(usedWhite[1]))
             startAt = str(rowStart) + str(colStart)
-            usedWhite = t
             tree = createTree(board, rowStart, colStart, int(t[0]), int(t[1]))
             final = bfs(tree, startAt, t)
             formatResult(final)
             board = movePiece(board, WHITE, startAt, t)
             printBoard(board)
+            usedWhite = t
 
         board = remove(board, black)
-
+        if isDead(board, int(t[0]), int(t[1])):
+            board = remove(board, t)
 
 def printBoard(board):
     for rows in board:
