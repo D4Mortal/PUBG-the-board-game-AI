@@ -21,29 +21,6 @@ def move(board, row, col, dir):
     '''
     return board[row + MODS[dir][0]][col + MODS[dir][1]]
 
-def right(board, row, column):
-    return board[row][column + 1]
-
-def two_right(board, row, column):
-    return board[row][column + 2]
-
-def left(board, row, column):
-    return board[row][column - 1]
-
-def two_left(board, row, column):
-    return board[row][column - 2]
-
-def down(board, row, column):
-    return board[row + 1][column]
-
-def two_down(board, row, column):
-    return board[row + 2][column]
-
-def up(board, row, column):
-    return board[row - 1][column]
-
-def two_up(board, row, column):
-    return board[row - 2][column]
 
 
 
@@ -130,42 +107,42 @@ class game():
                 if element == WHITE:
 
                     if row + 1 < 8:
-                        if down(state, row, col) == UNOCC:
+                        if move(state, row, col, 'D') == UNOCC:
                             actions[str(row) + str(col)].append(str(row + 1) + str(col))
         
-                        elif down(state, row, col) == WHITE or down(state, row, col) == BLACK:
+                        elif move(state, row, col, 'D') == WHITE or move(state, row, col, 'D') == BLACK:
                             if row + 2 < 8:
-                                if two_down(state, row, col) == UNOCC:
+                                if move(state, row, col, '2D') == UNOCC:
                                      actions[str(row) + str(col)].append(str(row + 2) + str(col))
     
                     if row - 1 >= 0:
-                        if up(state, row, col) == UNOCC:
+                        if move(state, row, col, 'U') == UNOCC:
                             actions[str(row) + str(col)].append(str(row - 1) + str(col))
 
         
-                        elif up(state, row, col) == WHITE or up(state, row, col) == BLACK:
+                        elif move(state, row, col, 'U') == WHITE or move(state, row, col, 'U') == BLACK:
                             if row - 2 >= 0:
-                                if two_up(state, row, col) == UNOCC:
+                                if move(state, row, col, '2U') == UNOCC:
                                     actions[str(row) + str(col)].append(str(row - 2) + str(col))
             
                     
                     
                     if col + 1 < 8:
-                        if right(state, row, col) == UNOCC:
+                        if move(state, row, col, 'R') == UNOCC:
                             actions[str(row) + str(col)].append(str(row) + str(col + 1))
         
-                        elif right(state, row, col) == WHITE or right(state, row, col) == BLACK:
+                        elif move(state, row, col, 'R') == WHITE or move(state, row, col, 'R') == BLACK:
                             if col + 2 < 8:
-                                if two_right(state, row, col) == UNOCC:
+                                if move(state, row, col, '2R') == UNOCC:
                                     actions[str(row) + str(col)].append(str(row) + str(col + 2))
                     
                     if col - 1 >= 0:
-                        if left(state, row, col) == UNOCC:
+                        if move(state, row, col, 'L') == UNOCC:
                             actions[str(row) + str(col)].append(str(row) + str(col - 1))
         
-                        elif left(state, row, col) == WHITE or left(state, row, col) == BLACK:
+                        elif move(state, row, col, 'L') == WHITE or move(state, row, col, 'L') == BLACK:
                             if col - 2 >= 0:
-                                if two_left(state, row, col) == UNOCC:
+                                if move(state, row, col, '2L') == UNOCC:
                                     actions[str(row) + str(col)].append(str(row) + str(col - 2))
     
                 col += 1
