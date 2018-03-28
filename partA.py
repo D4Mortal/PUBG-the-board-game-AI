@@ -368,7 +368,6 @@ def isDead(board, row, col):
     return False
 
 def formatResult(result):
-    print(result)
     row = 0
     col = 0
     counter = 0
@@ -399,7 +398,7 @@ def massacre(board):
             final = bfs(tree, startAt, t)
             formatResult(final)
             board = movePiece(board, WHITE, startAt, t)
-            printBoard(board)
+#            printBoard(board)
             usedWhite = t
 
         board = remove(board, black)
@@ -421,7 +420,7 @@ def main():
 
     if task == 'Moves':
         whiteMoves, blackMoves = testMoves(gameState)
-        print('{}\n{} moves'.format(whiteMoves, blackMoves))
+        print('{}\n{}'.format(whiteMoves, blackMoves))
 
     elif task == 'Massacre': massacre(gameState)
 
