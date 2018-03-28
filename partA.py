@@ -354,7 +354,7 @@ def isDead(board, row, col):
         if move(board, row, col, "L") == BLACK or  move(board, row, col, "L") == CORNER:
             if move(board, row, col, "R") == BLACK or  move(board, row, col, "R") == CORNER:
                 return True
-    if col == 0 or row == 7:
+    if col == 0 or col == 7:
         if move(board, row, col, "U") == BLACK or  move(board, row, col, "U") == CORNER:
             if move(board, row, col, "D") == BLACK or  move(board, row, col, "D") == CORNER:
                 return True
