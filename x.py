@@ -80,86 +80,99 @@ def testMoves(gameState):
 ###############################################################################
 
 class game():
+
     def __init__(self, initialState):
         self.initialState = initialState
 
+###############################################################################
 
-
-    def makeMove(self, state, start, end, colour = WHITE):
+    def movePiece(self, state, posA, posB, piece = WHITE):
         '''
-        avoid pointer
+        returns updated board after moving a piece from A to B
         '''
         newBoard = copy.deepcopy(state)
-
-        # removing piece, adding piece
-         # initial row, col
-        newBoard[int(start[0])][int(start[1])] = UNOCC
-        newBoard[int(end[0])][int(end[1])] = colour
-
+        newBoard[int(posA[0])][int(posA[1])] = UNOCC
+        newBoard[int(posB[0])][int(posB[1])] = piece
         newBoard = self.updateBoard(newBoard)
+
         return newBoard
 
-    def isValidMove(self, state, start, end):
-        row = int(start[0]) # initial row, col
-        col = int(start[1])
-        rowEnd = int(end[0])  #pos move to
-        colEnd = int(end[1])
+###############################################################################
 
-        if rowEnd > 7 or rowEnd < 0 or colEnd > 7 or colEnd < 0:
-            # out of board
+    def isValidMove(self, state, posA, posB):
+        '''
+        verify that a given move (A to B) is valid
+        '''
+        rowA = int(posA[0])
+        colA = int(posA[1])
+        rowB = int(posB[0])
+        colB = int(posB[1])
+
+        if rowB > 7 or rowB < 0 or colB > 7 or colB < 0:
+            # check move is within board
             return False
 
-        if row != rowEnd and col != colEnd:
-                # diagonal movement
+        if rowA != rowB and colA != colB:
+            # check for diagonal movement
             return False
 
         if state[rowEnd][colEnd] != UNOCC:
-            #cant move
+            # check whether position is occupied
             return False
 
         return True
 
-
+###############################################################################
 
     def isComplete(self, state):
-        # any blakc left
-
+        '''
+        check whether a given state is a goal state
+        '''
         for row in state:
-            for element in row:
-                if element == BLACK:
+            for symbol in row:
+                if symbol == BLACK:
                     return False
+
         return True
 
+###############################################################################
 
-    def heuristics(self, state):
+    def heuristic(self, state):
+        '''
+        '''
         if self.isComplete(state):
             return 1
 
-        BlackCount = 0
-        WhiteCount = 0
         score = 0
+        blackCount = 0
+        whiteCount = 0
 
-        # total heuristic count manhattan
+        # count number of each piece on board
         for row in state:
-            for element in row:
-                if element == BLACK: BlackCount += 1
-                if element == WHITE: WhiteCount += 1
-        if WhiteCount < 1:
-            # never expand it coz shit
+            for symbol in row:
+                if symbol == BLACK:
+                    blackCount += 1
+                if symbol == WHITE:
+                    whiteCount += 1
+
+        if whiteCount < 1:
+            # if no white pieces left state is a deadend
             score += DEADEND
 
         # eliminating black piece is really good traverse down that subtree
-        score += BlackCount * 1000    # priotirising
+        score += blackCount * 1000    # priotirising
 
         score += self.findTotalDistance(state)  #manhattan part
 
         return score
 
+###############################################################################
 
     def findTotalCost(self, state, depth):
         #depth = current depth (g(x))
-        return self.heuristics(state) + depth
+        return self.heuristic(state) + depth
 
+###############################################################################
 
     # find all the available moves on a board regardless of if the white piece will die making the move.
     def getAvailableMoves(self, state):
@@ -173,42 +186,42 @@ class game():
                 if element == WHITE:
 
                     if row + 1 < 8:
-                        if move(state, row, col, 'D') == UNOCC:
+                        if posCheck(state, row, col, 'D') == UNOCC:
                             actions[str(row) + str(col)].append(str(row + 1) + str(col))
 
-                        elif move(state, row, col, 'D') == WHITE or move(state, row, col, 'D') == BLACK:
+                        elif posCheck(state, row, col, 'D') == WHITE or posCheck(state, row, col, 'D') == BLACK:
                             if row + 2 < 8:
-                                if move(state, row, col, '2D') == UNOCC:
+                                if posCheck(state, row, col, '2D') == UNOCC:
                                      actions[str(row) + str(col)].append(str(row + 2) + str(col))
 
                     if row - 1 >= 0:
-                        if move(state, row, col, 'U') == UNOCC:
+                        if posCheck(state, row, col, 'U') == UNOCC:
                             actions[str(row) + str(col)].append(str(row - 1) + str(col))
 
 
-                        elif move(state, row, col, 'U') == WHITE or move(state, row, col, 'U') == BLACK:
+                        elif posCheck(state, row, col, 'U') == WHITE or posCheck(state, row, col, 'U') == BLACK:
                             if row - 2 >= 0:
-                                if move(state, row, col, '2U') == UNOCC:
+                                if posCheck(state, row, col, '2U') == UNOCC:
                                     actions[str(row) + str(col)].append(str(row - 2) + str(col))
 
 
 
                     if col + 1 < 8:
-                        if move(state, row, col, 'R') == UNOCC:
+                        if posCheck(state, row, col, 'R') == UNOCC:
                             actions[str(row) + str(col)].append(str(row) + str(col + 1))
 
-                        elif move(state, row, col, 'R') == WHITE or move(state, row, col, 'R') == BLACK:
+                        elif posCheck(state, row, col, 'R') == WHITE or posCheck(state, row, col, 'R') == BLACK:
                             if col + 2 < 8:
-                                if move(state, row, col, '2R') == UNOCC:
+                                if posCheck(state, row, col, '2R') == UNOCC:
                                     actions[str(row) + str(col)].append(str(row) + str(col + 2))
 
                     if col - 1 >= 0:
-                        if move(state, row, col, 'L') == UNOCC:
+                        if posCheck(state, row, col, 'L') == UNOCC:
                             actions[str(row) + str(col)].append(str(row) + str(col - 1))
 
-                        elif move(state, row, col, 'L') == WHITE or move(state, row, col, 'L') == BLACK:
+                        elif posCheck(state, row, col, 'L') == WHITE or posCheck(state, row, col, 'L') == BLACK:
                             if col - 2 >= 0:
-                                if move(state, row, col, '2L') == UNOCC:
+                                if posCheck(state, row, col, '2L') == UNOCC:
                                     actions[str(row) + str(col)].append(str(row) + str(col - 2))
 
                 col += 1
@@ -216,49 +229,51 @@ class game():
 
         return actions
 
+###############################################################################
 
     def isDead(self, board, row, col, colour):
 
         if colour == WHITE:
 
             if row == 0 or row == 7:
-                if move(board, row, col, "L") == BLACK or  move(board, row, col, "L") == CORNER:
-                    if move(board, row, col, "R") == BLACK or  move(board, row, col, "R") == CORNER:
+                if posCheck(board, row, col, "L") == BLACK or  posCheck(board, row, col, "L") == CORNER:
+                    if posCheck(board, row, col, "R") == BLACK or  posCheck(board, row, col, "R") == CORNER:
                         return True
             elif col == 0 or col == 7:
-                if move(board, row, col, "U") == BLACK or  move(board, row, col, "U") == CORNER:
-                    if move(board, row, col, "D") == BLACK or  move(board, row, col, "D") == CORNER:
+                if posCheck(board, row, col, "U") == BLACK or  posCheck(board, row, col, "U") == CORNER:
+                    if posCheck(board, row, col, "D") == BLACK or  posCheck(board, row, col, "D") == CORNER:
                         return True
 
             else:
-                if move(board, row, col, "L") == BLACK or  move(board, row, col, "L") == CORNER:
-                    if move(board, row, col, "R") == BLACK or  move(board, row, col, "R") == CORNER:
+                if posCheck(board, row, col, "L") == BLACK or  posCheck(board, row, col, "L") == CORNER:
+                    if posCheck(board, row, col, "R") == BLACK or  posCheck(board, row, col, "R") == CORNER:
                         return True
-                if move(board, row, col, "U") == BLACK or  move(board, row, col, "U") == CORNER:
-                    if move(board, row, col, "D") == BLACK or  move(board, row, col, "D") == CORNER:
+                if posCheck(board, row, col, "U") == BLACK or  posCheck(board, row, col, "U") == CORNER:
+                    if posCheck(board, row, col, "D") == BLACK or  posCheck(board, row, col, "D") == CORNER:
                         return True
 
         if colour == BLACK:
 
             if row == 0 or row == 7:
-                if move(board, row, col, "L") == WHITE or  move(board, row, col, "L") == CORNER:
-                    if move(board, row, col, "R") == WHITE or  move(board, row, col, "R") == CORNER:
+                if posCheck(board, row, col, "L") == WHITE or  posCheck(board, row, col, "L") == CORNER:
+                    if posCheck(board, row, col, "R") == WHITE or  posCheck(board, row, col, "R") == CORNER:
                         return True
             elif col == 0 or col == 7:
-                if move(board, row, col, "U") == WHITE or  move(board, row, col, "U") == CORNER:
-                    if move(board, row, col, "D") == WHITE or  move(board, row, col, "D") == CORNER:
+                if posCheck(board, row, col, "U") == WHITE or  posCheck(board, row, col, "U") == CORNER:
+                    if posCheck(board, row, col, "D") == WHITE or  posCheck(board, row, col, "D") == CORNER:
                         return True
 
             else:
-                if move(board, row, col, "L") == WHITE or  move(board, row, col, "L") == CORNER:
-                    if move(board, row, col, "R") == WHITE or  move(board, row, col, "R") == CORNER:
+                if posCheck(board, row, col, "L") == WHITE or  posCheck(board, row, col, "L") == CORNER:
+                    if posCheck(board, row, col, "R") == WHITE or  posCheck(board, row, col, "R") == CORNER:
                         return True
-                if move(board, row, col, "U") == WHITE or  move(board, row, col, "U") == CORNER:
-                    if move(board, row, col, "D") == WHITE or  move(board, row, col, "D") == CORNER:
+                if posCheck(board, row, col, "U") == WHITE or  posCheck(board, row, col, "U") == CORNER:
+                    if posCheck(board, row, col, "D") == WHITE or  posCheck(board, row, col, "D") == CORNER:
                         return True
 
         return False
 
+###############################################################################
 
     def remove(self, state, row, col):
         # remove a piece (row,col)
@@ -266,6 +281,7 @@ class game():
         newBoard[row][col] = UNOCC
         return newBoard
 
+###############################################################################
 
     def updateBoard(self, state):
         # check whether mvoe results in elimination
@@ -292,6 +308,8 @@ class game():
             row += 1
         return newBoard
 
+###############################################################################
+
     def findDistance(self, start, end):
         total = 0
         # initial row - final row)
@@ -299,6 +317,8 @@ class game():
         total += abs(int(start[0]) - int(end[0]))
         total += abs(int(start[1]) - int(end[1]))
         return total
+
+###############################################################################
 
     def findTotalDistance(self, state):
         total = 0
@@ -322,6 +342,7 @@ class game():
             row +=1
         return total
 
+###############################################################################
 
     def aStarSearch(self, max_nodes, maxDepth):
         # Performs a-star search
@@ -385,7 +406,7 @@ class game():
 
                     # Find the new state corresponding to the action and calculate total cost
                     if self.isValidMove(current_state, start, end):
-                        new_state = self.makeMove(current_state, start, end)
+                        new_state = self.movePiece(current_state, start, end)
                     else:
                         continue
 
@@ -460,7 +481,7 @@ class game():
                     print(current_depth, node_index)
                     break
 
-
+###############################################################################
 
     def generate_solution_path(self, node, node_dict, result):
         # Return the solution path for display from final (goal) state to starting state
@@ -498,6 +519,8 @@ def main():
         board.aStarSearch(NODES_GENERATED, MAX_DEPTH)
     else:
         print('Invalid mode')
+
+###############################################################################
 
 main()
 
