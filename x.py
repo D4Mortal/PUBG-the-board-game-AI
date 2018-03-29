@@ -1,5 +1,12 @@
-from collections import defaultdict
+# Chirag Rao Sahib      : 836011
+# Daniel Hao            :
+# Date                  : 28/03/2018
+# Python version        : 3.6.4
+
+###############################################################################
+
 import copy
+from collections import defaultdict
 
 NODES_GENERATED = 10**12
 MAX_DEPTH = 999999999999999
@@ -9,33 +16,42 @@ WHITE = 'O'
 UNOCC = '-'
 CORNER = 'X'
 SIZE = 8
-MODS = {'R':(0,1),
-       '2R':(0,2),
-       'L': (0,-1),
-       '2L': (0,-2),
-       'D':(1,0),
-       '2D':(2,0),
-       'U':(-1,0),
-       '2U':(-2,0)}
+MODS = {'R': (0, 1),
+        '2R': (0, 2),
+        'L': (0, -1),
+        '2L': (0, -2),
+        'D': (1, 0),
+        '2D': (2, 0),
+        'U': (-1, 0),
+        '2U': (-2, 0)}
 
 
+###############################################################################
 
 def move(board, row, col, dir):
     '''
     '''
     return board[row + MODS[dir][0]][col + MODS[dir][1]]
 
+###############################################################################
 
 def testMoves(gameState):
     '''
+    iterates over board and counts available moves for each piece
     '''
+    row = 0
     whiteMoves = 0
     blackMoves = 0
-    row = 0
 
-    for line in gameState:
+
+    # for idx, row in enumerate(gameState):
+    #     print(idx, val)
+
+
+
+    for row in gameState:
         col = 0
-        for symbol in line:
+        for symbol in row:
             if symbol == WHITE:
                 whiteMoves += checkSurr(gameState, row , col)
             if symbol == BLACK:
@@ -43,6 +59,8 @@ def testMoves(gameState):
             col += 1
         row += 1
     return whiteMoves, blackMoves
+
+###############################################################################
 
 def checkSurr(board, row, col):
     '''
@@ -64,6 +82,7 @@ def checkSurr(board, row, col):
 
     return availMoves
 
+###############################################################################
 
 class game():
     def __init__(self, initialState):
@@ -472,6 +491,7 @@ class game():
                     return self.generate_solution_path(expanded_node, node_dict, result)
 
 
+###############################################################################
 
 def main():
     gameState = []
@@ -479,20 +499,16 @@ def main():
     for i in range(SIZE):
         gameState.append(input().split())
 
-    task = input().split()[0]
+    mode = input().split()[0]
 
-    if task == 'Moves':
+    if mode == 'Moves':
         whiteMoves, blackMoves = testMoves(gameState)
         print('{}\n{}'.format(whiteMoves, blackMoves))
-
-    elif task == 'Massacre':
+    elif mode == 'Massacre':
         board = game(gameState)
         board.aStarSearch(NODES_GENERATED, MAX_DEPTH)
-
-    else: print('Invalid mode')
-
-
-
+    else:
+        print('Invalid mode')
 
 main()
 
