@@ -270,65 +270,65 @@ class game():
                                    "total_cost": self.findTotalCost(current_state, 0), "depth": 0}
         
 
-        failure = False
+        isSolution = True
 
         # all_nodes keeps track of all nodes on the frontier and is the priority queue. Each element in the list is a tuple consisting of node index and total cost of the node. This will be sorted by the total cost and serve as the priority queue.
         all_frontier_nodes = [(0, frontier_nodes[0]["total_cost"])]
 
         # Stop when maximum nodes have been considered
-        while not failure:
+        while isSolution:
 
             # Get current depth of state for use in total cost calculation
             current_depth = 0
+            
             for node_num, node in expanded_nodes.items():
                 if node["state"] == current_state:
                     current_depth = node["depth"]
 
-            # Find available actions corresponding to current state
+            # Find available actions for the current state
             available_actions = self.getAvailableMoves(current_state)
 
 
             # Iterate through possible actions 
-            for key, value in available_actions.items():
-                for action in value:
-                    repeat = False
+            for start, value in available_actions.items():
+                for end in value:
+                    visited = False
                  
                     
-                    # If max nodes reached, break out of loop
+                    # If max nodes reached stop searching
                     if node_index >= max_nodes:
-                        failure = True
-                        print("No Solution Found in first {} nodes generated".format(max_nodes))
-                        self.num_nodes_generated = max_nodes
+                        print("No Solution Found in first {} nodes generated".format(max_nodes))                       
                         return
                     
-                    if current_depth >= maxDepth:
-                        failure = True
+                    # if max depth reached stop searching
+                    if current_depth >= maxDepth:                    
                         print("No Solution Found in first {} layers".format(maxDepth))
                         return
                     
                     
                     # Find the new state corresponding to the action and calculate total cost
-                    if self.isValidMove(current_state, key, action):
-                        new_state = self.makeMove(current_state, key, action)
+                    if self.isValidMove(current_state, start, end):
+                        new_state = self.makeMove(current_state, start, end)               
                     else:
                         continue
+                    
                     new_state_parent = copy.deepcopy(current_state)
                     
                     # Check to see if new state has already been expanded
                     for expanded_node in expanded_nodes.values():
                         if expanded_node["state"] == new_state:
                             if expanded_node["parent"] == new_state_parent:
-                                repeat = True
+                                visited = True
 
                     # Check to see if new state and parent is on the frontier
                     # The same state can be added twice to the frontier if the parent state is different
                     for frontier_node in frontier_nodes.values():
                         if frontier_node["state"] == new_state:
                             if frontier_node["parent"] == new_state_parent:
-                                repeat = True
+                                visited = True
 
                     # If new state has already been expanded or is on the frontier, continue with next action     
-                    if repeat:
+                    if visited:
                         continue
 
                     else:
@@ -344,13 +344,13 @@ class game():
                         all_frontier_nodes.append((node_index, new_state_cost))
 
                         # Add the node to the frontier 
-                        frontier_nodes[node_index] = {"state": new_state, "parent": new_state_parent,  "total_cost": new_state_cost, "depth": current_depth + 1, "action" : '({}, {}) -> ({}, {})'.format(key[0], key[1], action[0], action[1])}
+                        frontier_nodes[node_index] = {"state": new_state, "parent": new_state_parent,  "total_cost": new_state_cost, "depth": current_depth + 1, "action" : '({}, {}) -> ({}, {})'.format(start[0], start[1], end[0], end[1])}
 
                 # Sort all the nodes on the frontier by total cost
             all_frontier_nodes = sorted(all_frontier_nodes, key=lambda x: x[1])
 
                 # If the number of nodes generated does not exceed max nodes, find the best node and set the current state to that state
-            if not failure:
+            if isSolution:
                     # The best node will be at the front of the queue
                     # After selecting the node for expansion, remove it from the queue
                 best_node = all_frontier_nodes.pop(0)
@@ -366,7 +366,7 @@ class game():
                     # Create attributes for the expanded nodes and the frontier nodes
                     self.expanded_nodes = expanded_nodes
                     self.frontier_nodes = frontier_nodes
-                    self.num_nodes_generated = node_index + 1
+                    
                     
                     
                     for node_num, node in expanded_nodes.items():
