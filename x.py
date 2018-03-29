@@ -28,42 +28,17 @@ MODS = {'R': (0, 1),
 
 ###############################################################################
 
-def move(board, row, col, dir):
+def posCheck(board, row, col, dir):
     '''
+    returns symbol at a given board position (modified by direction)
     '''
     return board[row + MODS[dir][0]][col + MODS[dir][1]]
 
 ###############################################################################
 
-def testMoves(gameState):
+def checkSurround(board, row, col):
     '''
-    iterates over board and counts available moves for each piece
-    '''
-    row = 0
-    whiteMoves = 0
-    blackMoves = 0
-
-
-    # for idx, row in enumerate(gameState):
-    #     print(idx, val)
-
-
-
-    for row in gameState:
-        col = 0
-        for symbol in row:
-            if symbol == WHITE:
-                whiteMoves += checkSurr(gameState, row , col)
-            if symbol == BLACK:
-                blackMoves += checkSurr(gameState, row , col)
-            col += 1
-        row += 1
-    return whiteMoves, blackMoves
-
-###############################################################################
-
-def checkSurr(board, row, col):
-    '''
+    given a position counts possible movements
     '''
     availMoves = 0
     checkCond = {'D':[row+1 < SIZE, row+2 < SIZE],
@@ -71,16 +46,36 @@ def checkSurr(board, row, col):
                  'R':[col+1 < SIZE, col+2 < SIZE],
                  'L':[col-1 >= 0, col-2 >= 0]}
 
-    for m in checkCond:
-        if checkCond[m][0]:
-            posCheck = move(board,row,col, m)
-            if posCheck == UNOCC: availMoves += 1
-            if posCheck == WHITE or posCheck == BLACK:
-                if checkCond[m][1]:
-                    posCheck2 = move(board,row,col,'2' + m)
-                    if posCheck2 == UNOCC: availMoves += 1
+    for direction in checkCond:
+        if checkCond[direction][0]:
+            symbol = posCheck(board, row, col, direction)
+            if symbol == UNOCC:
+                availMoves += 1
+            if symbol == WHITE or symbol == BLACK:
+                # check whether jump is possible
+                if checkCond[direction][1]:
+                    if posCheck(board, row, col,'2' + direction) == UNOCC:
+                        availMoves += 1
 
     return availMoves
+
+###############################################################################
+
+def testMoves(gameState):
+    '''
+    iterates over board and counts available moves for each piece
+    '''
+    whiteMoves = 0
+    blackMoves = 0
+
+    for row, line in enumerate(gameState):
+        for col, symbol in enumerate(line):
+            if symbol == WHITE:
+                whiteMoves += checkSurround(gameState, row, col)
+            if symbol == BLACK:
+                blackMoves += checkSurround(gameState, row, col)
+
+    return whiteMoves, blackMoves
 
 ###############################################################################
 
@@ -338,7 +333,7 @@ class game():
 
         self.starting_state = copy.deepcopy(self.initialState)
         current_state = copy.deepcopy(self.initialState)
-        
+
         # Node index is used for indexing the dictionaries and to keep track of the number of nodes expanded
         node_index = 0
 
@@ -353,10 +348,10 @@ class game():
 
         isSolution = True
 
-        # all_nodes keeps track of all nodes on the frontier and is the priority queue. 
-        # Each element in the list is a tuple consisting of node index and total cost of the node. 
+        # all_nodes keeps track of all nodes on the frontier and is the priority queue.
+        # Each element in the list is a tuple consisting of node index and total cost of the node.
         all_frontier_nodes = [(0, frontier_nodes[0]["total_cost"])]
-        
+
         # Stop when maximum nodes or depth have been considered
         while isSolution:
 
@@ -430,10 +425,10 @@ class game():
 
             # Sort all the nodes on the frontier by total cost
             all_frontier_nodes = sorted(all_frontier_nodes, key=lambda x: x[1])
-         
+
             # If the number of nodes generated does not exceed max nodes, find the best node and set the current state to that state
             if isSolution:
-                
+
                 # The best node will be at the front of the queue
                 # After selecting the node for expansion, remove it from the queue
                 best_node = all_frontier_nodes.pop(0)
