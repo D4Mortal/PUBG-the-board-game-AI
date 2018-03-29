@@ -8,9 +8,10 @@
 import copy
 from collections import defaultdict
 
-NODES_GENERATED = 10**12
-MAX_DEPTH = 999999999999999
-DEADEND = 999999999999999
+NODES_GENERATED = 2e10
+MAX_DEPTH = 2e10
+DEADEND = 1e5
+BLACK_MULTIPLIER = 1e3
 BLACK = '@'
 WHITE = 'O'
 UNOCC = '-'
@@ -116,7 +117,7 @@ class game():
             # check for diagonal movement
             return False
 
-        if state[rowEnd][colEnd] != UNOCC:
+        if state[rowB][colB] != UNOCC:
             # check whether position is occupied
             return False
 
@@ -126,7 +127,7 @@ class game():
 
     def isComplete(self, state):
         '''
-        check whether a given state is a goal state
+        check whether a given state is a goal state (complete)
         '''
         for row in state:
             for symbol in row:
@@ -139,11 +140,14 @@ class game():
 
     def heuristic(self, state):
         '''
+        heuristic function that returns the 'score' of a state.
+        lower scores indicate we are closer to a goal, while higher
+        scores indicate we are further away
         '''
         if self.isComplete(state):
             return 1
 
-        score = 0
+        stateScore = 0
         blackCount = 0
         whiteCount = 0
 
@@ -156,77 +160,59 @@ class game():
                     whiteCount += 1
 
         if whiteCount < 1:
-            # if no white pieces left state is a deadend
-            score += DEADEND
+            # if no white pieces left state is a deadend (increase score)
+            stateScore += DEADEND
 
-        # eliminating black piece is really good traverse down that subtree
-        score += blackCount * 1000    # priotirising
+        # increase score in proportion to number of black pieces
+        # since more black pieces on board is less favourable
+        stateScore += blackCount * BLACK_MULTIPLIER
 
-        score += self.findTotalDistance(state)  #manhattan part
+        # also consider manhattan distance
+        stateScore += self.manhattanDistance(state)
 
-        return score
-
-###############################################################################
-
-    def findTotalCost(self, state, depth):
-        #depth = current depth (g(x))
-        return self.heuristic(state) + depth
+        return stateScore
 
 ###############################################################################
 
-    # find all the available moves on a board regardless of if the white piece will die making the move.
+    def evalFunc(self, state, currentDepth):
+        '''
+        evaluation function as per f(n) = h(n) + g(n)
+        '''
+        return self.heuristic(state) + currentDepth
+
+###############################################################################
+
     def getAvailableMoves(self, state):
-
-        row = 0
+        '''
+        return dictionary of moves available for each white piece
+        '''
         actions = defaultdict(list)
 
-        for r in state:
-            col = 0
-            for element in r:
-                if element == WHITE:
+        for row, line in enumerate(state):
+            # describe up, down moves to check
+            checkCond = {'D': [row+1 < SIZE, 1, 0, row+2 < SIZE, 2, 0],
+                         'U': [row-1 >= 0, -1, 0, row-2 >= 0, -2, 0]}
 
-                    if row + 1 < 8:
-                        if posCheck(state, row, col, 'D') == UNOCC:
-                            actions[str(row) + str(col)].append(str(row + 1) + str(col))
+            for col, symbol in enumerate(line):
+                # describe left, right moves to check
+                checkCond['R'] = [col+1 < SIZE, 0, 1, col+2 < SIZE, 0, 2]
+                checkCond['L'] = [col-1 >= 0, 0, -1, col-2 >= 0, 0, -2]
 
-                        elif posCheck(state, row, col, 'D') == WHITE or posCheck(state, row, col, 'D') == BLACK:
-                            if row + 2 < 8:
-                                if posCheck(state, row, col, '2D') == UNOCC:
-                                     actions[str(row) + str(col)].append(str(row + 2) + str(col))
+                if symbol == WHITE:
+                    for dir in checkCond:
+                        if checkCond[dir][0]:
+                            posToCheck = posCheck(state, row, col, dir)
+                            index = str(row) + str(col)
 
-                    if row - 1 >= 0:
-                        if posCheck(state, row, col, 'U') == UNOCC:
-                            actions[str(row) + str(col)].append(str(row - 1) + str(col))
-
-
-                        elif posCheck(state, row, col, 'U') == WHITE or posCheck(state, row, col, 'U') == BLACK:
-                            if row - 2 >= 0:
-                                if posCheck(state, row, col, '2U') == UNOCC:
-                                    actions[str(row) + str(col)].append(str(row - 2) + str(col))
-
-
-
-                    if col + 1 < 8:
-                        if posCheck(state, row, col, 'R') == UNOCC:
-                            actions[str(row) + str(col)].append(str(row) + str(col + 1))
-
-                        elif posCheck(state, row, col, 'R') == WHITE or posCheck(state, row, col, 'R') == BLACK:
-                            if col + 2 < 8:
-                                if posCheck(state, row, col, '2R') == UNOCC:
-                                    actions[str(row) + str(col)].append(str(row) + str(col + 2))
-
-                    if col - 1 >= 0:
-                        if posCheck(state, row, col, 'L') == UNOCC:
-                            actions[str(row) + str(col)].append(str(row) + str(col - 1))
-
-                        elif posCheck(state, row, col, 'L') == WHITE or posCheck(state, row, col, 'L') == BLACK:
-                            if col - 2 >= 0:
-                                if posCheck(state, row, col, '2L') == UNOCC:
-                                    actions[str(row) + str(col)].append(str(row) + str(col - 2))
-
-                col += 1
-            row += 1
-
+                            if posToCheck == UNOCC:
+                                tmpIndex = str(row + checkCond[dir][1]) + str(col + checkCond[dir][2])
+                                actions[index].append(tmpIndex)
+                            elif posToCheck == WHITE or posToCheck == BLACK:
+                                # check whether jump is possible
+                                if checkCond[dir][3]:
+                                    if posCheck(state, row, col,'2' + dir) == UNOCC:
+                                        tmpIndex = str(row + checkCond[dir][4]) + str(col + checkCond[dir][5])
+                                        actions[index].append(tmpIndex)
         return actions
 
 ###############################################################################
@@ -310,7 +296,7 @@ class game():
 
 ###############################################################################
 
-    def findDistance(self, start, end):
+    def dist(self, start, end):
         total = 0
         # initial row - final row)
         # initial col - initial col
@@ -320,7 +306,7 @@ class game():
 
 ###############################################################################
 
-    def findTotalDistance(self, state):
+    def manhattanDistance(self, state):
         total = 0
         row = 0
         '''
@@ -335,7 +321,8 @@ class game():
                     for r2 in state:  #r second loop find all white peices
                         col2 = 0
                         for element2 in r2:
-                            if element2 == WHITE: total += self.findDistance(str(row) + str(col), str(row2) + str(col2))
+                            if element2 == WHITE:
+                                total += self.dist(str(row) + str(col), str(row2) + str(col2))
                             col2 += 1
                         row2 += 1
                 col += 1
@@ -361,10 +348,10 @@ class game():
         # Set the first element in both dictionaries to the starting state
         # This is the only node that will be in both dictionaries
         expanded_nodes[node_index] = {"state": current_state, "parent": "root", "action": "start",
-                                   "total_cost": self.findTotalCost(current_state, 0), "depth": 0}
+                                   "total_cost": self.evalFunc(current_state, 0), "depth": 0}
 
         frontier_nodes[node_index] = {"state": current_state, "parent": "root", "action": "start",
-                                   "total_cost": self.findTotalCost(current_state, 0), "depth": 0}
+                                   "total_cost": self.evalFunc(current_state, 0), "depth": 0}
 
 
         isSolution = True
@@ -435,7 +422,7 @@ class game():
                         depth = current_depth + 1
 
                         # Total cost is path length (number of steps from starting state) + heuristic
-                        new_state_cost = self.findTotalCost(new_state, depth)
+                        new_state_cost = self.evalFunc(new_state, depth)
 
 
                         # Add the node index and total cost to the all_nodes list
