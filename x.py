@@ -8,7 +8,7 @@
 import copy
 from collections import defaultdict
 
-NODES_GENERATED = 2e10
+MAX_NODES = 2e10
 MAX_DEPTH = 2e10
 DEADEND = 1e5
 BLACK_MULTIPLIER = 1e3
@@ -81,7 +81,9 @@ def testMoves(gameState):
 ###############################################################################
 
 class game():
-
+    '''
+    class containing functions for Massacre
+    '''
     def __init__(self, initialState):
         self.initialState = initialState
 
@@ -213,11 +215,13 @@ class game():
                             elif posToCheck == WHITE or posToCheck == BLACK:
                                 # check whether jump is possible
                                 if checkCond[dir][3]:
-                                    if posCheck(state, row, col,'2' + dir) == UNOCC:
+                                    j = '2' + dir  # jump direction
+                                    if posCheck(state, row, col, j) == UNOCC:
                                         tmpA = row + checkCond[dir][4]
                                         tmpB = col + checkCond[dir][5]
                                         tmpIndex = str(tmpA) + str(tmpB)
                                         actions[index].append(tmpIndex)
+        print(actions)
         return actions
 
 ###############################################################################
@@ -321,13 +325,15 @@ class game():
 
 ###############################################################################
 
-    def aStarSearch(self, max_nodes, maxDepth):
-        # Performs a-star search
-        # Prints the list of solution moves and the solution length
+    def aStarSearch(self):
+        '''
+        Performs a-star search
+        Prints the list of solution moves and the solution length
+        '''
 
         # Need a dictionary for the frontier and for the expanded nodes
-        frontier_nodes = {}  # about to expand nodes
-        expanded_nodes = {}
+        frontierNodes = {}  # about to expand nodes
+        expandedNodes = {}
 
         self.starting_state = copy.deepcopy(self.initialState)
         current_state = copy.deepcopy(self.initialState)
@@ -337,18 +343,18 @@ class game():
 
         # Set the first element in both dictionaries to the starting state
         # This is the only node that will be in both dictionaries
-        expanded_nodes[node_index] = {"state": current_state, "parent": "root", "action": "start",
-                                   "total_cost": self.evalFunc(current_state, 0), "depth": 0}
+        expandedNodes[node_index] = {'state': current_state, 'parent': 'root', 'action': 'start',
+                                   'total_cost': self.evalFunc(current_state, 0), 'depth': 0}
 
-        frontier_nodes[node_index] = {"state": current_state, "parent": "root", "action": "start",
-                                   "total_cost": self.evalFunc(current_state, 0), "depth": 0}
+        frontierNodes[node_index] = {'state': current_state, 'parent': 'root', 'action': 'start',
+                                   'total_cost': self.evalFunc(current_state, 0), 'depth': 0}
 
 
         isSolution = True
 
         # all_nodes keeps track of all nodes on the frontier and is the priority queue.
         # Each element in the list is a tuple consisting of node index and total cost of the node.
-        all_frontier_nodes = [(0, frontier_nodes[0]["total_cost"])]
+        all_frontierNodes = [(0, frontierNodes[0]['total_cost'])]
 
         # Stop when maximum nodes or depth have been considered
         while isSolution:
@@ -356,9 +362,9 @@ class game():
             # Get current depth of state for use in total cost calculation
             current_depth = 0
 
-            for node_num, node in expanded_nodes.items():
-                if node["state"] == current_state:
-                    current_depth = node["depth"]
+            for node_num, node in expandedNodes.items():
+                if node['state'] == current_state:
+                    current_depth = node['depth']
 
             # Find available actions for the current state
             available_actions = self.getAvailableMoves(current_state)
@@ -371,13 +377,13 @@ class game():
 
 
                     # If max nodes reached stop searching
-                    if node_index >= max_nodes:
-                        print("No Solution Found in first {} nodes generated".format(max_nodes))
+                    if node_index >= MAX_NODES:
+                        print('No Solution Found in first {} nodes generated'.format(MAX_NODES))
                         isSolution = False
 
                     # if max depth reached stop searching
-                    if current_depth >= maxDepth:
-                        print("No Solution Found in first {} layers".format(maxDepth))
+                    if current_depth >= MAX_DEPTH:
+                        print('No Solution Found in first {} layers'.format(MAX_DEPTH))
                         isSolution = False
 
 
@@ -390,16 +396,16 @@ class game():
                     new_state_parent = copy.deepcopy(current_state)
 
                     # Check to see if new state has already been expanded
-                    for expanded_node in expanded_nodes.values():
-                        if expanded_node["state"] == new_state:
-                            if expanded_node["parent"] == new_state_parent:
+                    for expanded_node in expandedNodes.values():
+                        if expanded_node['state'] == new_state:
+                            if expanded_node['parent'] == new_state_parent:
                                 visited = True
 
                     # Check to see if new state and parent is on the frontier
                     # The same state can be added twice to the frontier if the parent state is different
-                    for frontier_node in frontier_nodes.values():
-                        if frontier_node["state"] == new_state:
-                            if frontier_node["parent"] == new_state_parent:
+                    for frontier_node in frontierNodes.values():
+                        if frontier_node['state'] == new_state:
+                            if frontier_node['parent'] == new_state_parent:
                                 visited = True
 
                     # If new state has already been expanded or is on the frontier, continue with next action
@@ -416,32 +422,32 @@ class game():
 
 
                         # Add the node index and total cost to the all_nodes list
-                        all_frontier_nodes.append((node_index, new_state_cost))
+                        all_frontierNodes.append((node_index, new_state_cost))
 
                         # Add the node to the frontier
-                        frontier_nodes[node_index] = {"state": new_state, "parent": new_state_parent,  "total_cost": new_state_cost, "depth": current_depth + 1, "action" : '({}, {}) -> ({}, {})'.format(start[1], start[0], end[1], end[0])}
+                        frontierNodes[node_index] = {'state': new_state, 'parent': new_state_parent,  'total_cost': new_state_cost, 'depth': current_depth + 1, 'action' : '({}, {}) -> ({}, {})'.format(start[1], start[0], end[1], end[0])}
 
             # Sort all the nodes on the frontier by total cost
-            all_frontier_nodes = sorted(all_frontier_nodes, key=lambda x: x[1])
+            all_frontierNodes = sorted(all_frontierNodes, key=lambda x: x[1])
 
             # If the number of nodes generated does not exceed max nodes, find the best node and set the current state to that state
             if isSolution:
 
                 # The best node will be at the front of the queue
                 # After selecting the node for expansion, remove it from the queue
-                best_node = all_frontier_nodes.pop(0)
+                best_node = all_frontierNodes.pop(0)
                 best_node_index = best_node[0]
-                best_node_state = frontier_nodes[best_node_index]["state"]
+                best_node_state = frontierNodes[best_node_index]['state']
                 current_state = best_node_state
 
                 # Move the node from the frontier to the expanded nodes
-                expanded_nodes[best_node_index] = (frontier_nodes.pop(best_node_index))
+                expandedNodes[best_node_index] = (frontierNodes.pop(best_node_index))
 
                 # Check if current state is goal state
                 if self.isComplete(best_node_state):
-                    for node_num, node in expanded_nodes.items():
-                        if self.isComplete(node["state"]):
-                            final_node = expanded_nodes[node_num]
+                    for node_num, node in expandedNodes.items():
+                        if self.isComplete(node['state']):
+                            final_node = expandedNodes[node_num]
 # =============================================================================
                     # print(final_node)
                     # for a in final_node['state']:
@@ -450,7 +456,7 @@ class game():
                     # for a in final_node['parent']:
                     #     print(a)
 # =============================================================================
-                    finalresult = self.generate_solution_path(final_node, expanded_nodes, [])
+                    finalresult = self.genSolPath(final_node, expandedNodes, [])
                     # Display the solution path
                     for a in reversed(finalresult):
                         print(a)
@@ -460,23 +466,23 @@ class game():
 
 ###############################################################################
 
-    def generate_solution_path(self, node, node_dict, result):
-        # Return the solution path for display from final (goal) state to starting state
-        # If the node is the root, return the path
-        if node["parent"] == "root":
-            # If root is found, add the node and then return
-            return result
+    def genSolPath(self, node, nodeDict, path):
+        '''
+        recursive traversal up the search tree from the goal state to root,
+            reconstructing the solution path
+        '''
+        # base case : if the node is the root, return the path
+        if node['parent'] == 'root':
+            return path
 
         else:
-            # If the node is not the root, add the state and action to the solution path
-            parent_state = node["parent"]
-            result.append(node['action'])
+            parentState = node['parent']
+            path.append(node['action'])
 
-            # Find the parent of the node and recurse
-            for node_num, expanded_node in node_dict.items():
-                if expanded_node["state"] == parent_state:
-                    return self.generate_solution_path(expanded_node, node_dict, result)
-
+            # traverse up the node's parent
+            for n in nodeDict.values():
+                if n['state'] == parentState:
+                    return self.genSolPath(n, nodeDict, path)
 
 ###############################################################################
 
@@ -493,12 +499,11 @@ def main():
         print('{}\n{}'.format(whiteMoves, blackMoves))
     elif mode == 'Massacre':
         board = game(gameState)
-        board.aStarSearch(NODES_GENERATED, MAX_DEPTH)
+        isEliminated(self, board, row, col, piece)
+        board.aStarSearch()
     else:
         print('Invalid mode')
 
 ###############################################################################
 
 main()
-
-
