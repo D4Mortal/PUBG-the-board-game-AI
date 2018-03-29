@@ -189,12 +189,12 @@ class game():
         actions = defaultdict(list)
 
         for row, line in enumerate(state):
-            # describe up, down moves to check
+            # describe up/down moves to check
             checkCond = {'D': [row+1 < SIZE, 1, 0, row+2 < SIZE, 2, 0],
                          'U': [row-1 >= 0, -1, 0, row-2 >= 0, -2, 0]}
 
             for col, symbol in enumerate(line):
-                # describe left, right moves to check
+                # describe left/right moves to check
                 checkCond['R'] = [col+1 < SIZE, 0, 1, col+2 < SIZE, 0, 2]
                 checkCond['L'] = [col-1 >= 0, 0, -1, col-2 >= 0, 0, -2]
 
@@ -217,81 +217,69 @@ class game():
 
 ###############################################################################
 
-    def isDead(self, board, row, col, colour):
+    def isEliminated(self, board, row, col, piece):
+        '''
+        check whether the given piece will be eliminated by the corner
+            and/or surrounding opponents
+        '''
+        if piece == WHITE:
+            flag = BLACK
+        if piece == BLACK:
+            flag = WHITE
 
-        if colour == WHITE:
+        if row == 0 or row == 7:
+            checkLeft = posCheck(board, row, col, 'L')
+            checkRight = posCheck(board, row, col, 'R')
+            if checkLeft == flag or checkLeft == CORNER:
+                if checkRight == flag or checkRight == CORNER:
+                    return True
 
-            if row == 0 or row == 7:
-                if posCheck(board, row, col, "L") == BLACK or  posCheck(board, row, col, "L") == CORNER:
-                    if posCheck(board, row, col, "R") == BLACK or  posCheck(board, row, col, "R") == CORNER:
-                        return True
-            elif col == 0 or col == 7:
-                if posCheck(board, row, col, "U") == BLACK or  posCheck(board, row, col, "U") == CORNER:
-                    if posCheck(board, row, col, "D") == BLACK or  posCheck(board, row, col, "D") == CORNER:
-                        return True
+        elif col == 0 or col == 7:
+            checkUp = posCheck(board, row, col, 'U')
+            checkDown = posCheck(board, row, col, 'D')
+            if checkUp == flag or checkUp == CORNER:
+                if checkDown == flag or checkDown == CORNER:
+                    return True
 
-            else:
-                if posCheck(board, row, col, "L") == BLACK or  posCheck(board, row, col, "L") == CORNER:
-                    if posCheck(board, row, col, "R") == BLACK or  posCheck(board, row, col, "R") == CORNER:
-                        return True
-                if posCheck(board, row, col, "U") == BLACK or  posCheck(board, row, col, "U") == CORNER:
-                    if posCheck(board, row, col, "D") == BLACK or  posCheck(board, row, col, "D") == CORNER:
-                        return True
-
-        if colour == BLACK:
-
-            if row == 0 or row == 7:
-                if posCheck(board, row, col, "L") == WHITE or  posCheck(board, row, col, "L") == CORNER:
-                    if posCheck(board, row, col, "R") == WHITE or  posCheck(board, row, col, "R") == CORNER:
-                        return True
-            elif col == 0 or col == 7:
-                if posCheck(board, row, col, "U") == WHITE or  posCheck(board, row, col, "U") == CORNER:
-                    if posCheck(board, row, col, "D") == WHITE or  posCheck(board, row, col, "D") == CORNER:
-                        return True
-
-            else:
-                if posCheck(board, row, col, "L") == WHITE or  posCheck(board, row, col, "L") == CORNER:
-                    if posCheck(board, row, col, "R") == WHITE or  posCheck(board, row, col, "R") == CORNER:
-                        return True
-                if posCheck(board, row, col, "U") == WHITE or  posCheck(board, row, col, "U") == CORNER:
-                    if posCheck(board, row, col, "D") == WHITE or  posCheck(board, row, col, "D") == CORNER:
-                        return True
+        else:
+            # generate positions to check
+            check = [posCheck(board, row, col, i) for i in ['L','R','U','D']]
+            if check[0] == flag or check[0] == CORNER:
+                if check[1] == flag or check[1] == CORNER:
+                    return True
+            if check[2] == flag or check[2] == CORNER:
+                if check[3] == flag or check[3] == CORNER:
+                    return True
 
         return False
 
 ###############################################################################
 
-    def remove(self, state, row, col):
-        # remove a piece (row,col)
+    def eliminate(self, state, row, col):
+        '''
+        returns updated board after eliminating a given piece
+        '''
         newBoard = copy.deepcopy(state)
         newBoard[row][col] = UNOCC
+
         return newBoard
 
 ###############################################################################
 
     def updateBoard(self, state):
-        # check whether mvoe results in elimination
+        '''
+        returns updated board after necessary eliminations
+        '''
         newBoard = copy.deepcopy(state)
-        row = 0
-        for r in newBoard:
-            col = 0
-            for element in r:
-                if element == BLACK:
-                    if self.isDead(newBoard, row, col, BLACK):
-                        newBoard = self.remove(newBoard, row, col)
-                col += 1
-            row += 1
 
-        row = 0
-        # check white second
-        for r in newBoard:
-            col = 0
-            for element in r:
-                if element == WHITE:
-                    if self.isDead(newBoard, row, col, WHITE):
-                        newBoard = self.remove(newBoard, row, col)
-                col += 1
-            row += 1
+        # white has elimination priority, try eliminate black first
+        for piece in [BLACK, WHITE]:
+            for row, line in enumerate(newBoard):
+                for col, symbol in enumerate(line):
+                    if symbol == piece:
+                        if self.isEliminated(newBoard, row, col, piece):
+                            newBoard = self.eliminate(newBoard, row, col)
+
         return newBoard
 
 ###############################################################################
