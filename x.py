@@ -26,21 +26,21 @@ MODS = {'R': (0, 1),
         'U': (-1, 0),
         '2U': (-2, 0)}
 
-
-###############################################################################
-
-def posCheck(board, row, col, dir):
-    '''
-    returns symbol at a given board position (modified by direction)
-    '''
-    return board[row + MODS[dir][0]][col + MODS[dir][1]]
-
 ###############################################################################
 
 class game():
 
     def __init__(self, initialState):
+        # eliminate pieces in initial state if possible
         self.initialState = self.eliminateBoard(initialState)
+
+###############################################################################
+
+    def posCheck(self, state, row, col, dir):
+        '''
+        returns symbol at a given board position (modified by direction)
+        '''
+        return state[row + MODS[dir][0]][col + MODS[dir][1]]
 
 ###############################################################################
 
@@ -171,7 +171,7 @@ class game():
                 if symbol == piece:
                     for dir in checkCond:
                         if checkCond[dir][0]:
-                            posToCheck = posCheck(state, row, col, dir)
+                            posToCheck = self.posCheck(state, row, col, dir)
                             index = str(row) + str(col)
 
                             if posToCheck == UNOCC:
@@ -184,7 +184,7 @@ class game():
                                 # check whether jump is possible
                                 if checkCond[dir][3]:
                                     j = '2' + dir  # jump direction
-                                    if posCheck(state, row, col, j) == UNOCC:
+                                    if self.posCheck(state,row,col,j) == UNOCC:
                                         tmpA = row + checkCond[dir][4]
                                         tmpB = col + checkCond[dir][5]
                                         tmpIndex = str(tmpA) + str(tmpB)
@@ -205,22 +205,22 @@ class game():
             flag = WHITE
 
         if row == 0 or row == 7:
-            checkLeft = posCheck(board, row, col, 'L')
-            checkRight = posCheck(board, row, col, 'R')
+            checkLeft = self.posCheck(board, row, col, 'L')
+            checkRight = self.posCheck(board, row, col, 'R')
             if checkLeft == flag or checkLeft == CORNER:
                 if checkRight == flag or checkRight == CORNER:
                     return True
 
         elif col == 0 or col == 7:
-            checkUp = posCheck(board, row, col, 'U')
-            checkDown = posCheck(board, row, col, 'D')
+            checkUp = self.posCheck(board, row, col, 'U')
+            checkDown = self.posCheck(board, row, col, 'D')
             if checkUp == flag or checkUp == CORNER:
                 if checkDown == flag or checkDown == CORNER:
                     return True
 
         else:
             # generate positions to check
-            check = [posCheck(board, row, col, i) for i in ['L','R','U','D']]
+            check = [self.posCheck(board,row,col,i) for i in ['L','R','U','D']]
             if check[0] == flag or check[0] == CORNER:
                 if check[1] == flag or check[1] == CORNER:
                     return True
@@ -301,7 +301,7 @@ class game():
         expandedNodes[nodeIndex] = {'state': currentState,
                                      'parent': 'root',
                                      'action': 'start',
-                                     'total_cost': self.evalFunc(currentState,
+                                     'totalCost': self.evalFunc(currentState,
                                         0),
                                      'depth': 0}
 
@@ -311,7 +311,7 @@ class game():
 
         # all_nodes keeps track of all nodes on the frontier and is the priority queue.
         # Each element in the list is a tuple consisting of node index and total cost of the node.
-        allFrontierNodes = [(0, frontierNodes[0]['total_cost'])]
+        allFrontierNodes = [(0, frontierNodes[0]['totalCost'])]
 
         # Stop when maximum nodes or depth have been considered
         while isSolution:
@@ -334,7 +334,7 @@ class game():
 
                     # If max nodes reached stop searching
                     if nodeIndex >= MAX_NODES:
-                        print('No Solution Found in first {} nodes generated'.format(MAX_NODES))
+                        print('Max nodes reached. ({})'.format(MAX_NODES))
                         isSolution = False
 
                     # if max depth reached stop searching
@@ -383,7 +383,7 @@ class game():
                         # Add the node to the frontier
                         frontierNodes[nodeIndex] = {'state': new_state,
                                                     'parent': new_state_parent,
-                                                    'total_cost': new_state_cost,
+                                                    'totalCost': new_state_cost,
                                                     'depth': nodeDepth,
                                                     'action' : '({}, {}) -> ({}, {})'.format(posA[1], posA[0], posB[1], posB[0])}
 
