@@ -37,55 +37,23 @@ def posCheck(board, row, col, dir):
 
 ###############################################################################
 
-def checkSurround(board, row, col):
-    '''
-    given a position counts possible movements
-    '''
-    availMoves = 0
-    checkCond = {'D':[row+1 < SIZE, row+2 < SIZE],
-                 'U':[row-1 >= 0, row-2 >= 0],
-                 'R':[col+1 < SIZE, col+2 < SIZE],
-                 'L':[col-1 >= 0, col-2 >= 0]}
-
-    for direction in checkCond:
-        if checkCond[direction][0]:
-            symbol = posCheck(board, row, col, direction)
-            if symbol == UNOCC:
-                availMoves += 1
-            if symbol == WHITE or symbol == BLACK:
-                # check whether jump is possible
-                if checkCond[direction][1]:
-                    if posCheck(board, row, col,'2' + direction) == UNOCC:
-                        availMoves += 1
-
-    return availMoves
-
-###############################################################################
-
-def testMoves(gameState):
-    '''
-    iterates over board and counts available moves for each piece
-    '''
-    whiteMoves = 0
-    blackMoves = 0
-
-    for row, line in enumerate(gameState):
-        for col, symbol in enumerate(line):
-            if symbol == WHITE:
-                whiteMoves += checkSurround(gameState, row, col)
-            if symbol == BLACK:
-                blackMoves += checkSurround(gameState, row, col)
-
-    return whiteMoves, blackMoves
-
-###############################################################################
-
 class game():
-    '''
-    class containing functions for Massacre
-    '''
+
     def __init__(self, initialState):
         self.initialState = self.eliminateBoard(initialState)
+
+###############################################################################
+
+    def moveCount(self, piece):
+        '''
+        counts available moves for a given piece
+        '''
+        moves = 0
+
+        for v in self.getAvailableMoves(self.initialState, piece).values():
+            moves += len(v)
+
+        return(moves)
 
 ###############################################################################
 
@@ -184,7 +152,7 @@ class game():
 
 ###############################################################################
 
-    def getAvailableMoves(self, state):
+    def getAvailableMoves(self, state, piece = WHITE):
         '''
         return dictionary of moves available for each white piece
         '''
@@ -200,7 +168,7 @@ class game():
                 checkCond['R'] = [col+1 < SIZE, 0, 1, col+2 < SIZE, 0, 2]
                 checkCond['L'] = [col-1 >= 0, 0, -1, col-2 >= 0, 0, -2]
 
-                if symbol == WHITE:
+                if symbol == piece:
                     for dir in checkCond:
                         if checkCond[dir][0]:
                             posToCheck = posCheck(state, row, col, dir)
@@ -221,7 +189,7 @@ class game():
                                         tmpB = col + checkCond[dir][5]
                                         tmpIndex = str(tmpA) + str(tmpB)
                                         actions[index].append(tmpIndex)
-        print(actions)
+
         return actions
 
 ###############################################################################
@@ -323,66 +291,65 @@ class game():
         # Need a dictionary for the frontier and for the expanded nodes
         frontierNodes = {}  # about to expand nodes
         expandedNodes = {}
-
-        self.starting_state = copy.deepcopy(self.initialState)
-        current_state = copy.deepcopy(self.initialState)
+        currentState = copy.deepcopy(self.initialState)
 
         # Node index is used for indexing the dictionaries and to keep track of the number of nodes expanded
-        node_index = 0
+        nodeIndex = 0
 
         # Set the first element in both dictionaries to the starting state
         # This is the only node that will be in both dictionaries
-        expandedNodes[node_index] = {'state': current_state, 'parent': 'root', 'action': 'start',
-                                   'total_cost': self.evalFunc(current_state, 0), 'depth': 0}
+        expandedNodes[nodeIndex] = {'state': currentState,
+                                     'parent': 'root',
+                                     'action': 'start',
+                                     'total_cost': self.evalFunc(currentState,
+                                        0),
+                                     'depth': 0}
 
-        frontierNodes[node_index] = {'state': current_state, 'parent': 'root', 'action': 'start',
-                                   'total_cost': self.evalFunc(current_state, 0), 'depth': 0}
-
+        frontierNodes[nodeIndex] = copy.deepcopy(expandedNodes[nodeIndex])
 
         isSolution = True
 
         # all_nodes keeps track of all nodes on the frontier and is the priority queue.
         # Each element in the list is a tuple consisting of node index and total cost of the node.
-        all_frontierNodes = [(0, frontierNodes[0]['total_cost'])]
+        allFrontierNodes = [(0, frontierNodes[0]['total_cost'])]
 
         # Stop when maximum nodes or depth have been considered
         while isSolution:
 
             # Get current depth of state for use in total cost calculation
-            current_depth = 0
+            depth = 0
 
-            for node_num, node in expandedNodes.items():
-                if node['state'] == current_state:
-                    current_depth = node['depth']
+            for n in expandedNodes.values():
+                if n['state'] == currentState:
+                    depth = n['depth']
 
             # Find available actions for the current state
-            available_actions = self.getAvailableMoves(current_state)
-
+            actions = self.getAvailableMoves(currentState)
 
             # Iterate through possible actions
-            for start, value in available_actions.items():
-                for end in value:
+
+            for posA, value in actions.items():
+                for posB in value:
                     visited = False
 
-
                     # If max nodes reached stop searching
-                    if node_index >= MAX_NODES:
+                    if nodeIndex >= MAX_NODES:
                         print('No Solution Found in first {} nodes generated'.format(MAX_NODES))
                         isSolution = False
 
                     # if max depth reached stop searching
-                    if current_depth >= MAX_DEPTH:
+                    if depth >= MAX_DEPTH:
                         print('No Solution Found in first {} layers'.format(MAX_DEPTH))
                         isSolution = False
 
 
                     # Find the new state corresponding to the action and calculate total cost
-                    if self.isValidMove(current_state, start, end):
-                        new_state = self.movePiece(current_state, start, end)
+                    if self.isValidMove(currentState, posA, posB):
+                        new_state = self.movePiece(currentState, posA, posB)
                     else:
                         continue
 
-                    new_state_parent = copy.deepcopy(current_state)
+                    new_state_parent = copy.deepcopy(currentState)
 
                     # Check to see if new state has already been expanded
                     for expanded_node in expandedNodes.values():
@@ -403,34 +370,38 @@ class game():
 
                     else:
                         # Each action represents another node generated
-                        node_index += 1
-                        depth = current_depth + 1
+                        nodeIndex += 1
+                        nodeDepth = depth + 1
 
                         # Total cost is path length (number of steps from starting state) + heuristic
-                        new_state_cost = self.evalFunc(new_state, depth)
+                        new_state_cost = self.evalFunc(new_state, nodeDepth)
 
 
                         # Add the node index and total cost to the all_nodes list
-                        all_frontierNodes.append((node_index, new_state_cost))
+                        allFrontierNodes.append((nodeIndex, new_state_cost))
 
                         # Add the node to the frontier
-                        frontierNodes[node_index] = {'state': new_state, 'parent': new_state_parent,  'total_cost': new_state_cost, 'depth': current_depth + 1, 'action' : '({}, {}) -> ({}, {})'.format(start[1], start[0], end[1], end[0])}
+                        frontierNodes[nodeIndex] = {'state': new_state,
+                                                    'parent': new_state_parent,
+                                                    'total_cost': new_state_cost,
+                                                    'depth': nodeDepth,
+                                                    'action' : '({}, {}) -> ({}, {})'.format(posA[1], posA[0], posB[1], posB[0])}
 
             # Sort all the nodes on the frontier by total cost
-            all_frontierNodes = sorted(all_frontierNodes, key=lambda x: x[1])
+            allFrontierNodes = sorted(allFrontierNodes, key=lambda x: x[1])
 
             # If the number of nodes generated does not exceed max nodes, find the best node and set the current state to that state
             if isSolution:
 
                 # The best node will be at the front of the queue
                 # After selecting the node for expansion, remove it from the queue
-                best_node = all_frontierNodes.pop(0)
-                best_node_index = best_node[0]
-                best_node_state = frontierNodes[best_node_index]['state']
-                current_state = best_node_state
+                best_node = allFrontierNodes.pop(0)
+                best_nodeIndex = best_node[0]
+                best_node_state = frontierNodes[best_nodeIndex]['state']
+                currentState = best_node_state
 
                 # Move the node from the frontier to the expanded nodes
-                expandedNodes[best_node_index] = (frontierNodes.pop(best_node_index))
+                expandedNodes[best_nodeIndex] = (frontierNodes.pop(best_nodeIndex))
 
                 # Check if current state is goal state
                 if self.isComplete(best_node_state):
@@ -450,7 +421,7 @@ class game():
                     for a in reversed(finalresult):
                         print(a)
                     # +1 the depth
-                    print(current_depth, node_index)
+                    print(depth, nodeIndex)
                     break
 
 ###############################################################################
@@ -473,6 +444,7 @@ class game():
                 if n['state'] == parentState:
                     return self.genSolPath(n, nodeDict, path)
 
+
 ###############################################################################
 
 def main():
@@ -482,12 +454,11 @@ def main():
         gameState.append(input().split())
 
     mode = input().split()[0]
+    board = game(gameState)  # initialise game class
 
     if mode == 'Moves':
-        whiteMoves, blackMoves = testMoves(gameState)
-        print('{}\n{}'.format(whiteMoves, blackMoves))
+        print('{}\n{}'.format(board.moveCount(WHITE), board.moveCount(BLACK)))
     elif mode == 'Massacre':
-        board = game(gameState)
         board.aStarSearch()
     else:
         print('Invalid mode')
