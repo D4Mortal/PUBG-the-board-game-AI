@@ -1,5 +1,9 @@
 from collections import defaultdict
 import copy
+
+NODES_GENERATED = 10**12
+MAX_DEPTH = 999999999999999
+DEADEND = 999999999999999
 BLACK = '@'
 WHITE = 'O'
 UNOCC = '-'
@@ -68,8 +72,13 @@ class game():
 
 
     def makeMove(self, state, start, end, colour = WHITE):
+        '''
+        avoid pointer
+        '''
         newBoard = copy.deepcopy(state)
 
+        # removing piece, adding piece
+         # initial row, col
         newBoard[int(start[0])][int(start[1])] = UNOCC
         newBoard[int(end[0])][int(end[1])] = colour
 
@@ -77,18 +86,21 @@ class game():
         return newBoard
 
     def isValidMove(self, state, start, end):
-        row = int(start[0])
+        row = int(start[0]) # initial row, col
         col = int(start[1])
-        rowEnd = int(end[0])
+        rowEnd = int(end[0])  #pos move to
         colEnd = int(end[1])
 
         if rowEnd > 7 or rowEnd < 0 or colEnd > 7 or colEnd < 0:
+            # out of board
             return False
 
         if row != rowEnd and col != colEnd:
+                # diagonal movement
             return False
 
         if state[rowEnd][colEnd] != UNOCC:
+            #cant move
             return False
 
         return True
@@ -96,6 +108,8 @@ class game():
 
 
     def isComplete(self, state):
+        # any blakc left
+
         for row in state:
             for element in row:
                 if element == BLACK:
@@ -110,21 +124,26 @@ class game():
         BlackCount = 0
         WhiteCount = 0
         score = 0
+
+        # total heuristic count manhattan
         for row in state:
             for element in row:
                 if element == BLACK: BlackCount += 1
                 if element == WHITE: WhiteCount += 1
-        if WhiteCount < 2:
-            score += 999999999999999
+        if WhiteCount < 1:
+            # never expand it coz shit
+            score += DEADEND
 
-        score += BlackCount * 1000
+        # eliminating black piece is really good traverse down that subtree
+        score += BlackCount * 1000    # priotirising
 
-        score += self.findTotalDistance(state)
+        score += self.findTotalDistance(state)  #manhattan part
 
         return score
 
 
     def findTotalCost(self, state, depth):
+        #depth = current depth (g(x))
         return self.heuristics(state) + depth
 
 
@@ -228,12 +247,14 @@ class game():
 
 
     def remove(self, state, row, col):
+        # remove a piece (row,col)
         newBoard = copy.deepcopy(state)
         newBoard[row][col] = UNOCC
         return newBoard
 
 
     def updateBoard(self, state):
+        # check whether mvoe results in elimination
         newBoard = copy.deepcopy(state)
         row = 0
         for r in newBoard:
@@ -246,6 +267,7 @@ class game():
             row += 1
 
         row = 0
+        # check white second
         for r in newBoard:
             col = 0
             for element in r:
@@ -258,6 +280,8 @@ class game():
 
     def findDistance(self, start, end):
         total = 0
+        # initial row - final row)
+        # initial col - initial col
         total += abs(int(start[0]) - int(end[0]))
         total += abs(int(start[1]) - int(end[1]))
         return total
@@ -265,12 +289,16 @@ class game():
     def findTotalDistance(self, state):
         total = 0
         row = 0
-        for r in state:
+        '''
+        loop through board for black pieces
+        records positions of black pieces, find distance between all white piece and particular black piece
+        '''
+        for r in state:  #row
             col = 0
-            for element in r:
-                if element == BLACK:
+            for element in r: #element
+                if element == BLACK:  # white
                     row2 = 0
-                    for r2 in state:
+                    for r2 in state:  #r second loop find all white peices
                         col2 = 0
                         for element2 in r2:
                             if element2 == WHITE: total += self.findDistance(str(row) + str(col), str(row2) + str(col2))
@@ -286,7 +314,7 @@ class game():
         # Prints the list of solution moves and the solution length
 
         # Need a dictionary for the frontier and for the expanded nodes
-        frontier_nodes = {}
+        frontier_nodes = {}  # about to expand nodes
         expanded_nodes = {}
 
         self.starting_state = copy.deepcopy(self.initialState)
@@ -377,7 +405,7 @@ class game():
                         all_frontier_nodes.append((node_index, new_state_cost))
 
                         # Add the node to the frontier
-                        frontier_nodes[node_index] = {"state": new_state, "parent": new_state_parent,  "total_cost": new_state_cost, "depth": current_depth + 1, "action" : '({}, {}) -> ({}, {})'.format(start[0], start[1], end[0], end[1])}
+                        frontier_nodes[node_index] = {"state": new_state, "parent": new_state_parent,  "total_cost": new_state_cost, "depth": current_depth + 1, "action" : '({}, {}) -> ({}, {})'.format(start[1], start[0], end[1], end[0])}
 
                 # Sort all the nodes on the frontier by total cost
             all_frontier_nodes = sorted(all_frontier_nodes, key=lambda x: x[1])
@@ -409,6 +437,7 @@ class game():
                     # print(final_node)
                     # for a in final_node['state']:
                     #     print(a)
+                    # print('ontop')
                     # for a in final_node['parent']:
                     #     print(a)
 # =============================================================================
@@ -416,6 +445,8 @@ class game():
                     # Display the solution path
                     for a in reversed(finalresult):
                         print(a)
+                    # +1 the depth
+                    print(current_depth, node_index)
                     break
 
 
@@ -456,7 +487,7 @@ def main():
 
     elif task == 'Massacre':
         board = game(gameState)
-        board.aStarSearch(1000000000000000000000000,1000000000000000)
+        board.aStarSearch(NODES_GENERATED, MAX_DEPTH)
 
     else: print('Invalid mode')
 
