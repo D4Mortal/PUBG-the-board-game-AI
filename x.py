@@ -1,5 +1,5 @@
 # Chirag Rao Sahib      : 836011
-# Daniel Hao            :
+# Daniel Hao            : 834496
 # Date                  : 28/03/2018
 # Python version        : 3.6.4
 
@@ -338,6 +338,7 @@ class game():
 
         self.starting_state = copy.deepcopy(self.initialState)
         current_state = copy.deepcopy(self.initialState)
+        
         # Node index is used for indexing the dictionaries and to keep track of the number of nodes expanded
         node_index = 0
 
@@ -352,10 +353,11 @@ class game():
 
         isSolution = True
 
-        # all_nodes keeps track of all nodes on the frontier and is the priority queue. Each element in the list is a tuple consisting of node index and total cost of the node. This will be sorted by the total cost and serve as the priority queue.
+        # all_nodes keeps track of all nodes on the frontier and is the priority queue. 
+        # Each element in the list is a tuple consisting of node index and total cost of the node. 
         all_frontier_nodes = [(0, frontier_nodes[0]["total_cost"])]
-
-        # Stop when maximum nodes have been considered
+        
+        # Stop when maximum nodes or depth have been considered
         while isSolution:
 
             # Get current depth of state for use in total cost calculation
@@ -378,12 +380,12 @@ class game():
                     # If max nodes reached stop searching
                     if node_index >= max_nodes:
                         print("No Solution Found in first {} nodes generated".format(max_nodes))
-                        return
+                        isSolution = False
 
                     # if max depth reached stop searching
                     if current_depth >= maxDepth:
                         print("No Solution Found in first {} layers".format(maxDepth))
-                        return
+                        isSolution = False
 
 
                     # Find the new state corresponding to the action and calculate total cost
@@ -426,13 +428,14 @@ class game():
                         # Add the node to the frontier
                         frontier_nodes[node_index] = {"state": new_state, "parent": new_state_parent,  "total_cost": new_state_cost, "depth": current_depth + 1, "action" : '({}, {}) -> ({}, {})'.format(start[1], start[0], end[1], end[0])}
 
-                # Sort all the nodes on the frontier by total cost
+            # Sort all the nodes on the frontier by total cost
             all_frontier_nodes = sorted(all_frontier_nodes, key=lambda x: x[1])
-
-                # If the number of nodes generated does not exceed max nodes, find the best node and set the current state to that state
+         
+            # If the number of nodes generated does not exceed max nodes, find the best node and set the current state to that state
             if isSolution:
-                    # The best node will be at the front of the queue
-                    # After selecting the node for expansion, remove it from the queue
+                
+                # The best node will be at the front of the queue
+                # After selecting the node for expansion, remove it from the queue
                 best_node = all_frontier_nodes.pop(0)
                 best_node_index = best_node[0]
                 best_node_state = frontier_nodes[best_node_index]["state"]
@@ -443,12 +446,6 @@ class game():
 
                 # Check if current state is goal state
                 if self.isComplete(best_node_state):
-                    # Create attributes for the expanded nodes and the frontier nodes
-                    self.expanded_nodes = expanded_nodes
-                    self.frontier_nodes = frontier_nodes
-
-
-
                     for node_num, node in expanded_nodes.items():
                         if self.isComplete(node["state"]):
                             final_node = expanded_nodes[node_num]
@@ -475,15 +472,12 @@ class game():
         # If the node is the root, return the path
         if node["parent"] == "root":
             # If root is found, add the node and then return
-
-
             return result
 
         else:
             # If the node is not the root, add the state and action to the solution path
             parent_state = node["parent"]
             result.append(node['action'])
-
 
             # Find the parent of the node and recurse
             for node_num, expanded_node in node_dict.items():
