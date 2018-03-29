@@ -100,9 +100,6 @@ class game():
         
         for r in state:
             col = 0
-            
-
-            
             for element in r:
                 if element == WHITE:
 
