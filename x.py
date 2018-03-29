@@ -85,7 +85,7 @@ class game():
     class containing functions for Massacre
     '''
     def __init__(self, initialState):
-        self.initialState = self.updateBoard(initialState)
+        self.initialState = self.eliminateBoard(initialState)
 
 ###############################################################################
 
@@ -96,7 +96,7 @@ class game():
         newBoard = copy.deepcopy(state)
         newBoard[int(posA[0])][int(posA[1])] = UNOCC
         newBoard[int(posB[0])][int(posB[1])] = piece
-        newBoard = self.updateBoard(newBoard)
+        newBoard = self.eliminateBoard(newBoard)
 
         return newBoard
 
@@ -264,18 +264,7 @@ class game():
 
 ###############################################################################
 
-    def eliminate(self, state, row, col):
-        '''
-        returns updated board after eliminating a given piece
-        '''
-        newBoard = copy.deepcopy(state)
-        newBoard[row][col] = UNOCC
-
-        return newBoard
-
-###############################################################################
-
-    def updateBoard(self, state):
+    def eliminateBoard(self, state):
         '''
         returns updated board after necessary eliminations
         '''
@@ -287,7 +276,7 @@ class game():
                 for col, symbol in enumerate(line):
                     if symbol == piece:
                         if self.isEliminated(newBoard, row, col, piece):
-                            newBoard = self.eliminate(newBoard, row, col)
+                            newBoard[row][col] = UNOCC
 
         return newBoard
 
