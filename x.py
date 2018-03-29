@@ -168,7 +168,7 @@ class game():
         stateScore += blackCount * BLACK_MULTIPLIER
 
         # also consider manhattan distance
-        stateScore += self.manhattanDistance(state)
+        stateScore += self.totalManHatDist(state)
 
         return stateScore
 
@@ -205,13 +205,18 @@ class game():
                             index = str(row) + str(col)
 
                             if posToCheck == UNOCC:
-                                tmpIndex = str(row + checkCond[dir][1]) + str(col + checkCond[dir][2])
+                                tmpA = row + checkCond[dir][1]
+                                tmpB = col + checkCond[dir][2]
+                                tmpIndex = str(tmpA) + str(tmpB)
                                 actions[index].append(tmpIndex)
+
                             elif posToCheck == WHITE or posToCheck == BLACK:
                                 # check whether jump is possible
                                 if checkCond[dir][3]:
                                     if posCheck(state, row, col,'2' + dir) == UNOCC:
-                                        tmpIndex = str(row + checkCond[dir][4]) + str(col + checkCond[dir][5])
+                                        tmpA = row + checkCond[dir][4]
+                                        tmpB = col + checkCond[dir][5]
+                                        tmpIndex = str(tmpA) + str(tmpB)
                                         actions[index].append(tmpIndex)
         return actions
 
@@ -272,7 +277,7 @@ class game():
         '''
         newBoard = copy.deepcopy(state)
 
-        # white has elimination priority, try eliminate black first
+        # white has elimination priority, try eliminate black pieces first
         for piece in [BLACK, WHITE]:
             for row, line in enumerate(newBoard):
                 for col, symbol in enumerate(line):
@@ -284,37 +289,34 @@ class game():
 
 ###############################################################################
 
-    def dist(self, start, end):
-        total = 0
-        # initial row - final row)
-        # initial col - initial col
-        total += abs(int(start[0]) - int(end[0]))
-        total += abs(int(start[1]) - int(end[1]))
-        return total
+    def manHatDist(self, posA, posB):
+        '''
+        calculate the Manhattan distance between two pieces (A and B).
+        the sum of the row and column differences for A and B
+        '''
+        dist = abs(int(posA[0]) - int(posB[0]))
+        dist += abs(int(posA[1]) - int(posB[1]))
+
+        return dist
 
 ###############################################################################
 
-    def manhattanDistance(self, state):
+    def totalManHatDist(self, state):
+        '''
+        total Manhattan distance from every white piece to every black piece
+        '''
         total = 0
-        row = 0
-        '''
-        loop through board for black pieces
-        records positions of black pieces, find distance between all white piece and particular black piece
-        '''
-        for r in state:  #row
-            col = 0
-            for element in r: #element
-                if element == BLACK:  # white
-                    row2 = 0
-                    for r2 in state:  #r second loop find all white peices
-                        col2 = 0
-                        for element2 in r2:
-                            if element2 == WHITE:
-                                total += self.dist(str(row) + str(col), str(row2) + str(col2))
-                            col2 += 1
-                        row2 += 1
-                col += 1
-            row +=1
+
+        for row, line in enumerate(state):
+            for col, symbol in enumerate(line):
+                if symbol == BLACK:
+                    for row2, line2 in enumerate(state):
+                        for col2, symbol2 in enumerate(line2):
+                            if symbol2 == WHITE:
+                                posA = str(row) + str(col)
+                                posB = str(row2) + str(col2)
+                                total += self.manHatDist(posA, posB)
+
         return total
 
 ###############################################################################
