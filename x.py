@@ -85,7 +85,7 @@ class game():
     class containing functions for Massacre
     '''
     def __init__(self, initialState):
-        self.initialState = initialState
+        self.initialState = self.updateBoard(initialState)
 
 ###############################################################################
 
@@ -499,7 +499,6 @@ def main():
         print('{}\n{}'.format(whiteMoves, blackMoves))
     elif mode == 'Massacre':
         board = game(gameState)
-        isEliminated(self, board, row, col, piece)
         board.aStarSearch()
     else:
         print('Invalid mode')
