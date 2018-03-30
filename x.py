@@ -339,90 +339,80 @@ class game():
 
                     # if max depth reached stop searching
                     if depth >= MAX_DEPTH:
-                        print('No Solution Found in first {} layers'.format(MAX_DEPTH))
+                        print('Max depth reached. ({})'.format(MAX_DEPTH))
                         isSolution = False
-
 
                     # Find the new state corresponding to the action and calculate total cost
                     if self.isValidMove(currentState, posA, posB):
-                        new_state = self.movePiece(currentState, posA, posB)
+                        tState = self.movePiece(currentState, posA, posB)
                     else:
+                        # test validness of next state
                         continue
 
-                    new_state_parent = copy.deepcopy(currentState)
+                    tStateParent = copy.deepcopy(currentState)
 
-                    # Check to see if new state has already been expanded
-                    for expanded_node in expandedNodes.values():
-                        if expanded_node['state'] == new_state:
-                            if expanded_node['parent'] == new_state_parent:
+                    #Check to see if new state has already been expanded
+
+                    for n in expandedNodes.values():
+                        if n['state'] == tState:
+                            if n['parent'] == tStateParent:
                                 visited = True
+                                break
 
                     # Check to see if new state and parent is on the frontier
                     # The same state can be added twice to the frontier if the parent state is different
-                    for frontier_node in frontierNodes.values():
-                        if frontier_node['state'] == new_state:
-                            if frontier_node['parent'] == new_state_parent:
+                    for fn in frontierNodes.values():
+                        if fn['state'] == tState:
+                            if fn['parent'] == tStateParent:
                                 visited = True
+                                break
 
                     # If new state has already been expanded or is on the frontier, continue with next action
                     if visited:
                         continue
-
                     else:
                         # Each action represents another node generated
                         nodeIndex += 1
                         nodeDepth = depth + 1
 
                         # Total cost is path length (number of steps from starting state) + heuristic
-                        new_state_cost = self.evalFunc(new_state, nodeDepth)
+                        tStateCost = self.evalFunc(tState, nodeDepth)
 
 
                         # Add the node index and total cost to the all_nodes list
-                        allFrontierNodes.append((nodeIndex, new_state_cost))
+                        allFrontierNodes.append((nodeIndex, tStateCost))
 
                         # Add the node to the frontier
-                        frontierNodes[nodeIndex] = {'state': new_state,
-                                                    'parent': new_state_parent,
-                                                    'totalCost': new_state_cost,
+                        frontierNodes[nodeIndex] = {'state': tState,
+                                                    'parent': tStateParent,
+                                                    'totalCost': tStateCost,
                                                     'depth': nodeDepth,
                                                     'action' : '({}, {}) -> ({}, {})'.format(posA[1], posA[0], posB[1], posB[0])}
 
             # Sort all the nodes on the frontier by total cost
-            allFrontierNodes = sorted(allFrontierNodes, key=lambda x: x[1])
+            allFrontierNodes = sorted(allFrontierNodes, key = lambda x: x[1])
 
             # If the number of nodes generated does not exceed max nodes, find the best node and set the current state to that state
             if isSolution:
 
                 # The best node will be at the front of the queue
                 # After selecting the node for expansion, remove it from the queue
-                best_node = allFrontierNodes.pop(0)
-                best_nodeIndex = best_node[0]
-                best_node_state = frontierNodes[best_nodeIndex]['state']
-                currentState = best_node_state
-
                 # Move the node from the frontier to the expanded nodes
-                expandedNodes[best_nodeIndex] = (frontierNodes.pop(best_nodeIndex))
+                bestNode = allFrontierNodes.pop(0)
+                bestNodeIndex = bestNode[0]
+                bestNodeState = frontierNodes[bestNodeIndex]['state']
+                expandedNodes[bestNodeIndex] = frontierNodes.pop(bestNodeIndex)
+                currentState = bestNodeState
 
                 # Check if current state is goal state
-                if self.isComplete(best_node_state):
-                    for node_num, node in expandedNodes.items():
+                if self.isComplete(currentState):
+                    for idx, node in expandedNodes.items():
                         if self.isComplete(node['state']):
-                            final_node = expandedNodes[node_num]
-# =============================================================================
-                    # print(final_node)
-                    # for a in final_node['state']:
-                    #     print(a)
-                    # print('ontop')
-                    # for a in final_node['parent']:
-                    #     print(a)
-# =============================================================================
-                    finalresult = self.genSolPath(final_node, expandedNodes, [])
-                    # Display the solution path
-                    for a in reversed(finalresult):
-                        print(a)
-                    # +1 the depth
-                    print(depth, nodeIndex)
-                    break
+                            goalNode = expandedNodes[idx]
+
+                    path = self.genSolPath(goalNode, expandedNodes, [])
+
+                    return reversed(path)
 
 ###############################################################################
 
@@ -459,7 +449,9 @@ def main():
     if mode == 'Moves':
         print('{}\n{}'.format(board.moveCount(WHITE), board.moveCount(BLACK)))
     elif mode == 'Massacre':
-        board.aStarSearch()
+        # Display the solution path
+        for move in board.aStarSearch():
+            print(move)
     else:
         print('Invalid mode')
 
