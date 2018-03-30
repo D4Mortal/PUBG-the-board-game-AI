@@ -8,16 +8,16 @@
 import copy
 from collections import defaultdict
 
-MAX_NODES = 1e5
-MAX_DEPTH = 5e2
-DEADEND = 1e5
-BLACK_MULTIPLIER = 1e3
+MAX_NODES = 1e5  # max number of nodes to expand
+MAX_DEPTH = 5e2  # max depth of tree to explore
+DEADEND = 1e5  # heavy (bad) score for deadends (heuristic)
+BLACK_MULTIPLIER = 1e3  # heavy (bad) score for more black pieces (heuristic)
 BLACK = '@'
 WHITE = 'O'
 UNOCC = '-'
 CORNER = 'X'
-SIZE = 8
-MODS = {'R': (0, 1),
+SIZE = 8  # board size
+MODS = {'R': (0, 1),  # how each direction modifies a position
         '2R': (0, 2),
         'L': (0, -1),
         '2L': (0, -2),
