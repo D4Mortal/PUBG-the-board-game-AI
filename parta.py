@@ -8,8 +8,8 @@
 import copy
 from collections import defaultdict
 
-MAX_NODES = 2e10
-MAX_DEPTH = 2e10
+MAX_NODES = 1e5
+MAX_DEPTH = 5e2
 DEADEND = 1e5
 BLACK_MULTIPLIER = 1e3
 BLACK = '@'
@@ -369,7 +369,11 @@ class game():
                                                     'parent': tStateParent,
                                                     'totalCost': tStateCost,
                                                     'depth': nodeDepth,
-                                                    'action' : '({}, {}) -> ({}, {})'.format(posA[1], posA[0], posB[1], posB[0])}
+                                                    'action' :
+                                                    '({}, {}) -> ({}, {})'
+                                                        .format(posA[1],
+                                                            posA[0], posB[1],
+                                                            posB[0])}
 
             # sort frontier nodes by total cost f(n)
             priorityQueue = sorted(priorityQueue, key = lambda x: x[1])
