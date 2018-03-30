@@ -1,6 +1,6 @@
 # Chirag Rao Sahib      : 836011
 # Daniel Hao            : 834496
-# Date                  : 28/03/2018
+# Date                  : 30/03/2018
 # Python version        : 3.6.4
 
 ###############################################################################
@@ -50,7 +50,7 @@ class game():
         '''
         moves = 0
 
-        for v in self.getAvailableMoves(self.initialState, piece).values():
+        for v in self.getLegalMoves(self.initialState, piece).values():
             moves += len(v)
 
         return(moves)
@@ -152,7 +152,7 @@ class game():
 
 ###############################################################################
 
-    def getAvailableMoves(self, state, piece = WHITE):
+    def getLegalMoves(self, state, piece = WHITE):
         '''
         return dictionary of moves available for each white piece
         '''
@@ -284,135 +284,117 @@ class game():
 
     def aStarSearch(self):
         '''
-        Performs a-star search
-        Prints the list of solution moves and the solution length
+        returns the shortest path to a goal state
         '''
-
-        # Need a dictionary for the frontier and for the expanded nodes
-        frontierNodes = {}  # about to expand nodes
+        frontierNodes = {}
         expandedNodes = {}
         currentState = copy.deepcopy(self.initialState)
+        nodeIndex = 0  # track no. nodes expanded + used to index dictionaries
 
-        # Node index is used for indexing the dictionaries and to keep track of the number of nodes expanded
-        nodeIndex = 0
-
-        # Set the first element in both dictionaries to the starting state
-        # This is the only node that will be in both dictionaries
+        # current state is part of both expanded and frontier nodes
         expandedNodes[nodeIndex] = {'state': currentState,
                                      'parent': 'root',
                                      'action': 'start',
                                      'totalCost': self.evalFunc(currentState,
                                         0),
                                      'depth': 0}
-
         frontierNodes[nodeIndex] = copy.deepcopy(expandedNodes[nodeIndex])
+        limitReached = False  # terminal condition for loop
+        # priority queue of frontier nodes
+        # each element is a tuple : (node index, total cost of a node)
+        priorityQueue = [(0, frontierNodes[0]['totalCost'])]
 
-        isSolution = True
-
-        # all_nodes keeps track of all nodes on the frontier and is the priority queue.
-        # Each element in the list is a tuple consisting of node index and total cost of the node.
-        allFrontierNodes = [(0, frontierNodes[0]['totalCost'])]
-
-        # Stop when maximum nodes or depth have been considered
-        while isSolution:
-
-            # Get current depth of state for use in total cost calculation
-            depth = 0
+        while limitReached == False:
+            depth = 0  # track depth of solution
 
             for n in expandedNodes.values():
+                # get depth of current state
                 if n['state'] == currentState:
                     depth = n['depth']
+                    break
 
-            # Find available actions for the current state
-            actions = self.getAvailableMoves(currentState)
+            # find legal moves in the current state
+            legalMoves = self.getLegalMoves(currentState)
 
-            # Iterate through possible actions
-
-            for posA, value in actions.items():
+            # iterate through legal moves
+            for posA, value in legalMoves.items():
                 for posB in value:
                     visited = False
 
-                    # If max nodes reached stop searching
-                    if nodeIndex >= MAX_NODES:
-                        print('Max nodes reached. ({})'.format(MAX_NODES))
-                        isSolution = False
+                    # stop searching if node or depth limit reached
+                    if nodeIndex >= MAX_NODES or depth >= MAX_DEPTH:
+                        print('Node or depth limit reached')
+                        limitReached = True
+                        break
 
-                    # if max depth reached stop searching
-                    if depth >= MAX_DEPTH:
-                        print('Max depth reached. ({})'.format(MAX_DEPTH))
-                        isSolution = False
-
-                    # Find the new state corresponding to the action and calculate total cost
+                    # generate test state for a move
                     if self.isValidMove(currentState, posA, posB):
                         tState = self.movePiece(currentState, posA, posB)
                     else:
-                        # test validness of next state
+                        # skip and test validness of next move (state)
                         continue
 
                     tStateParent = copy.deepcopy(currentState)
 
-                    #Check to see if new state has already been expanded
-
+                    # Check if new state is already expanded
                     for n in expandedNodes.values():
                         if n['state'] == tState:
                             if n['parent'] == tStateParent:
                                 visited = True
                                 break
 
-                    # Check to see if new state and parent is on the frontier
-                    # The same state can be added twice to the frontier if the parent state is different
+                    # Check if new state is in frontier nodes
+                    # note: state can be in frontier twice if
+                    #       parent state is different
                     for fn in frontierNodes.values():
                         if fn['state'] == tState:
                             if fn['parent'] == tStateParent:
                                 visited = True
                                 break
 
-                    # If new state has already been expanded or is on the frontier, continue with next action
                     if visited:
+                        # skip state if expanded or in frontier
                         continue
                     else:
-                        # Each action represents another node generated
+                        # each move represents another node generated
                         nodeIndex += 1
                         nodeDepth = depth + 1
 
-                        # Total cost is path length (number of steps from starting state) + heuristic
+                        # total cost as per evaluation function f(n)
                         tStateCost = self.evalFunc(tState, nodeDepth)
+                        priorityQueue.append((nodeIndex, tStateCost))
 
-
-                        # Add the node index and total cost to the all_nodes list
-                        allFrontierNodes.append((nodeIndex, tStateCost))
-
-                        # Add the node to the frontier
+                        # Add node to frontier
                         frontierNodes[nodeIndex] = {'state': tState,
                                                     'parent': tStateParent,
                                                     'totalCost': tStateCost,
                                                     'depth': nodeDepth,
                                                     'action' : '({}, {}) -> ({}, {})'.format(posA[1], posA[0], posB[1], posB[0])}
 
-            # Sort all the nodes on the frontier by total cost
-            allFrontierNodes = sorted(allFrontierNodes, key = lambda x: x[1])
+            # sort frontier nodes by total cost f(n)
+            priorityQueue = sorted(priorityQueue, key = lambda x: x[1])
 
-            # If the number of nodes generated does not exceed max nodes, find the best node and set the current state to that state
-            if isSolution:
-
-                # The best node will be at the front of the queue
-                # After selecting the node for expansion, remove it from the queue
-                # Move the node from the frontier to the expanded nodes
-                bestNode = allFrontierNodes.pop(0)
+            if limitReached == False:
+                bestNode = priorityQueue.pop(0)  # best node at front of queue
                 bestNodeIndex = bestNode[0]
+
+                # move best node from frontier to expanded nodes
                 bestNodeState = frontierNodes[bestNodeIndex]['state']
                 expandedNodes[bestNodeIndex] = frontierNodes.pop(bestNodeIndex)
-                currentState = bestNodeState
+                currentState = bestNodeState  # update current state
 
-                # Check if current state is goal state
+                # test if current state is now goal state
                 if self.isComplete(currentState):
-                    for idx, node in expandedNodes.items():
+                    for index, node in expandedNodes.items():
                         if self.isComplete(node['state']):
-                            goalNode = expandedNodes[idx]
+                            # find a goal node
+                            goalNode = expandedNodes[index]
+                            break
 
+                    # generate solution path if complete and goal node found
                     path = self.genSolPath(goalNode, expandedNodes, [])
 
-                    return reversed(path)
+                    return reversed(path)  # get path from root to goal node
 
 ###############################################################################
 
@@ -421,14 +403,13 @@ class game():
         recursive traversal up the search tree from the goal state to root,
             reconstructing the solution path
         '''
-        # base case : if the node is the root, return the path
-        if node['parent'] == 'root':
+        parentState = node['parent']
+
+        if parentState == 'root':
+            # base case : if the node is the root, return the path
             return path
-
         else:
-            parentState = node['parent']
             path.append(node['action'])
-
             # traverse up the node's parent
             for n in nodeDict.values():
                 if n['state'] == parentState:
