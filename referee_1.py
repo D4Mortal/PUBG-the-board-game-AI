@@ -6,7 +6,7 @@ import time
 import argparse
 import importlib
 
-VERSION_INFO = """Referee version 1.1 (released Apr 08 2018)
+VERSION_INFO = """Referee version 1.0 (released Apr 08 2018)
 Plays a basic game of Watch Your Back! between two Player classes
 Run `python referee.py -h` for help and additional usage information
 """
@@ -36,7 +36,7 @@ def main():
         except _InvalidActionException as e:
             # if one of the players makes an invalid action,
             # print the error message
-            print(f"invalid action ({game.loser}):", e)
+            print('invalid action:', e)
             break
         print(game)
         opponent.update(action)
@@ -136,18 +136,15 @@ class _Game:
             self.board[y][x] = 'X'
         self.n_shrinks = 0
 
-        # tracking progress through game phases
-        self.turns  = 0
-        self.phase  = 'placing'
+        # tracking progress through phases
+        self.turns = 0
+        self.phase = 'placing'
         self.pieces = {'W': 0, 'B': 0}
         self.winner = None
-        self.loser  = None
 
-    _DISPLAY = {'B': '@', 'W': 'O', 'X': 'X', '-': '-', ' ': ' '}
     def __str__(self):
         """String representation of the current game state."""
-        displayboard = [[_Game._DISPLAY[p] for p in row] for row in self.board]
-        board = '\n'.join(' '.join(row) for row in displayboard)
+        board = '\n'.join(' '.join(row) for row in self.board)
         if self.playing():
             progress = f'{self.turns} turns into the {self.phase} phase'
         else:
@@ -169,10 +166,7 @@ class _Game:
         if self.phase == 'placing':
             self._place(action)
         elif self.phase == 'moving':
-            if action is None:
-                self._forfeit()
-            else:
-                self._move(action)
+            self._move(action)
 
         # progress the game
         self.turns += 1
@@ -194,25 +188,18 @@ class _Game:
         :param place: (x, y) tuple representing the square on which to place
         the piece
         """
-        # unpack and validate piece representation
-        try:
-            x, y = place
-            assert(isinstance(x, int) and isinstance(y, int))
-        except:
-            self._invalidate(f"invalid place action representation: {place!r}")
-
-        # validate place itself
+        x, y = place
         piece = self._piece()
 
         if not self._within_board(x, y):
-            self._invalidate(f"player's place contained invalid coordinates: "
-                f"{place}")
+            self._invalidate(f"{piece}'s place contained invalid coordinates: "
+                f"({x}, {y})")
         if piece == 'W' and y > 5 or piece == 'B' and y < 2:
-            self._invalidate(f"player tried to place outside their starting "
-                f"zone: {place}")
+            self._invalidate(f"{piece} tried to place outside their placing "
+                f"region: ({x}, {y})")
         if not self.board[y][x] == '-':
-            self._invalidate(f"player tried to place on an occupied square or "
-                f"corner: {place}")
+            self._invalidate(f"{piece} tried to place on an occupied square or "
+                f"corner: ({x}, {y})")
 
         # if that was all okay... we can carry out the place action!
         self.board[y][x] = piece
@@ -221,7 +208,6 @@ class _Game:
 
 
     def _move(self, move):
-
         """
         Validate a move a -> b and update the board configuration accordingly.
 
@@ -229,66 +215,27 @@ class _Game:
         (xa, ya) -> (xb, yb)
         """
         # unpack and validate move representation
-        try:
-            (xa, ya), (xb, yb) = a, b = move
-            assert(all(isinstance(coordinate, int) for coordinate in a+b))
-        except:
-            self._invalidate(f"invalid move action representation: {move!r}")
-        
-        # validate move itself
+        (xa, ya), (xb, yb) = move
         piece = self._piece()
+
         if not (self._within_board(xa, ya) and self._within_board(xb, yb)):
-            self._invalidate(f"player's move contained invalid coordinates: "
-                f"({a}) -> ({b})")
+            self._invalidate(f"{piece}'s move contained invalid coordinates: "
+                f"({xa}, {ya}) -> ({xb}, {yb})")
         if self.board[ya][xa] != piece:
-            self._invalidate(f"player tried to move from a square it doesn't "
-                f"have a piece on: ({a}) -> ({b})")
+            self._invalidate(f"{piece} tried to move from a square it doesn't "
+                f"have a piece on: ({xa}, {ya}) -> ({xb}, {yb})")
         if self.board[yb][xb] != '-':
-            self._invalidate(f"player tried to move to an occupied square or "
-                f"corner: ({a}) -> ({b})")
+            self._invalidate(f"{piece} tried to move to an occupied square or "
+                f"corner: ({xa}, {ya}) -> ({xb}, {yb})")
         if not (self._is_jump(move) or self._is_move(move)):
-            self._invalidate(f"player tried to move to a non-reachable square "
+            self._invalidate(f"{piece} tried to move to a non-reachable square "
                 "(a square that is neither adjacent nor opposite an adjacent "
-                f"occupied square): ({a}) -> ({b})")
+                f"occupied square): ({xa}, {ya}) -> ({xb}, {yb})")
 
         # if that was all okay... we can carry out the move!
         self.board[yb][xb] = piece
         self.board[ya][xa] = '-'
-        self._eliminate_about(b)
-
-    def _forfeit(self):
-        """
-        Validate a 'forfeit' (no move) action, which must not be taken unless
-        the player has no legal moves available.
-        """
-        piece = self._piece()
-        message = f'player tried to forfeit a move, but had available moves'
-
-        # check for any possible moves for any of the player's pieces
-        for xa, ya in self._squares_with_piece(piece):
-            for dx, dy in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
-                # is the adjacent square unoccupied?
-                xb, yb = xa + dx, ya + dy
-                if self._within_board(xb, yb) and self.board[yb][xb] == '-':
-                    self._invalidate(message)
-                # if not, how about the opposite square?
-                xb, yb = xb + dx, yb + dy
-                if self._within_board(xb, yb) and self.board[yb][xb] == '-':
-                    self._invalidate(message)
-
-        # if that was all okay... there are no available moves and so the
-        # forfeit was legal! no action required.
-
-    def _squares_with_piece(self, piece):
-        """
-        Generate coordinates of squares currently containing a piece
-
-        :param piece: string representation of the piece type to check for
-        """
-        for x in range(8):
-            for y in range(8):
-                if self.board[y][x] == piece:
-                    yield (x, y)
+        self._eliminate_about((xb, yb))
 
     def _piece(self):
         """:return: the piece of the player with the current turn"""
@@ -348,7 +295,6 @@ class _Game:
         :raises _InvalidActionException: (every time)
         """
         self.phase = 'invalid'
-        self.loser  = self._piece()
         self.winner = self._other()
         raise _InvalidActionException(reason)
 
