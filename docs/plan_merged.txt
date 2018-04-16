@@ -1,4 +1,22 @@
+1. Implement Minimax
+2. Create a test program
+3. Train heuristic
+
+
+
+
 game notes
+
+OPTIMISATIONS
+bitboards
+transposition table
+
+minimax (alpha-beta)
+
+
+
+
+//////////////////////////////////////CHIRAG
 
 OPTIMISATIONS
 bitboards
