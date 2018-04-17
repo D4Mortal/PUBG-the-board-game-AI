@@ -421,10 +421,18 @@ class game():
 
 
 ###############################################################################
-
+                    
+def printBoard(board):
+    for i in board:
+        for a in i:
+            print(a + " ",end = '')
+        print('')
+        
+###############################################################################       
+        
 def main():
     gameState = []
-
+    
     for i in range(SIZE):
         gameState.append(input().split())
 
@@ -432,9 +440,13 @@ def main():
     board = game(gameState)  # initialise game class
 
     if mode == 'Moves':
+        print("The board config is:")
+        printBoard(gameState)
         print('{}\n{}'.format(board.moveCount(WHITE), board.moveCount(BLACK)))
     elif mode == 'Massacre':
         # Display the solution path
+        print("The board config is:")
+        printBoard(gameState)
         for move in board.aStarSearch():
             print(move)
     else:
