@@ -6,6 +6,7 @@
 ###############################################################################
 import copy
 from collections import defaultdict
+from Board import board
 
 MAX_NODES = 1e5  # max number of nodes to expand
 MAX_DEPTH = 5e2  # max depth of tree to explore
