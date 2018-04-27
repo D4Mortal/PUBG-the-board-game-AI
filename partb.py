@@ -27,7 +27,7 @@ MODS = {'R': (0, 1),  # how each direction modifies a position
         'U': (-1, 0),
         '2U': (-2, 0)}
 
-
+###############################################################################
 
 class Player():
 
@@ -37,7 +37,9 @@ class Player():
         self.state[0,7] = CORNER
         self.state[7,0] = CORNER
         self.state[7,7] = CORNER
-
+        
+        self.node = board(self.state, None)
+        
         if colour[0] == 'w':
           self.player_colour = WHITE
           self.opp_colour = BLACK
@@ -59,6 +61,76 @@ class Player():
         return 0
 
     def update(self, action):
+        self.node.makeMove(action, self.opp_colour)
+          
+
+    def initStrat(self):
+      return
+      # placeholder initialise strategy
+
+
+    def miniMax(self):
+        # uses board class as a node to generate 
+        return
+    
+    
+    def heuristics(self):
+        return
+
+
+###############################################################################
+        
+# simple board class that stores the current board config and the move that brought
+# it there
+# class inherits from object and uses slots instead of dict to reduce memory usuage
+# and faster attribute access
+        
+class board(object):
+ 
+    __slots__ = ('state', 'move', 'score')
+ 
+    def __init__(self, state, move):
+        self.state = state
+        self.move = move
+        self.score = self.calculateScore()
+ 
+###############################################################################
+        
+     # function that returns the new board object created from the specified move
+    def newMakeMove(self, action, colour):
+        newState = copy.deepcopy(self.state)
+ 
+        action_tuple = np.array(action)
+        action_size = action_tuple.size
+
+        if action_size == 1:
+          return
+
+        elif action_size == 2:
+          #placing phase
+          newState[action_tuple[0], action_tuple[1]] = self.opp_colour
+
+        elif action_size == 4:
+          # moving phase
+          self.put_piece(newState, action_tuple[0][0], action_tuple[0][1], UNOCC)
+          self.put_piece(newState, action_tuple[1][0], action_tuple[1][1], colour)
+ 
+        
+        newBoard = board(newState, action)
+        return newBoard
+ 
+###############################################################################
+        
+    def put_piece(self, state, row, col, piece):
+      state[row, col] = piece
+      
+
+###############################################################################
+      
+    # function that make moves on the current object, changes the current state,
+    # does not create a new board
+    
+    def makeMove(self, action, colour):
         action_tuple = np.array(action)
         action_size = action_tuple.size
 
@@ -71,52 +143,18 @@ class Player():
 
         elif action_size == 4:
           # moving phase
-          self.put_piece(action_tuple[0][0], action_tuple[0][1], UNOCC)
-          self.put_piece(action_tuple[1][0], action_tuple[1][1], self.opp_colour)
-
-    def initStrat(self):
-      return
-      # placeholder initialise strategy
-
-
-
-
-# simple board class that stores the current board config and the move that brought
-# it there
-# class inherits from object and uses slots instead of dict to reduce memory usuage
-# and faster attribute access
-
-# class board(object):
-
-#     __slots__ = ('state', 'move')
-
-#     def __init__(self, state, move):
-#         self.state = state
-#         self.move = move
-
-
-
-#     # function that returns the new board object created from the specified move
-#     def newMakeMove(self, move):
-#         newState = copy.deepcopy(self.state)
-
-#         # make changes in the newState according to the moves specified
-
-#         newBoard = board(newState, move)
-#         return newBoard
-
-
-
-#     # function that make moves on the current object, changes the current state,
-#     # does not create a new board
-#     def _makeMove(self, move):
-
-
-#         # make changes in the self.state according to the moves specified
-
-
-#         return
-
+          self.put_piece(self.state, action_tuple[0][0], action_tuple[0][1], UNOCC)
+          self.put_piece(self.state, action_tuple[1][0], action_tuple[1][1], colour)
+ 
+        
+        self.move = action # update the move that brought it to this state
+        return
+    
+###############################################################################
+        
+    def calculateScore(self):
+        return 4
+###############################################################################
 
 
 
@@ -136,15 +174,20 @@ def testrun(me = 'WHITE'):
 
     # update board tests
     move = ((0,1), (3,4))
+    move2 = ((3,4), (6,6))
     place = (6,5)
     null_move = None
 
     print('before update')
     game.put_piece(0, 1, BLACK)  # example for move
-    print(game.state)
+    print(game.node.state)
 
     print('after update')
     game.update(move)
-    print(game.state)
+    print(game.node.state)
+    
+    print('after update 2')
+    game.update(move2)
+    print(game.node.state)
 
 testrun()
