@@ -154,21 +154,21 @@ class board(object):
         
     def calculateScore(self):
         return 4
+    
 ###############################################################################
 
+def testMemUsage():
+    gameState = np.full((SIZE, SIZE), UNOCC, dtype=int)
 
+#    print("show", sys.getsizeof(board(gameState, ((0,0),(0,1)))))
+#    print(gameState )
+#    print("show", sys.getsizeof(gameState[0]))
 
-# gameState = []
-# for i in range(8):
-#     gameState.append(input().split())
-
-# print("show", sys.getsizeof(board(gameState, ((0,0),(0,1)))))
-# print(gameState )
-# print("show", sys.getsizeof(gameState[0]))
-
-# l = [board(gameState, 'bar') for i in range(20000000)]
-
-
+    l = [board(gameState, 'bar') for i in range(50000000)]
+    print(sys.getsizeof(l))
+    
+###############################################################################
+    
 def testrun(me = 'WHITE'):
     game = Player(me)
 
@@ -191,3 +191,4 @@ def testrun(me = 'WHITE'):
     print(game.node.state)
 
 testrun()
+testMemUsage()
