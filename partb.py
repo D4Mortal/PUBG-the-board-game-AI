@@ -61,7 +61,9 @@ class Player():
         return 0
 
     def update(self, action):
-        self.node.makeMove(action, self.opp_colour)
+        if self.node.state[action[0][0]][action[0][1]] <= 0:
+            return None
+        self.node.makeMove(action)
           
 
     def initStrat(self):
@@ -74,8 +76,8 @@ class Player():
         return
     
     
-    def heuristics(self):
-        return
+    
+    
 
 
 ###############################################################################
@@ -97,9 +99,10 @@ class board(object):
 ###############################################################################
         
      # function that returns the new board object created from the specified move
-    def newMakeMove(self, action, colour):
+    def newMakeMove(self, action):
         newState = copy.deepcopy(self.state)
- 
+        
+        
         action_tuple = np.array(action)
         action_size = action_tuple.size
 
@@ -112,6 +115,7 @@ class board(object):
 
         elif action_size == 4:
           # moving phase
+          colour = self.state[action[0][0]][action[0][1]]
           self.put_piece(newState, action_tuple[0][0], action_tuple[0][1], UNOCC)
           self.put_piece(newState, action_tuple[1][0], action_tuple[1][1], colour)
  
@@ -130,10 +134,11 @@ class board(object):
     # function that make moves on the current object, changes the current state,
     # does not create a new board
     
-    def makeMove(self, action, colour):
+    def makeMove(self, action):
         action_tuple = np.array(action)
         action_size = action_tuple.size
-
+        
+        
         if action_size == 1:
           return
 
@@ -141,8 +146,9 @@ class board(object):
           #placing phase
           self.state[action_tuple[0], action_tuple[1]] = self.opp_colour
 
-        elif action_size == 4:
+        elif action_size == 4:   
           # moving phase
+          colour = self.state[action[0][0]][action[0][1]]
           self.put_piece(self.state, action_tuple[0][0], action_tuple[0][1], UNOCC)
           self.put_piece(self.state, action_tuple[1][0], action_tuple[1][1], colour)
  
@@ -154,6 +160,14 @@ class board(object):
         
     def calculateScore(self):
         return 4
+    
+    
+    def isComplete(self):
+        unique, counts = np.unique(self.state, return_counts=True)
+        results = dict(zip(unique, counts))
+        if results[WHITE] <= 2 or results[BLACK] <= 2:
+            return True
+        return False
     
 ###############################################################################
 
@@ -180,6 +194,7 @@ def testrun(me = 'WHITE'):
 
     print('before update')
     game.put_piece(0, 1, BLACK)  # example for move
+    game.put_piece(4, 4, WHITE)  # example for move
     print(game.node.state)
 
     print('after update')
@@ -189,6 +204,7 @@ def testrun(me = 'WHITE'):
     print('after update 2')
     game.update(move2)
     print(game.node.state)
-
+    
+    print(game.node.isComplete())
 testrun()
-testMemUsage()
+#testMemUsage()
