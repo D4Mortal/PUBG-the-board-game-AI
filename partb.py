@@ -48,7 +48,7 @@ class Player():
         
         
         
-        if colour[0] == 'w':
+        if colour[0] == 'W':
           self.player_colour = WHITE
           self.node = board(self.state, None, WHITE)
           self.opp_colour = BLACK
@@ -99,13 +99,13 @@ class Player():
         
 class board(object):
  
-    __slots__ = ('state', 'move', 'score', 'colour')
+    __slots__ = ('state', 'move', 'colour')
  
     def __init__(self, state, move, colour):
         self.state = state
         self.move = move
         self.colour = colour
-        self.score = self.calculateScore()
+
 ###############################################################################
         
     # function that returns a new board object created from the specified move
@@ -121,7 +121,7 @@ class board(object):
 
         elif action_size == 2:
           #placing phase
-          newState[action_tuple[0], action_tuple[1]] = self.opp_colour
+          newState[action_tuple[0], action_tuple[1]] = self.opp_colour ############################## need to fix this
 
         elif action_size == 4:
           # moving phase
@@ -221,22 +221,21 @@ class board(object):
 ###############################################################################
         
     def calculateScore(self):
-        blackCount = 0
-        whiteCount = 0
-        for row in self.state:
-            for symbol in row:
-                if symbol == BLACK:
-                    blackCount += 1
-                if symbol == WHITE:
-                    whiteCount += 1
-        if self.colour == WHITE: return whiteCount - blackCount
-        else: return blackCount - whiteCount
+        unique, counts = np.unique(self.state, return_counts=True)
+        results = dict(zip(unique, counts))
+        if self.colour in results and MAP[self.colour] in results:
+            if results[self.colour] <= 2 and results[MAP[self.colour]] > 2:
+                return -999
+            if results[self.colour] > 2 and results[MAP[self.colour]] <= 2:
+                return 999
+            else:
+                return self.colour - MAP[self.colour]
+        
 ###############################################################################    
     
     def isComplete(self):
-        unique, counts = np.unique(self.state, return_counts=True)
-        results = dict(zip(unique, counts))
-        if results[WHITE] <= 2 or results[BLACK] <= 2:
+        score = self.calculateScore()
+        if score == 999 or score == -999:
             return True
         return False
     
@@ -316,7 +315,7 @@ def testMemUsage():
 #    print(gameState )
 #    print("show", sys.getsizeof(gameState[0]))
 
-    l = [board(gameState, 'bar') for i in range(50000000)]
+    l = [board(gameState, 'bar', WHITE) for i in range(50000000)]
     print(sys.getsizeof(l))
     
 ###############################################################################
@@ -358,13 +357,13 @@ def testrun(me = 'WHITE'):
     game.update(move4)
     print(game.node.state)
     
+    
     print(game.node.isComplete())
     
-#    for a in game.node.genChild(BLACK):
-#        print("this this generated")
-#        print(a.state)
+    for a in game.node.genChild(BLACK):
+        print("this this generated")
+        print(a.state)
+        print(a.calculateScore())
     
 testrun()
 #testMemUsage()
-selfColour = WHITE
-oppColour = BLACK
