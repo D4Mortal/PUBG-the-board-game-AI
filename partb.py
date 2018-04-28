@@ -28,7 +28,15 @@ MODS = {'R': (0, 1),  # how each direction modifies a position
         '2U': (-2, 0)}
 
 ###############################################################################
-
+def posCheck(state, row, col, dir):
+        '''
+        returns symbol at a given board position (modified by direction)
+        '''
+        return state[row + MODS[dir][0], col + MODS[dir][1]]
+    
+    
+###############################################################################    
+    
 class Player():
 
     def __init__(self, colour):
@@ -160,7 +168,7 @@ class board(object):
         
     def calculateScore(self):
         return 4
-    
+###############################################################################    
     
     def isComplete(self):
         unique, counts = np.unique(self.state, return_counts=True)
@@ -170,6 +178,64 @@ class board(object):
         return False
     
 ###############################################################################
+    def genChild(self):
+        
+        row = 0
+        actions = defaultdict(list)
+        action = []
+        action_tuple = ()
+        for r in self.state:
+            col = 0
+            for element in r:
+                if element == WHITE:
+
+                    if row + 1 < 8:
+                        if posCheck(self.state, row, col, 'D') == UNOCC:
+                            actions[str(row) + str(col)].append(str(row + 1) + str(col))
+                            action_tuple = ((row, col), (row +1, col))
+                            action.append(self.newMakeMove(action_tuple))
+        
+                        elif posCheck(self.state, row, col, 'D') == WHITE or posCheck(self.state, row, col, 'D') == BLACK:
+                            if row + 2 < 8:
+                                if posCheck(self.state, row, col, '2D') == UNOCC:
+                                     actions[str(row) + str(col)].append(str(row + 2) + str(col))
+                                     action_tuple = ((row, col), (row +1, col))
+                                     action.append(self.newMakeMove(action_tuple))
+                    if row - 1 >= 0:
+                        if posCheck(self.state, row, col, 'U') == UNOCC:
+                            actions[str(row) + str(col)].append(str(row - 1) + str(col))
+
+        
+                        elif posCheck(self.state, row, col, 'U') == WHITE or posCheck(self.state, row, col, 'U') == BLACK:
+                            if row - 2 >= 0:
+                                if posCheck(self.state, row, col, '2U') == UNOCC:
+                                    actions[str(row) + str(col)].append(str(row - 2) + str(col))
+            
+                    
+                    
+                    if col + 1 < 8:
+                        if posCheck(self.state, row, col, 'R') == UNOCC:
+                            actions[str(row) + str(col)].append(str(row) + str(col + 1))
+        
+                        elif posCheck(self.state, row, col, 'R') == WHITE or posCheck(self.state, row, col, 'R') == BLACK:
+                            if col + 2 < 8:
+                                if posCheck(self.state, row, col, '2R') == UNOCC:
+                                    actions[str(row) + str(col)].append(str(row) + str(col + 2))
+                    
+                    if col - 1 >= 0:
+                        if posCheck(self.state, row, col, 'L') == UNOCC:
+                            actions[str(row) + str(col)].append(str(row) + str(col - 1))
+        
+                        elif posCheck(self.state, row, col, 'L') == WHITE or posCheck(self.state, row, col, 'L') == BLACK:
+                            if col - 2 >= 0:
+                                if posCheck(self.state, row, col, '2L') == UNOCC:
+                                    actions[str(row) + str(col)].append(str(row) + str(col - 2))
+    
+                col += 1
+            row += 1
+            
+        return actions
+        
 
 def testMemUsage():
     gameState = np.full((SIZE, SIZE), UNOCC, dtype=int)
@@ -185,7 +251,7 @@ def testMemUsage():
     
 def testrun(me = 'WHITE'):
     game = Player(me)
-
+    
     # update board tests
     move = ((0,1), (3,4))
     move2 = ((3,4), (6,6))
@@ -206,5 +272,6 @@ def testrun(me = 'WHITE'):
     print(game.node.state)
     
     print(game.node.isComplete())
+    print(game.node.genChild())
 testrun()
 #testMemUsage()
