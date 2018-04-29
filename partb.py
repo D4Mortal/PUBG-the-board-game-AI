@@ -1,21 +1,29 @@
 import copy
 import numpy as np
 import sys
+<<<<<<< HEAD
 from collections import defaultdict
 
 import time 
 import random
 import timeit
 
+=======
+import time
+import random
+import operator
+from collections import defaultdict
+>>>>>>> 614fc6bb8375d78b126d32d5cd12abda240b6107
 
 SIZE = 8  # board size
 
-
-CORNER = 3  #'X'
 UNOCC = 0  #'-'
 WHITE = 1  #'O'
 BLACK = 2  #'@'
+CORNER = 3  #'X'
 WALL = 4
+
+MINIMAX_DEPTH = 3
 
 MAP = {WHITE:BLACK, BLACK:WHITE}
 
@@ -29,37 +37,47 @@ MODS = {'R': (0, 1),  # how each direction modifies a position
         '2U': (-2, 0)}
 
 ###############################################################################
-def posCheck(state, row, col, dir, return_rowcol =False):
-        '''
-        returns symbol at a given board position (modified by direction)
-        '''
-        if return_rowcol:
-            return row + MODS[dir][0], col + MODS[dir][1]
+def posCheck(state, row, col, dir, return_rowcol = False):
+    '''
+    returns symbol at a given board position (modified by direction)
+    '''
+    if return_rowcol:
+        return row + MODS[dir][0], col + MODS[dir][1]
 
-        return state[row + MODS[dir][0], col + MODS[dir][1]]
+    return state[row + MODS[dir][0], col + MODS[dir][1]]
 
 
 ###############################################################################
 
 def initTable():
-    ZobristTable = np.empty((8,8,5))
-    for i in range(8):
-        for j in range(8):
+    ZobristTable = np.empty((SIZE,SIZE,5))
+    for i in range(SIZE):
+        for j in range(SIZE):
             for k in range(5):
                 ZobristTable[i,j,k] = random.randint(0,10000000000000000000)
+
     
+
+
     return ZobristTable
 
 ###############################################################################
 
 # Zobrist Hashing
-def Hash(state, table):
+def hash(state, table):
     value = 0
+
     for i in range(8):
         for j in range(8):
             if state[i, j] == WHITE or state[i, j] == BLACK:
                 piece = state[i, j]
                 value = value^int(table[i, j, piece]) 
+
+    for i in range(SIZE):
+        for j in range(SIZE):
+            if state[i, j] == WHITE or state[i, j] == BLACK:
+                piece = state[i, j]
+                value ^= int(table[i, j, piece])
 
     return value
 
@@ -97,11 +115,11 @@ class Player():
         self.turns = turns + 1
         if self.totalTurns > 24:
             if self.countPieces(self.node) < 8:
-                action = self.miniMax(5)
-                self.node.makeMove(action, self.player_colour)
+                action = self.miniMax(MINIMAX_DEPTH)
+                self.node.update_board_inplace(action, self.player_colour)
             else:
-                action = self.miniMax(5)
-                self.node.makeMove(action, self.player_colour)
+                action = self.miniMax(MINIMAX_DEPTH)
+                self.node.update_board_inplace(action, self.player_colour)
             return action
         else:
             # placing phase
@@ -114,21 +132,15 @@ class Player():
     def update(self, action):
         if self.node.state[action[0][0]][action[0][1]] <= 0:
             return None
-        self.node.makeMove(action, self.opp_colour)
+        self.node.update_board_inplace(action, self.opp_colour)
         self.totalTurns += 1
 
 ###############################################################################
 
     def countPieces(self, node):
-        unique, counts = np.unique(node.state, return_counts=True)
-        results = dict(zip(unique, counts))
-        return results[self.player_colour] + results[self.opp_colour]
+        results = np.bincount(node.state.ravel())
+        return results[WHITE] + results[BLACK]
 
-###############################################################################
-
-    def initStrat(self):
-      return
-      # placeholder initialise strategy
 ###############################################################################
 
     def firstShrink(self, node):
@@ -140,7 +152,6 @@ class Player():
         node.state[1,6] = CORNER
         node.state[6,1] = CORNER
         node.state[6,6] = CORNER
-
 
     def secondShrink(self, node):
         node.state[1, :] = WALL
@@ -156,21 +167,22 @@ class Player():
 
     def miniMax(self, depth):
         start = time.time()
+
         def maxValue(node, depth, alpha, beta, turns):
             if turns == 129:
                 self.firstShrink(node)
             if turns == 193:
                 self.secondShrink(node)
 
-            if node.isComplete() or depth <= 0:
-                return node.calculateScore()
+            if node.is_terminal() or depth <= 0:
+                return node.eval_node()
 
             v = -np.inf
 
-            for nextMoves in sorted(node.genChild(node.colour), key=lambda x: x.estimate, reverse=True):
+            for nextMoves in sorted(node.genChild(node.colour), key=lambda x: x.move_estim, reverse=True):
 
                 v = max(v, minValue(nextMoves, depth-1, alpha, beta, turns+1))
-#                print(nextMoves.calculateScore(), end='')
+#                print(nextMoves.eval_node(), end='')
 #                print("White's move: ", end='')
 #                print(nextMoves.move)
 #                print(nextMoves.state)
@@ -187,17 +199,17 @@ class Player():
             if turns == 193:
                 self.secondShrink(node)
 
-            if node.isComplete():
-                return node.calculateScore()
+            if node.is_terminal():
+                return node.eval_node()
             if depth <= 0:
-                return node.calculateScore()
+                return node.eval_node()
 
             v = np.inf
 
-            for nextMoves in sorted(node.genChild(MAP[node.colour]), key=lambda x: x.estimate):
+            for nextMoves in sorted(node.genChild(MAP[node.colour]), key=lambda x: x.move_estim):
 
                 v = min(v, maxValue(nextMoves, depth-1, alpha, beta, turns+1))
-#                print(nextMoves.calculateScore(), end='')
+#                print(nextMoves.eval_node(), end='')
 
 
 #                print(nextMoves.state)
@@ -228,17 +240,17 @@ class Player():
 
 class board(object):
 
-    __slots__ = ('state', 'move', 'colour', 'estimate')
+    __slots__ = ('state', 'move', 'colour', 'move_estim')
 
     def __init__(self, state, move, colour):
         self.state = state
         self.move = move
         self.colour = colour
-        self.estimate = self.estimateScore()
+        self.move_estim = self.pvs_estim()
 ###############################################################################
 
     # function that returns a new board object created from the specified move
-    def newMakeMove(self, action):
+    def update_board_return(self, action):
         newState = copy.deepcopy(self.state)
 
 
@@ -311,7 +323,11 @@ class board(object):
         '''
         returns updated board after necessary eliminations
         '''
-        mapping = {1: [BLACK, WHITE], 2: [WHITE, BLACK]}
+
+        # numpy ufunc ???
+        mapping = {WHITE: [BLACK, WHITE], BLACK: [WHITE, BLACK]}
+        # order of elimination
+
         for piece in mapping[colour]:
             for row, line in enumerate(state):
                 for col, symbol in enumerate(line):
@@ -326,7 +342,7 @@ class board(object):
     # function that make moves on the current object, changes the current state,
     # does not create a new board
 
-    def makeMove(self, action, colour):
+    def update_board_inplace(self, action, colour):
         action_tuple = np.array(action)
         action_size = action_tuple.size
 
@@ -340,7 +356,7 @@ class board(object):
 
         elif action_size == 4:
           # moving phase
-          colour = self.state[action[0][0]][action[0][1]]
+          colour = self.state[action[0][0], action[0][1]]
           self.put_piece(self.state, action_tuple[0][0], action_tuple[0][1], UNOCC)
           self.put_piece(self.state, action_tuple[1][0], action_tuple[1][1], colour)
 
@@ -350,28 +366,29 @@ class board(object):
 
 ###############################################################################
 
-    def calculateScore(self):
+    def eval_node(self):
         results = np.bincount(self.state.ravel())
         if results[self.colour] <= 2 and results[MAP[self.colour]] > 2:
             return -999
         if results[self.colour] > 2 and results[MAP[self.colour]] <= 2:
             return 999
         else:
-            feature1 = results[self.colour] - results[MAP[self.colour]]
-            feature2 = self.safeMobility(self.state)
-            eval_func = 0.8 * feature1 + 0.5 * feature2
+            f1= results[self.colour] - results[MAP[self.colour]]
+            f2 = self.safeMobility(self.state)
+            eval_func = 0.8 * f1 + 0.5 * f2
 
             return eval_func
 
 ###############################################################################
 
-    def estimateScore(self):
+    def pvs_estim(self):
         results = np.bincount(self.state.ravel())
         return results[self.colour] - results[MAP[self.colour]]
+
 ###############################################################################
 
-    def isComplete(self):
-        score = self.calculateScore()
+    def is_terminal(self):
+        score = self.eval_node()
         if score == 999 or score == -999:
             return True
         return False
@@ -387,15 +404,15 @@ class board(object):
 
         for m in checkCond:
             if checkCond[m][0]:
-
-                row2, col2 = posCheck(board,row,col, m, return_rowcol=True)
+                row2, col2 = posCheck(board, row, col, m, return_rowcol=True)
                 newPos = self.state[row,col]
-                if newPos == UNOCC and self.isEliminated(board, row2, col2, piece) == False:
+                if newPos == UNOCC and not self.isEliminated(board, row2, col2, piece):
                     availMoves += 1
+
                 if newPos == WHITE or newPos == BLACK:
                     if checkCond[m][1]:
                         row3, col3 = posCheck(board,row,col, '2' + m, return_rowcol=True)
-                        if self.state[row3,col3] == UNOCC and self.isEliminated(board, row3, col3, piece)== False:
+                        if self.state[row3,col3] == UNOCC and not self.isEliminated(board, row3, col3, piece):
                             availMoves += 1
         return availMoves
 
@@ -404,24 +421,21 @@ class board(object):
     def safeMobility(self, board):
         playerMoves = 0
         oppMoves = 0
-        row = 0
+        oppColour = MAP[self.colour]
 
-        for line in board:
-            col = 0
-            for symbol in line:
+        for row, line in enumerate(board):
+            for col, symbol in enumerate(line):
                 if symbol == self.colour:
                     playerMoves += self.checkSurr(board, row , col, self.colour)
-                if symbol == MAP[self.colour]:
-                    oppMoves += self.checkSurr(board, row , col, MAP[self.colour])
-                col += 1
-            row += 1
+                if symbol == oppColour:
+                    oppMoves += self.checkSurr(board,row,col, oppColour)
 
         return playerMoves - oppMoves
 
 ###############################################################################
 
     def genChild(self, colour):
-        action = []
+        child_nodes = []
         action_tuple = ()
 
         for row, line in enumerate(self.state):
@@ -439,13 +453,12 @@ class board(object):
                         if checkCond[dir][0]:
                             posToCheck = posCheck(self.state, row, col, dir)
 
-
                             if posToCheck == UNOCC:
                                 tmpA = row + checkCond[dir][1]
                                 tmpB = col + checkCond[dir][2]
 
                                 action_tuple = ((row, col), (tmpA, tmpB))
-                                action.append(self.newMakeMove(action_tuple))
+                                child_nodes.append(self.update_board_return(action_tuple))
 
                             elif posToCheck == WHITE or posToCheck == BLACK:
                                 # check whether jump is possible
@@ -456,9 +469,9 @@ class board(object):
                                         tmpB = col + checkCond[dir][5]
 
                                         action_tuple = ((row, col), (tmpA, tmpB))
-                                        action.append(self.newMakeMove(action_tuple))
+                                        child_nodes.append(self.update_board_return(action_tuple))
 
-        return action
+        return child_nodes
 
 ###############################################################################
 def testMemUsage():
@@ -495,14 +508,14 @@ def testrun(me = 'WHITE'):
     game.put_piece(3, 6, BLACK)  # example for move
 #    print(game.node.state)
 #    print(game.player_colour)
-#    print(game.node.calculateScore())
+#    print(game.node.eval_node())
 #
-#    print(game.node.isComplete())
+#    print(game.node.is_terminal())
 
 #    for a in game.node.genChild(BLACK):
 #        print("this this generated")
 #        print(a.state)
-#        print(a.calculateScore())
+#        print(a.eval_node())
 
 
 #    print("This is the current board config")
@@ -513,37 +526,49 @@ def testrun(me = 'WHITE'):
 #    print("The optimal move for white is: ", end='')
 #    print(result)
 
-    
-#    print("this is the current board state at turn 100")
-#    print(game.node.state)
-#    game.action(100)
-#    print("The ideal move would be: {} for turn 127".format(game.node.move))
 
 #    print("this is the current board state at turn 100")
 #    print(game.node.state)
 #    game.action(100)
 #    print("The ideal move would be: {} for turn 127".format(game.node.move))
+
+
+#    print("this is the current board state at turn 100")
+#    print(game.node.state)
+#    game.action(100)
+#    print("The ideal move would be: {} for turn 127".format(game.node.move))
+
+
+    print("this is the current board state at turn 100")
+    print(game.node.state)
+    game.action(100)
+    print("The ideal move would be: {} for turn 127".format(game.node.move))
 
 
 #    game.firstShrink()
 #    print(game.node.state)
-#    print(game.node.calculateScore())
+#    print(game.node.eval_node())
 #
 #    game.secondShrink()
 #    print(game.node.state)
-#    print(game.node.calculateScore())
+#    print(game.node.eval_node())
 
 #    game.update(((2, 5), (4, 5)))
 #    print(game.node.state)
+
 #    print(game.node.calculateScore())
 
-    
+
+#    print(game.node.eval_node())
+
+
     zor = initTable()
-    r = Hash(game.node.state, zor)
+    r = hash(game.node.state, zor)
     print(r)
     
     r = r^int(zor[3,3,WHITE])   # same as putting down a white piece at 3,3
     print(r)
+<<<<<<< HEAD
     
     r = r^int(zor[3,3,WHITE])   # removing the white piece placed at 3,3
     print(r)
@@ -566,6 +591,8 @@ def testrun(me = 'WHITE'):
 if __name__ == "__main__":
     print (timeit.timeit('"Hash(state,table)".join(str(n) for n in range(100))',number=100))
 
+=======
+>>>>>>> 614fc6bb8375d78b126d32d5cd12abda240b6107
 
 testrun()
 #testMemUsage()
