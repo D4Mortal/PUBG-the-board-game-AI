@@ -14,7 +14,7 @@ WHITE = 1  #'O'
 BLACK = 2  #'@'
 WALL = 5
 
-MAP = {1:2, 2:1}
+MAP = {WHITE:BLACK, BLACK:WHITE}
 
 MODS = {'R': (0, 1),  # how each direction modifies a position
         '2R': (0, 2),
@@ -136,9 +136,7 @@ class Player():
             if turns == 193:
                 self.secondShrink(node)
 
-            if node.isComplete():
-                return node.calculateScore()
-            if depth <= 0:
+            if node.isComplete() or depth <= 0:
                 return node.calculateScore()
 
             v = -np.inf

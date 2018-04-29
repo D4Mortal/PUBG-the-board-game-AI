@@ -14,25 +14,23 @@ transposition table: can be used to store expanded moves, since the opponent is 
 numpy array
 class __slots__
 minimax (alpha-beta)
-
-
-
-
-//////////////////////////////////////CHIRAG
-
-OPTIMISATIONS
-bitboards
-transposition table
+Principal variation search nagascout
 negamax
 
 disable eval towards end of game
 
+https://en.wikipedia.org/wiki/Quiescence_search
 
-
+https://en.wikipedia.org/wiki/Killer_heuristic
+https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning
 
 
 EVALUATION features
 piece-square tables
+http://chessprogramming.wikispaces.com/Simplified+evaluation+functio
+https://chessprogramming.wikispaces.com/Endgame
+https://www.quora.com/How-do-I-make-Minimax-algorithm-incredibly-fast-How-do-I-deepen-the-game-search-tree
+https://en.wikipedia.org/wiki/Zobrist_hashing
 
 
 
