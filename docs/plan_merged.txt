@@ -10,8 +10,9 @@ game notes
 
 OPTIMISATIONS
 bitboards
-transposition table
-
+transposition table: can be used to store expanded moves, since the opponent is likely to play the move that's expanded, it would sav time
+numpy array
+class __slots__
 minimax (alpha-beta)
 
 

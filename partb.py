@@ -2,12 +2,13 @@ import copy
 import numpy as np
 import sys
 from collections import defaultdict
-
+import time 
+import operator
 
 SIZE = 8  # board size
 
 
-CORNER = -1  #'X'
+CORNER = 9  #'X'
 UNOCC = 0  #'-'
 WHITE = 1  #'O'
 BLACK = 2  #'@'
@@ -73,7 +74,7 @@ class Player():
                 action = self.miniMax(5)
                 self.node.makeMove(action, self.player_colour)
             else:
-                action = self.miniMax(4)
+                action = self.miniMax(5)
                 self.node.makeMove(action, self.player_colour)
             return action
         else:
@@ -128,7 +129,7 @@ class Player():
 ###############################################################################
         
     def miniMax(self, depth):
-
+        start = time.time()
         def maxValue(node, depth, alpha, beta, turns):
             if turns == 129:
                 self.firstShrink(node)
@@ -142,7 +143,7 @@ class Player():
 
             v = -np.inf
 
-            for nextMoves in node.genChild(node.colour):
+            for nextMoves in sorted(node.genChild(node.colour), key=lambda x: x.estimate, reverse=True):
                 
                 v = max(v, minValue(nextMoves, depth-1, alpha, beta, turns+1))
 #                print(nextMoves.calculateScore(), end='')
@@ -169,7 +170,7 @@ class Player():
 
             v = np.inf
 
-            for nextMoves in node.genChild(MAP[node.colour]):
+            for nextMoves in sorted(node.genChild(MAP[node.colour]), key=lambda x: x.estimate):
                 
                 v = min(v, maxValue(nextMoves, depth-1, alpha, beta, turns+1))
 #                print(nextMoves.calculateScore(), end='')
@@ -191,6 +192,8 @@ class Player():
             if v > best_score:
                 best_score = v
                 best_action = Moves.move
+        end = time.time()
+        print(end - start)
         return best_action
 ###############################################################################
 
@@ -201,13 +204,13 @@ class Player():
 
 class board(object):
 
-    __slots__ = ('state', 'move', 'colour')
+    __slots__ = ('state', 'move', 'colour', 'estimate')
 
     def __init__(self, state, move, colour):
         self.state = state
         self.move = move
         self.colour = colour
-
+        self.estimate = self.estimateScore()
 ###############################################################################
 
     # function that returns a new board object created from the specified move
@@ -324,22 +327,25 @@ class board(object):
 ###############################################################################
 
     def calculateScore(self):
-        unique, counts = np.unique(self.state, return_counts=True)
-        results = dict(zip(unique, counts))
+        results = np.bincount(self.state.ravel())
+        if results[self.colour] <= 2 and results[MAP[self.colour]] > 2:
+            return -999
+        if results[self.colour] > 2 and results[MAP[self.colour]] <= 2:
+            return 999
+        else:
+            feature1 = results[self.colour] - results[MAP[self.colour]]
+            feature2 = self.safeMobility(self.state)
+            eval_func = 0.8 * feature1 + 0.5 * feature2
 
-
-        if self.colour in results and MAP[self.colour] in results:
-            if results[self.colour] <= 2 and results[MAP[self.colour]] > 2:
-                return -999
-            if results[self.colour] > 2 and results[MAP[self.colour]] <= 2:
-                return 999
-            else:
-                feature1 = results[self.colour] - results[MAP[self.colour]]
-                feature2 = self.safeMobility(self.state)
-                eval_func = 0.8 * feature1 + 0.5 * feature2
-
-                return eval_func
-
+            return eval_func
+            
+###############################################################################
+                
+    def estimateScore(self):
+        results = np.bincount(self.state.ravel())
+        return results[self.colour] - results[MAP[self.colour]]
+###############################################################################       
+                
     def isComplete(self):
         score = self.calculateScore()
         if score == 999 or score == -999:
@@ -427,6 +433,7 @@ class board(object):
                                         
                                         action_tuple = ((row, col), (tmpA, tmpB))
                                         action.append(self.newMakeMove(action_tuple))
+        
         return action
     
 ###############################################################################
@@ -482,9 +489,9 @@ def testrun(me = 'WHITE'):
 #    print("The optimal move for white is: ", end='')
 #    print(result)
     
-    print("this is the current board state at turn 126")
+    print("this is the current board state at turn 100")
     print(game.node.state)
-    game.action(126)
+    game.action(100)
     print("The ideal move would be: {} for turn 127".format(game.node.move))
 
     
