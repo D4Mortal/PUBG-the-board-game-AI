@@ -1,19 +1,14 @@
 import copy
 import numpy as np
 import sys
-<<<<<<< HEAD
+
 from collections import defaultdict
 
 import time 
 import random
 import timeit
 
-=======
-import time
-import random
-import operator
-from collections import defaultdict
->>>>>>> 614fc6bb8375d78b126d32d5cd12abda240b6107
+
 
 SIZE = 8  # board size
 
@@ -66,18 +61,11 @@ def initTable():
 # Zobrist Hashing
 def hash(state, table):
     value = 0
-
-    for i in range(8):
-        for j in range(8):
-            if state[i, j] == WHITE or state[i, j] == BLACK:
-                piece = state[i, j]
-                value = value^int(table[i, j, piece]) 
-
     for i in range(SIZE):
         for j in range(SIZE):
             if state[i, j] == WHITE or state[i, j] == BLACK:
                 piece = state[i, j]
-                value ^= int(table[i, j, piece])
+                value = value^int(table[i, j, piece]) 
 
     return value
 
@@ -568,19 +556,19 @@ def testrun(me = 'WHITE'):
     
     r = r^int(zor[3,3,WHITE])   # same as putting down a white piece at 3,3
     print(r)
-<<<<<<< HEAD
+
     
     r = r^int(zor[3,3,WHITE])   # removing the white piece placed at 3,3
     print(r)
     
     
     game.put_piece(3, 3, WHITE) # put down a white at 3,3 and recalculate the whole hash
-    g = Hash(game.node.state, zor)
+    g = hash(game.node.state, zor)
     print(g)
     game.put_piece(3, 3, UNOCC) # revert the piece put down at 3,3
     
     game.update(move3)              # move3 is ((3,5), (1,1)), equilvalent to the one below
-    a = Hash(game.node.state, zor)
+    a = hash(game.node.state, zor)
     print(a)
     
     r = r^int(zor[3,5,BLACK]) # undo the hash at 3,5 for black so its now blank
@@ -591,8 +579,7 @@ def testrun(me = 'WHITE'):
 if __name__ == "__main__":
     print (timeit.timeit('"Hash(state,table)".join(str(n) for n in range(100))',number=100))
 
-=======
->>>>>>> 614fc6bb8375d78b126d32d5cd12abda240b6107
+
 
 testrun()
 #testMemUsage()
