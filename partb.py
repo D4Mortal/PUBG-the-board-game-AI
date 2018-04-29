@@ -2,14 +2,12 @@ import copy
 import numpy as np
 import sys
 from collections import defaultdict
-<<<<<<< HEAD
+
 import time 
 import random
-=======
-import time
-import operator
+import timeit
 
->>>>>>> 778417dffc0bd60922aa8397202537779d0f7469
+
 SIZE = 8  # board size
 
 
@@ -49,6 +47,7 @@ def initTable():
         for j in range(8):
             for k in range(5):
                 ZobristTable[i,j,k] = random.randint(0,10000000000000000000)
+    
     return ZobristTable
 
 ###############################################################################
@@ -57,10 +56,11 @@ def initTable():
 def Hash(state, table):
     value = 0
     for i in range(8):
-        for j in range(5):
+        for j in range(8):
             if state[i, j] == WHITE or state[i, j] == BLACK:
                 piece = state[i, j]
-                value ^= int(table[i, j, piece])               
+                value = value^int(table[i, j, piece]) 
+
     return value
 
 ###############################################################################
@@ -479,7 +479,7 @@ def testrun(me = 'WHITE'):
     # update board tests
     move = ((0,1), (3,4))
     move2 = ((3,4), (6,6))
-    move3 = ((3,5), (4,5))
+    move3 = ((3,5), (1,1))
     move4 = ((6,6),(5,6))
     place = (6,5)
     null_move = None
@@ -512,19 +512,17 @@ def testrun(me = 'WHITE'):
 #    result = game.miniMax(int(depth))
 #    print("The optimal move for white is: ", end='')
 #    print(result)
-<<<<<<< HEAD
+
     
 #    print("this is the current board state at turn 100")
 #    print(game.node.state)
 #    game.action(100)
 #    print("The ideal move would be: {} for turn 127".format(game.node.move))
-=======
 
-    print("this is the current board state at turn 100")
-    print(game.node.state)
-    game.action(100)
-    print("The ideal move would be: {} for turn 127".format(game.node.move))
->>>>>>> 778417dffc0bd60922aa8397202537779d0f7469
+#    print("this is the current board state at turn 100")
+#    print(game.node.state)
+#    game.action(100)
+#    print("The ideal move would be: {} for turn 127".format(game.node.move))
 
 
 #    game.firstShrink()
@@ -538,18 +536,36 @@ def testrun(me = 'WHITE'):
 #    game.update(((2, 5), (4, 5)))
 #    print(game.node.state)
 #    print(game.node.calculateScore())
-<<<<<<< HEAD
+
     
     zor = initTable()
     r = Hash(game.node.state, zor)
     print(r)
-    game.put_piece(4, 3, WHITE)
-    game.put_piece(4, 3, UNOCC)
+    
+    r = r^int(zor[3,3,WHITE])   # same as putting down a white piece at 3,3
     print(r)
-=======
+    
+    r = r^int(zor[3,3,WHITE])   # removing the white piece placed at 3,3
+    print(r)
+    
+    
+    game.put_piece(3, 3, WHITE) # put down a white at 3,3 and recalculate the whole hash
+    g = Hash(game.node.state, zor)
+    print(g)
+    game.put_piece(3, 3, UNOCC) # revert the piece put down at 3,3
+    
+    game.update(move3)              # move3 is ((3,5), (1,1)), equilvalent to the one below
+    a = Hash(game.node.state, zor)
+    print(a)
+    
+    r = r^int(zor[3,5,BLACK]) # undo the hash at 3,5 for black so its now blank
+    r = r^int(zor[1,1,BLACK]) # hash 1,1 for black
+    print(r)
+    
+    
+if __name__ == "__main__":
+    print (timeit.timeit('"Hash(state,table)".join(str(n) for n in range(100))',number=100))
 
 
-
->>>>>>> 778417dffc0bd60922aa8397202537779d0f7469
 testrun()
 #testMemUsage()
