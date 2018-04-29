@@ -11,7 +11,7 @@ CORNER = -1  #'X'
 UNOCC = 0  #'-'
 WHITE = 1  #'O'
 BLACK = 2  #'@'
-
+WALL = 5
 
 MAP = {1:2, 2:1}
 
@@ -45,7 +45,7 @@ class Player():
         self.state[0,7] = CORNER
         self.state[7,0] = CORNER
         self.state[7,7] = CORNER
-
+        self.turns = 126
 
 
         if colour[0] == 'W':
@@ -81,19 +81,45 @@ class Player():
       return
       # placeholder initialise strategy
 
-
+    def firstShrink(self, node):
+        node.state[0, :] = WALL
+        node.state[7, :] = WALL
+        node.state[:, 0] = WALL
+        node.state[:, 7] = WALL
+        node.state[1,1] = CORNER
+        node.state[1,6] = CORNER
+        node.state[6,1] = CORNER
+        node.state[6,6] = CORNER
+    
+    
+    def secondShrink(self, node):
+        node.state[1, :] = WALL
+        node.state[7, :] = WALL
+        node.state[:, 1] = WALL
+        node.state[:, 6] = WALL
+        node.state[2,2] = CORNER
+        node.state[2,5] = CORNER
+        node.state[5,2] = CORNER
+        node.state[5,5] = CORNER
+        
     def miniMax(self, depth):
 
-        def maxValue(node, depth, alpha, beta):
+        def maxValue(node, depth, alpha, beta, turns):
+            if turns == 129:
+                self.firstShrink(node)
+            if turns == 193:
+                self.secondShrink(node)
+                
             if node.isComplete():
-                return node.calculateScore()+depth
+                return node.calculateScore()
             if depth <= 0:
                 return node.calculateScore()
 
             v = -np.inf
 
             for nextMoves in node.genChild(node.colour):
-                v = max(v, minValue(nextMoves, depth-1, alpha, beta))
+                
+                v = max(v, minValue(nextMoves, depth-1, alpha, beta, turns+1))
 #                print(nextMoves.calculateScore(), end='')
 #                print("White's move: ", end='')
 #                print(nextMoves.move)
@@ -105,17 +131,22 @@ class Player():
             return v
 
 
-        def minValue(node, depth, alpha, beta):
+        def minValue(node, depth, alpha, beta, turns):
+            if turns == 129:
+                self.firstShrink(node)
+            if turns == 193:
+                self.secondShrink(node)
+                
             if node.isComplete():
                 return node.calculateScore()
             if depth <= 0:
-                return node.calculateScore()+depth
+                return node.calculateScore()
 
             v = np.inf
 
             for nextMoves in node.genChild(MAP[node.colour]):
-
-                v = min(v, maxValue(nextMoves, depth-1, alpha, beta))
+                
+                v = min(v, maxValue(nextMoves, depth-1, alpha, beta, turns+1))
 #                print(nextMoves.calculateScore(), end='')
 
 
@@ -130,7 +161,7 @@ class Player():
         beta = np.inf
         best_action = None
         for Moves in self.node.genChild(self.player_colour):
-            v = minValue(Moves, depth-1, best_score, beta)
+            v = minValue(Moves, depth-1, best_score, beta, self.turns)
 
 
 #            print(best_score)
@@ -429,6 +460,7 @@ def testrun(me = 'WHITE'):
 #    print('before update')
     game.put_piece(4, 3, WHITE)  # example for move
     game.put_piece(2, 4, BLACK)  # example for move
+    game.put_piece(2, 2, BLACK)  # example for move
     game.put_piece(4, 7, WHITE)  # example for move
     game.put_piece(2, 5, WHITE)  # example for move
     game.put_piece(4, 6, WHITE)  # example for move
@@ -453,8 +485,20 @@ def testrun(me = 'WHITE'):
     result = game.miniMax(int(depth))
     print("The optimal move for white is: ", end='')
     print(result)
+    
+#    game.firstShrink()
+#    print(game.node.state)
+#    print(game.node.calculateScore())
+#    
+#    game.secondShrink()
+#    print(game.node.state)
+#    print(game.node.calculateScore())
+    
 #    game.update(((2, 5), (4, 5)))
 #    print(game.node.state)
 #    print(game.node.calculateScore())
+    
+    
+    
 testrun()
 #testMemUsage()

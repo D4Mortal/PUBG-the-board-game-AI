@@ -2,7 +2,8 @@
 2. Create a test program
 3. Train heuristic
 
-
+# after 110 turns, prioritize middle position due to board shrink
+# after 180 turns, same as above
 
 
 game notes
