@@ -58,17 +58,15 @@ class Player():
           self.opp_colour = WHITE
           self.node = board(self.state, None, BLACK)
 
-
+###############################################################################
 
     def put_piece(self, row, col, piece):
       self.state[row, col] = piece
 
-
+###############################################################################
+      
     def action(self, turns):
-        # turns since start of current phase
-        # placing action = (x,y)
-        # moving action = ((a,b),(c,d)) from a,b to c,d
-        # forfeit action = None
+        # This is only used by player pieces
         self.turns = turns + 1
         if self.totalTurns > 24:
             if self.countPieces(self.node) < 8:
@@ -82,25 +80,30 @@ class Player():
             # placing phase 
             self.totalTurns += 1
             return
-
-
+        
+###############################################################################
+            
+    # This is only called by enemy pieces
     def update(self, action):
         if self.node.state[action[0][0]][action[0][1]] <= 0:
             return None
         self.node.makeMove(action, self.opp_colour)
         self.totalTurns += 1
 
-
+###############################################################################
+        
     def countPieces(self, node):
         unique, counts = np.unique(node.state, return_counts=True)
         results = dict(zip(unique, counts))
         return results[self.player_colour] + results[self.opp_colour]
-
+    
+###############################################################################
 
     def initStrat(self):
       return
       # placeholder initialise strategy
-
+###############################################################################
+      
     def firstShrink(self, node):
         node.state[0, :] = WALL
         node.state[7, :] = WALL
@@ -121,6 +124,8 @@ class Player():
         node.state[2,5] = CORNER
         node.state[5,2] = CORNER
         node.state[5,5] = CORNER
+        
+###############################################################################
         
     def miniMax(self, depth):
 
@@ -288,6 +293,7 @@ class board(object):
                             state[row][col] = UNOCC
 
         return state
+    
 ###############################################################################
 
     # function that make moves on the current object, changes the current state,
@@ -339,6 +345,7 @@ class board(object):
         if score == 999 or score == -999:
             return True
         return False
+    
 ###############################################################################
 
     def checkSurr(self, board, row, col, piece):
@@ -362,7 +369,8 @@ class board(object):
                             availMoves += 1
         return availMoves
 
-
+###############################################################################
+        
     def safeMobility(self, board):
         playerMoves = 0
         oppMoves = 0
@@ -381,73 +389,46 @@ class board(object):
         return playerMoves - oppMoves
 
 ###############################################################################
+        
     def genChild(self, colour):
-
-        row = 0
         action = []
         action_tuple = ()
-        for r in self.state:
-            col = 0
-            for element in r:
-                if element == colour:
 
-                    if row + 1 < 8:
-                        if posCheck(self.state, row, col, 'D') == UNOCC:
+        for row, line in enumerate(self.state):
+            # describe up/down moves to check
+            checkCond = {'D': [row+1 < SIZE, 1, 0, row+2 < SIZE, 2, 0],
+                         'U': [row-1 >= 0, -1, 0, row-2 >= 0, -2, 0]}
 
-                            action_tuple = ((row, col), (row + 1, col))
-                            action.append(self.newMakeMove(action_tuple))
+            for col, symbol in enumerate(line):
+                # describe left/right moves to check
+                checkCond['R'] = [col+1 < SIZE, 0, 1, col+2 < SIZE, 0, 2]
+                checkCond['L'] = [col-1 >= 0, 0, -1, col-2 >= 0, 0, -2]
 
-                        elif posCheck(self.state, row, col, 'D') == WHITE or posCheck(self.state, row, col, 'D') == BLACK:
-                            if row + 2 < 8:
-                                if posCheck(self.state, row, col, '2D') == UNOCC:
-
-                                     action_tuple = ((row, col), (row + 2, col))
-                                     action.append(self.newMakeMove(action_tuple))
-
-                    if row - 1 >= 0:
-                        if posCheck(self.state, row, col, 'U') == UNOCC:
-
-                            action_tuple = ((row, col), (row - 1, col))
-                            action.append(self.newMakeMove(action_tuple))
-
-                        elif posCheck(self.state, row, col, 'U') == WHITE or posCheck(self.state, row, col, 'U') == BLACK:
-                            if row - 2 >= 0:
-                                if posCheck(self.state, row, col, '2U') == UNOCC:
-
-                                    action_tuple = ((row, col), (row - 2, col))
-                                    action.append(self.newMakeMove(action_tuple))
+                if symbol == colour:
+                    for dir in checkCond:
+                        if checkCond[dir][0]:
+                            posToCheck = posCheck(self.state, row, col, dir)
 
 
-                    if col + 1 < 8:
-                        if posCheck(self.state, row, col, 'R') == UNOCC:
+                            if posToCheck == UNOCC:
+                                tmpA = row + checkCond[dir][1]
+                                tmpB = col + checkCond[dir][2]
 
-                            action_tuple = ((row, col), (row, col + 1))
-                            action.append(self.newMakeMove(action_tuple))
+                                action_tuple = ((row, col), (tmpA, tmpB))
+                                action.append(self.newMakeMove(action_tuple))
 
-                        elif posCheck(self.state, row, col, 'R') == WHITE or posCheck(self.state, row, col, 'R') == BLACK:
-                            if col + 2 < 8:
-                                if posCheck(self.state, row, col, '2R') == UNOCC:
-
-                                    action_tuple = ((row, col), (row, col + 2))
-                                    action.append(self.newMakeMove(action_tuple))
-
-                    if col - 1 >= 0:
-                        if posCheck(self.state, row, col, 'L') == UNOCC:
-
-                            action_tuple = ((row, col), (row, col - 1))
-                            action.append(self.newMakeMove(action_tuple))
-
-                        elif posCheck(self.state, row, col, 'L') == WHITE or posCheck(self.state, row, col, 'L') == BLACK:
-                            if col - 2 >= 0:
-                                if posCheck(self.state, row, col, '2L') == UNOCC:
-
-                                    action_tuple = ((row, col), (row, col - 2))
-                                    action.append(self.newMakeMove(action_tuple))
-                col += 1
-            row += 1
-
+                            elif posToCheck == WHITE or posToCheck == BLACK:
+                                # check whether jump is possible
+                                if checkCond[dir][3]:
+                                    j = '2' + dir  # jump direction
+                                    if posCheck(self.state,row,col,j) == UNOCC:
+                                        tmpA = row + checkCond[dir][4]
+                                        tmpB = col + checkCond[dir][5]
+                                        
+                                        action_tuple = ((row, col), (tmpA, tmpB))
+                                        action.append(self.newMakeMove(action_tuple))
         return action
-
+    
 ###############################################################################
 def testMemUsage():
     gameState = np.full((SIZE, SIZE), UNOCC, dtype=int)
@@ -501,10 +482,10 @@ def testrun(me = 'WHITE'):
 #    print("The optimal move for white is: ", end='')
 #    print(result)
     
-#    print("this is the current board state at turn 126")
-#    print(game.node.state)
-#    game.action(126)
-#    print("The ideal move would be: {} for turn 127".format(game.node.move))
+    print("this is the current board state at turn 126")
+    print(game.node.state)
+    game.action(126)
+    print("The ideal move would be: {} for turn 127".format(game.node.move))
 
     
 #    game.firstShrink()
