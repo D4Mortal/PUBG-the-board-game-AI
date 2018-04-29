@@ -3,6 +3,7 @@ import numpy as np
 import sys
 from collections import defaultdict
 
+
 SIZE = 8  # board size
 
 
@@ -62,7 +63,8 @@ class Player():
 
     def put_piece(self, row, col, piece):
       self.state[row, col] = piece
-
+      
+                
     def action(self, turns):
         # turns since start of current phase
         # placing action = (x,y)
@@ -81,15 +83,65 @@ class Player():
       # placeholder initialise strategy
 
 
-    def miniMax(self):
-        # uses board class as a node to generate 
-        return
+    def miniMax(self, depth):
+        
+        def maxValue(node, depth, alpha, beta):
+            if node.isComplete():
+                return node.calculateScore()+depth
+            if depth <= 0:
+                return node.calculateScore()
+        
+            v = -np.inf
+        
+            for nextMoves in node.genChild(node.colour):
+                v = max(v, minValue(nextMoves, depth-1, alpha, beta))
+#                print(nextMoves.calculateScore(), end='')
+#                print("White's move: ", end='')
+#                print(nextMoves.move)
+#                print(nextMoves.state)
+                if v >= beta:
+                    return v     
+                alpha = max(alpha, v)
+            
+            return v
     
     
-    
-    
+        def minValue(node, depth, alpha, beta):
+            if node.isComplete():
+                return node.calculateScore()
+            if depth <= 0:
+                return node.calculateScore()+depth
+        
+            v = np.inf
+            
+            for nextMoves in node.genChild(MAP[node.colour]):
 
+                v = min(v, maxValue(nextMoves, depth-1, alpha, beta))
+#                print(nextMoves.calculateScore(), end='')
+                
+                
+#                print(nextMoves.state)
+                if v <= alpha:
+                    return v
+                beta = min(beta, v)
+                     
+            return v
+        
+        best_score = -np.inf
+        beta = np.inf
+        best_action = None
+        for Moves in self.node.genChild(self.player_colour):
+            v = minValue(Moves, depth-1, best_score, beta)
+             
+            
+#            print(best_score)
 
+            if v > best_score:
+                best_score = v
+                best_action = Moves.move
+#                print(Moves.move)
+#                print(v)
+        return best_action
 ###############################################################################
         
 # simple board class that stores the current board config and the move that brought
@@ -229,7 +281,8 @@ class board(object):
             if results[self.colour] > 2 and results[MAP[self.colour]] <= 2:
                 return 999
             else:
-                return self.colour - MAP[self.colour]
+                
+                return results[self.colour] - results[MAP[self.colour]]
         
 ###############################################################################    
     
@@ -307,7 +360,7 @@ class board(object):
             
         return action
         
-
+###############################################################################
 def testMemUsage():
     gameState = np.full((SIZE, SIZE), UNOCC, dtype=int)
 
@@ -331,39 +384,35 @@ def testrun(me = 'WHITE'):
     place = (6,5)
     null_move = None
 
-    print('before update')
-    game.put_piece(0, 1, BLACK)  # example for move
-    print()
+#    print('before update')
+    game.put_piece(4, 3, WHITE)  # example for move
+    game.put_piece(2, 4, BLACK)  # example for move
     game.put_piece(4, 7, WHITE)  # example for move
-    game.put_piece(4, 4, WHITE)  # example for move
+    game.put_piece(2, 5, WHITE)  # example for move
     game.put_piece(4, 6, WHITE)  # example for move
     game.put_piece(3, 5, BLACK)  # example for move
     game.put_piece(3, 6, BLACK)  # example for move
+#    print(game.node.state)
+#    print(game.player_colour)
+#    print(game.node.calculateScore())
+#    
+#    print(game.node.isComplete())
+    
+#    for a in game.node.genChild(BLACK):
+#        print("this this generated")
+#        print(a.state)
+#        print(a.calculateScore())
+        
+       
+    print("This is the current board config")
     print(game.node.state)
-
-    print('after update')
-    game.update(move)
-    print(game.node.state)
-    
-    print('after update 2')
-    game.update(move2)
-    print(game.node.state)
-    
-    print('after update 3')
-    game.update(move3)
-    print(game.node.state)
-    
-    print('after update 4')
-    game.update(move4)
-    print(game.node.state)
-    
-    
-    print(game.node.isComplete())
-    
-    for a in game.node.genChild(BLACK):
-        print("this this generated")
-        print(a.state)
-        print(a.calculateScore())
-    
+    depth = input("Please select a depth to search on: ")
+    print("Searching ahead for {} moves...".format(depth))
+    result = game.miniMax(int(depth))
+    print("The optimal move for white is: ", end='')
+    print(result)
+#    game.update(((2, 5), (4, 5)))
+#    print(game.node.state)
+#    print(game.node.calculateScore())
 testrun()
 #testMemUsage()
