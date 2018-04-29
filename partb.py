@@ -357,7 +357,8 @@ class board(object):
                                     action.append(self.newMakeMove(action_tuple))
                 col += 1
             row += 1
-            
+        if len(action) == 0:
+            print("no available moves")
         return action
         
 ###############################################################################
