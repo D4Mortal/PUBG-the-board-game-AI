@@ -46,7 +46,7 @@ class Player():
         self.state[7,0] = CORNER
         self.state[7,7] = CORNER
         self.turns = 126
-
+        self.totalTurns = 25
 
         if colour[0] == 'W':
           self.player_colour = WHITE
@@ -69,12 +69,32 @@ class Player():
         # placing action = (x,y)
         # moving action = ((a,b),(c,d)) from a,b to c,d
         # forfeit action = None
-        return 0
+        self.turns = turns + 1
+        if self.totalTurns > 24:
+            if self.countPieces(self.node) < 8:
+                action = self.miniMax(5)
+                self.node.makeMove(action, self.player_colour)
+            else:
+                action = self.miniMax(4)
+                self.node.makeMove(action, self.player_colour)
+            return action
+        else:
+            # placing phase 
+            self.totalTurns += 1
+            return
+
 
     def update(self, action):
         if self.node.state[action[0][0]][action[0][1]] <= 0:
             return None
-        self.node.makeMove(action)
+        self.node.makeMove(action, self.opp_colour)
+        self.totalTurns += 1
+
+
+    def countPieces(self, node):
+        unique, counts = np.unique(node.state, return_counts=True)
+        results = dict(zip(unique, counts))
+        return results[self.player_colour] + results[self.opp_colour]
 
 
     def initStrat(self):
@@ -160,17 +180,12 @@ class Player():
         best_score = -np.inf
         beta = np.inf
         best_action = None
+        
         for Moves in self.node.genChild(self.player_colour):
             v = minValue(Moves, depth-1, best_score, beta, self.turns)
-
-
-#            print(best_score)
-
             if v > best_score:
                 best_score = v
                 best_action = Moves.move
-#                print(Moves.move)
-#                print(v)
         return best_action
 ###############################################################################
 
@@ -278,7 +293,7 @@ class board(object):
     # function that make moves on the current object, changes the current state,
     # does not create a new board
 
-    def makeMove(self, action):
+    def makeMove(self, action, colour):
         action_tuple = np.array(action)
         action_size = action_tuple.size
 
@@ -288,7 +303,7 @@ class board(object):
 
         elif action_size == 2:
           #placing phase
-          self.state[action_tuple[0], action_tuple[1]] = self.opp_colour
+          self.state[action_tuple[0], action_tuple[1]] = colour
 
         elif action_size == 4:
           # moving phase
@@ -478,13 +493,19 @@ def testrun(me = 'WHITE'):
 #        print(a.calculateScore())
 
 
-    print("This is the current board config")
-    print(game.node.state)
-    depth = input("Please select a depth to search on: ")
-    print("Searching ahead for {} moves...".format(depth))
-    result = game.miniMax(int(depth))
-    print("The optimal move for white is: ", end='')
-    print(result)
+#    print("This is the current board config")
+#    print(game.node.state)
+#    depth = input("Please select a depth to search on: ")
+#    print("Searching ahead for {} moves...".format(depth))
+#    result = game.miniMax(int(depth))
+#    print("The optimal move for white is: ", end='')
+#    print(result)
+    
+#    print("this is the current board state at turn 126")
+#    print(game.node.state)
+#    game.action(126)
+#    print("The ideal move would be: {} for turn 127".format(game.node.move))
+
     
 #    game.firstShrink()
 #    print(game.node.state)
