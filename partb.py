@@ -3,16 +3,15 @@ import numpy as np
 import sys
 from collections import defaultdict
 import time 
-import operator
-
+import random
 SIZE = 8  # board size
 
 
-CORNER = 9  #'X'
+CORNER = 3  #'X'
 UNOCC = 0  #'-'
 WHITE = 1  #'O'
 BLACK = 2  #'@'
-WALL = 5
+WALL = 4
 
 MAP = {1:2, 2:1}
 
@@ -38,6 +37,27 @@ def posCheck(state, row, col, dir, return_rowcol =False):
 
 ###############################################################################
 
+def initTable():
+    ZobristTable = np.empty((8,8,5))
+    for i in range(8):
+        for j in range(8):
+            for k in range(5):
+                ZobristTable[i,j,k] = random.randint(0,10000000000000000000)
+    return ZobristTable
+
+###############################################################################
+
+# Zobrist Hashing
+def Hash(state, table):
+    value = 0
+    for i in range(8):
+        for j in range(5):
+            if state[i, j] == WHITE or state[i, j] == BLACK:
+                piece = state[i, j]
+                value ^= int(table[i, j, piece])               
+    return value
+
+###############################################################################
 class Player():
 
     def __init__(self, colour):
@@ -489,10 +509,10 @@ def testrun(me = 'WHITE'):
 #    print("The optimal move for white is: ", end='')
 #    print(result)
     
-    print("this is the current board state at turn 100")
-    print(game.node.state)
-    game.action(100)
-    print("The ideal move would be: {} for turn 127".format(game.node.move))
+#    print("this is the current board state at turn 100")
+#    print(game.node.state)
+#    game.action(100)
+#    print("The ideal move would be: {} for turn 127".format(game.node.move))
 
     
 #    game.firstShrink()
@@ -507,7 +527,11 @@ def testrun(me = 'WHITE'):
 #    print(game.node.state)
 #    print(game.node.calculateScore())
     
-    
-    
+    zor = initTable()
+    r = Hash(game.node.state, zor)
+    print(r)
+    game.put_piece(4, 3, WHITE)
+    game.put_piece(4, 3, UNOCC)
+    print(r)
 testrun()
 #testMemUsage()
