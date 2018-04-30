@@ -107,8 +107,10 @@ class Player():
         self.state[0,7] = CORNER
         self.state[7,0] = CORNER
         self.state[7,7] = CORNER
+
         self.turns = 126
         self.totalTurns = 0
+
 
         if colour[0] == 'w':
           self.player_colour = WHITE
@@ -141,30 +143,41 @@ class Player():
                 self.node.update_board_inplace(action, self.player_colour)
             return action
         else:
-            # placing phase
+           # print('activate placing')
             self.totalTurns += 1
-            return self.place_phase()
+
+            place_move = self.place_phase()
+            self.node.update_board_inplace(place_move, self.player_colour)
+
+            return place_move
+
 
 ###############################################################################
     def in_danger(self, piece):
         # return where to place to block danger
 
+        # checkCond = {'D':[row+1 < SIZE, row+2 < SIZE],
+        #              'U':[row-1 >= 0, row-2 >= 0],
+        #              'R':[col+1 < SIZE, col+2 < SIZE],
+        #              'L':[col-1 >= 0, col-2 >= 0]}
+
+        checkCond = dict()
+
+
         
         
         for row, line in enumerate(self.state):
+            checkCond['D'] = row+1 < SIZE
+            checkCond['U'] = row-1 >= 0
             for col, symbol in enumerate(line):
-                
-                checkCond = {'D':[row+1 < SIZE, row+2 < SIZE],
-                     'U':[row-1 >= 0, row-2 >= 0],
-                     'R':[col+1 < SIZE, col+2 < SIZE],
-                     'L':[col-1 >= 0, col-2 >= 0]}
-                
+                checkCond['R'] = col+1 < SIZE
+                checkCond['L'] = col-1 >= 0
                 if symbol == piece:
                     for m in checkCond:
-                        if checkCond[m][0]:
+                        if checkCond[m]:
                             row2, col2 = pos_check(board,row,col, m, return_rowcol=True)
                             newPos = self.state[row2,col2]
-                            if newPos == self.opp_colour:
+                            if newPos == MAP[piece]:
                                 if row2 == row:
                                     if col2 > col:
                                         if self.state[row, col-1] == UNOCC:
@@ -185,7 +198,6 @@ class Player():
 
 
     def place_phase(self):
-
 
         if self.state[self.place_moves[0][0], self.place_moves[0][1]] == UNOCC:
             return self.place_moves[0]
@@ -211,6 +223,7 @@ class Player():
             if kill_result != None:
                 return kill_result
 
+            if danger_result == None and kill_result == None: break
 
 
         if self.state[self.place_moves[6][0], self.place_moves[6][1]] == UNOCC:
@@ -598,14 +611,14 @@ def testrun(me = 'white'):
     null_move = None
 
 #    print('before update')
-    game.put_piece(4, 3, WHITE)  # example for move
-    game.put_piece(2, 4, BLACK)  # example for move
-    game.put_piece(2, 2, BLACK)  # example for move
-    game.put_piece(4, 7, WHITE)  # example for move
-    game.put_piece(2, 5, WHITE)  # example for move
-    game.put_piece(4, 6, WHITE)  # example for move
-    game.put_piece(3, 5, BLACK)  # example for move
-    game.put_piece(3, 6, BLACK)  # example for move
+    # game.put_piece(4, 3, WHITE)  # example for move
+    # game.put_piece(2, 4, BLACK)  # example for move
+    # game.put_piece(2, 2, BLACK)  # example for move
+    # game.put_piece(4, 7, WHITE)  # example for move
+    # game.put_piece(2, 5, WHITE)  # example for move
+    # game.put_piece(4, 6, WHITE)  # example for move
+    # game.put_piece(3, 5, BLACK)  # example for move
+    # game.put_piece(3, 6, BLACK)  # example for move
 #    print(game.node.state)
 #    print(game.player_colour)
 #    print(game.node.eval_node())
@@ -618,18 +631,30 @@ def testrun(me = 'white'):
 #        print(a.eval_node())
 
 
-#    print("This is the current board config")
-#    print(game.node.state)
-#    depth = input("Please select a depth to search on: ")
-#    print("Searching ahead for {} moves...".format(depth))
-#    result = game.miniMax(int(depth))
-#    print("The optimal move for white is: ", end='')
-#    print(result)
+
+    # print("This is the current board config")
+    # print(game.node.state)
+    # depth = input("Please select a depth to search on: ")
+    # print("Searching ahead for {} moves...".format(depth))
+    # result = game.miniMax(int(depth))
+    # print("The optimal move for white is: ", end='')
+    # print(result)
+
 #
-#    print("this is the current board state at turn 100")
-#    print(game.node.state)
-#    game.action(100)
-#    print("The ideal move would be: {} for turn 127".format(game.node.move))
+    # print("this is the current board state")
+    # print(game.node.state)
+
+    print('place test')
+
+    for i in list(range(0,24,2)):
+        print('game move', i)
+        if i == 12:
+            game.put_piece(2, 4, BLACK)
+            game.put_piece(2,5, WHITE)
+        print('total_turns', game.totalTurns)
+        print(game.node.state)
+        game.action(i)
+  #  print("The ideal move would be: {} for turn 127".format(game.node.move))
 
 
 #    game.firstShrink()
