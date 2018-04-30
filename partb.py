@@ -235,6 +235,10 @@ class Player():
 
     # This is only called by enemy pieces
     def update(self, action):
+<<<<<<< HEAD
+=======
+
+>>>>>>> 82952574c1d960dfcc974658c7ed954d1b0e0e79
         self.node.update_board_inplace(action, self.opp_colour)
         self.totalTurns += 1
 
