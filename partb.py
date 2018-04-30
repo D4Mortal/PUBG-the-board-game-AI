@@ -82,19 +82,19 @@ def zorHash(state, table):
 
 ###############################################################################
 
-def hashMove(hashValue, state, action):
+def hashMove(hashValue, colour, action):
     originPos = action[0]
     targetPos = action[1]
     newHash = copy.deepcopy(hashValue)
-    newHash = newHash^int(ZOR[originPos[0], originPos[1], state[originPos[0], originPos[1]]])
-    newHash = newHash^int(ZOR[targetPos[0], targetPos[1], state[originPos[0], originPos[1]]])
+    newHash = newHash^int(ZOR[originPos[0], originPos[1], colour])
+    newHash = newHash^int(ZOR[targetPos[0], targetPos[1], colour])
     return newHash
 
 ###############################################################################
 
-def hashRemove(hashValue, state, position):
+def hashRemove(hashValue, colour, position):
     newHash = copy.deepcopy(hashValue)
-    newHash = newHash^int(ZOR[position[0], position[1], state[position[0], position[1]]])
+    newHash = newHash^int(ZOR[position[0], position[1], colour])
     return newHash
 
 ###############################################################################
@@ -108,10 +108,11 @@ class Player():
         self.state[7,0] = CORNER
         self.state[7,7] = CORNER
 
-        self.turns = 126
+        self.turns = 100
         self.totalTurns = 0
-
-
+        self.hashTable = dict()
+        self.visited = 0
+        
         if colour[0] == 'w':
           self.player_colour = WHITE
           self.opp_colour = BLACK
@@ -235,10 +236,6 @@ class Player():
 
     # This is only called by enemy pieces
     def update(self, action):
-<<<<<<< HEAD
-=======
-
->>>>>>> 82952574c1d960dfcc974658c7ed954d1b0e0e79
         self.node.update_board_inplace(action, self.opp_colour)
         self.totalTurns += 1
 
@@ -274,23 +271,40 @@ class Player():
 
     def miniMax(self, depth):
         start = time.time()
+        currentHash = zorHash(self.node.state, ZOR)
+        
+        def maxValue(nodeInfo, depth, alpha, beta, turns, hashValue):
+            node = nodeInfo[0]
+            killed = nodeInfo[1]
 
-        def maxValue(node, depth, alpha, beta, turns):
             if turns == 129:
                 self.firstShrink(node)
-            if turns == 193:
+                nodeHash = zorHash(node.state, ZOR)
+            elif turns == 193:
                 self.secondShrink(node)
+                nodeHash = zorHash(node.state, ZOR)
+            else:
+                nodeHash = hashMove(hashValue, self.opp_colour, node.move)
+                for dead in killed:
+                    nodeHash = hashRemove(nodeHash, dead[1], dead[0])
+            
+            if nodeHash in self.hashTable:
+                nodeValue = self.hashTable[nodeHash]
+                self.visited+=1
+            else:
+                nodeValue = node.eval_node()
+                self.hashTable[nodeHash] = nodeValue
 
-            if  depth <= 0 or node.is_terminal():
-                return node.eval_node()
+            if  depth <= 0 or nodeValue == -999 or nodeValue == 999 or nodeValue == 100:
+                return nodeValue
 
             v = -np.inf
             ordered_child_nodes = sorted(node.genChild(node.colour),
-                key=lambda x: x.move_estim, reverse=True)
+                key=lambda x: x[0].move_estim, reverse=True)
 
             for child in ordered_child_nodes:
 
-                v = max(v, minValue(child, depth-1, alpha, beta, turns+1))
+                v = max(v, minValue(child, depth-1, alpha, beta, turns+1, nodeHash))
 #                print(child.eval_node(), end='')
 #                print("White's move: ", end='')
 #                print(child.move)
@@ -302,25 +316,39 @@ class Player():
             return v
 
 
-        def minValue(node, depth, alpha, beta, turns):
+        def minValue(nodeInfo, depth, alpha, beta, turns, hashValue):
+            node = nodeInfo[0]
+            killed = nodeInfo[1]
+
             if turns == 129:
                 self.firstShrink(node)
-            if turns == 193:
+                nodeHash = zorHash(node.state, ZOR)
+            elif turns == 193:
                 self.secondShrink(node)
-
-            if node.is_terminal():
-                return node.eval_node()
-            if depth <= 0:
-                return node.eval_node()
+                nodeHash = zorHash(node.state, ZOR)
+            else:
+                nodeHash = hashMove(hashValue, self.player_colour, node.move)    
+                for dead in killed:
+                    nodeHash = hashRemove(nodeHash, dead[1], dead[0])
+                
+            if nodeHash in self.hashTable:
+                nodeValue = self.hashTable[nodeHash]
+                self.visited+=1
+            else:
+                nodeValue = node.eval_node()
+                self.hashTable[nodeHash] = nodeValue
+                
+            if  depth <= 0 or nodeValue == -999 or nodeValue == 999 or nodeValue == 100:
+                return nodeValue
 
             v = np.inf
 
             ordered_child_nodes = sorted(node.genChild(MAP[node.colour]),
-                key=lambda x: x.move_estim)
+                key=lambda x: x[0].move_estim)
 
             for child in ordered_child_nodes:
 
-                v = min(v, maxValue(child, depth-1, alpha, beta, turns+1))
+                v = min(v, maxValue(child, depth-1, alpha, beta, turns+1, nodeHash))
 #                print(child.eval_node(), end='')
 #                print(child.state)
                 if v <= alpha:
@@ -334,10 +362,10 @@ class Player():
         best_action = None
 
         for child in self.node.genChild(self.player_colour):
-            v = minValue(child, depth-1, best_score, beta, self.turns)
+            v = minValue(child, depth-1, best_score, beta, self.turns, currentHash)
             if v > best_score:
                 best_score = v
-                best_action = child.move
+                best_action = child[0].move
 
         end = time.time()
         print(end - start)
@@ -379,9 +407,9 @@ class board(object):
           self.put_piece(newState, action_tuple[0][0], action_tuple[0][1], UNOCC)
           self.put_piece(newState, action_tuple[1][0], action_tuple[1][1], colour)
 
-        self.eliminate_board(newState, colour)
+        eieminated = self.eliminate_board(newState, colour)
 
-        return board(newState, action, self.colour)
+        return board(newState, action, self.colour), eieminated
 
 ###############################################################################
 
@@ -434,7 +462,7 @@ class board(object):
         '''
         returns updated board after necessary eliminations
         '''
-
+        eliminated = []
         # numpy ufunc ???
         mapping = {WHITE: [BLACK, WHITE], BLACK: [WHITE, BLACK]}
         # order of elimination
@@ -445,8 +473,8 @@ class board(object):
                     if symbol == piece:
                         if self.is_eliminated(state, row, col, piece):
                             state[row][col] = UNOCC
-
-        return state
+                            eliminated.append(((row, col), piece))
+        return eliminated
 
 ###############################################################################
 
@@ -587,7 +615,7 @@ class board(object):
 
                                         action_tuple = ((row, col), (tmpA, tmpB))
                                         child_nodes.append(self.update_board_return(action_tuple))
-
+                                  
         return child_nodes
 
 ###############################################################################
@@ -615,14 +643,14 @@ def testrun(me = 'white'):
     null_move = None
 
 #    print('before update')
-    # game.put_piece(4, 3, WHITE)  # example for move
-    # game.put_piece(2, 4, BLACK)  # example for move
-    # game.put_piece(2, 2, BLACK)  # example for move
-    # game.put_piece(4, 7, WHITE)  # example for move
-    # game.put_piece(2, 5, WHITE)  # example for move
-    # game.put_piece(4, 6, WHITE)  # example for move
-    # game.put_piece(3, 5, BLACK)  # example for move
-    # game.put_piece(3, 6, BLACK)  # example for move
+    game.put_piece(4, 3, WHITE)  # example for move
+    game.put_piece(2, 4, BLACK)  # example for move
+    game.put_piece(2, 2, BLACK)  # example for move
+    game.put_piece(4, 7, WHITE)  # example for move
+    game.put_piece(2, 5, WHITE)  # example for move
+    game.put_piece(4, 6, WHITE)  # example for move
+    game.put_piece(3, 5, BLACK)  # example for move
+    game.put_piece(3, 6, BLACK)  # example for move
 #    print(game.node.state)
 #    print(game.player_colour)
 #    print(game.node.eval_node())
@@ -636,28 +664,30 @@ def testrun(me = 'white'):
 
 
 
-    # print("This is the current board config")
-    # print(game.node.state)
-    # depth = input("Please select a depth to search on: ")
-    # print("Searching ahead for {} moves...".format(depth))
-    # result = game.miniMax(int(depth))
-    # print("The optimal move for white is: ", end='')
-    # print(result)
+    print("This is the current board config")
+    print(game.node.state)
+    depth = input("Please select a depth to search on: ")
+    print("Searching ahead for {} moves...".format(depth))
+    result = game.miniMax(int(depth))
+    print("The optimal move for white is: ", end='')
+    print(result)
+    print(len(game.hashTable))
+    print(game.visited)
+    
 
-#
     # print("this is the current board state")
     # print(game.node.state)
 
-    print('place test')
-
-    for i in list(range(0,24,2)):
-        print('game move', i)
-        if i == 12:
-            game.put_piece(2, 4, BLACK)
-            game.put_piece(2,5, WHITE)
-        print('total_turns', game.totalTurns)
-        print(game.node.state)
-        game.action(i)
+#    print('place test')
+#
+#    for i in list(range(0,24,2)):
+#        print('game move', i)
+#        if i == 12:
+#            game.put_piece(2, 4, BLACK)
+#            game.put_piece(2,5, WHITE)
+#        print('total_turns', game.totalTurns)
+#        print(game.node.state)
+#        game.action(i)
   #  print("The ideal move would be: {} for turn 127".format(game.node.move))
 
 
@@ -678,24 +708,24 @@ def testrun(me = 'white'):
     # print(game.node.eval_node())
 
 
-    r = zorHash(game.node.state, ZOR)
-    print(r)
-    print(hashMove(r, game.node.state, ((3,5), (1,1))))
-
-
-    game.update(move3)              # move3 is ((3,5), (1,1))
-    a = zorHash(game.node.state, ZOR)
-    print(a)
-
-    game.node.state[4,6] = UNOCC      # remove white piece and recalculate hash from scratch
-    a = zorHash(game.node.state, ZOR)
-    print(a)
-    
-    r = r^int(ZOR[3, 5, BLACK])     # hash the moves ((3,5), (1,1)) from initial state
-    r = r^int(ZOR[1, 1, BLACK])
-    
-    game.node.state[4,6] = WHITE    # put the white piece back in
-    print(hashRemove(r, game.node.state, (4,6))) # compute hash value from removing white piece
+#    r = zorHash(game.node.state, ZOR)
+#    print(r)
+#    print(hashMove(r, game.node.state, ((3,5), (1,1))))
+#
+#
+#    game.update(move3)              # move3 is ((3,5), (1,1))
+#    a = zorHash(game.node.state, ZOR)
+#    print(a)
+#
+#    game.node.state[4,6] = UNOCC      # remove white piece and recalculate hash from scratch
+#    a = zorHash(game.node.state, ZOR)
+#    print(a)
+#    
+#    r = r^int(ZOR[3, 5, BLACK])     # hash the moves ((3,5), (1,1)) from initial state
+#    r = r^int(ZOR[1, 1, BLACK])
+#    
+#    game.node.state[4,6] = WHITE    # put the white piece back in
+#    print(hashRemove(r, game.node.state, (4,6))) # compute hash value from removing white piece
     
 
 if __name__ == "__main__":
