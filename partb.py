@@ -61,8 +61,10 @@ def initTable():
              for k in range(5):
                  ZobristTable[i,j,k] = random.randint(0,1e19)
 
+    # print(np.random.choice(10000, size = (SIZE, SIZE, 5), replace=False))
      return ZobristTable
-#    return np.random.randint(1e5, size = (SIZE, SIZE, 5)).astype('float64')
+
+
 
 ###############################################################################
 
@@ -74,7 +76,7 @@ def zorHash(state, table):
             if state[i, j] == WHITE or state[i, j] == BLACK:
                 piece = state[i, j]
                 value = value^int(table[i, j, piece])
-                
+
 
     return value
 
@@ -112,12 +114,13 @@ class Player():
           self.player_colour = WHITE
           self.opp_colour = BLACK
           self.node = board(self.state, None, WHITE)
-
+          self.place_moves = [(2,0),(2,7),(4,0),(4,7),(5,0),(5,7),(0,2),(0,5)]
 
         else:
           self.player_colour = BLACK
           self.opp_colour = WHITE
           self.node = board(self.state, None, BLACK)
+          self.place_moves = [(5,0),(5,7),(3,0),(3,7),(2,0),(2,7),(7,2),(7,5)]
 
 ###############################################################################
 
@@ -143,6 +146,75 @@ class Player():
             return
 
 ###############################################################################
+    def in_danger(self, piece):
+        # return where to place to block danger
+        checkCond = {'D':[row+1 < SIZE, row+2 < SIZE],
+                     'U':[row-1 >= 0, row-2 >= 0],
+                     'R':[col+1 < SIZE, col+2 < SIZE],
+                     'L':[col-1 >= 0, col-2 >= 0]}
+
+        for row, line in enumerate(self.state):
+            for col, symbol in enumerate(line):
+                if symbol == piece:
+                    for m in checkCond:
+                        if checkCond[m][0]:
+                            row2, col2 = pos_check(board,row,col, m, return_rowcol=True)
+                            newPos = self.state[row2,col2]
+                            if newPos == self.opp_colour:
+                                if row2 == row:
+                                    if col2 > col:
+                                        if self.state[row, col-1] == UNOCC:
+                                            return (row, col-1)
+                                    if col2 < col:
+                                        if self.state[row, col+1] == UNOCC:
+                                            return (row, col+1)
+                                    # row opposite
+                                if col2 == col:
+                                    if row2 > row:
+                                        if self.state[row-1, col] == UNOCC:
+                                            return (row-1, col)
+                                    if row2 < row:
+                                        if self.state[row+1, col] == UNOCC:
+                                            return (row+1, col)
+        return None
+
+
+
+    def place_phase(self):
+
+
+        if self.state[self.place_moves[0][0], self.place_moves[0][1]] == UNOCC:
+            return self.place_moves[0]
+        if self.state[self.place_moves[1][0], self.place_moves[1][1]] == UNOCC:
+            return self.place_moves[1]
+
+# (self, board, row, col, piece)
+        while totalTurns < 21:
+            if self.state[self.place_moves[2][0], self.place_moves[2][1]] == UNOCC and not self.node.is_eliminated(self.state, self.place_moves[2][0], self.place_moves[2][1], self.player_colour):
+                return self.place_moves[2]
+            if self.state[self.place_moves[3][0], self.place_moves[3][1]] == UNOCC and not self.node.is_eliminated(self.state, self.place_moves[3][0], self.place_moves[3][1], self.player_colour):
+                return self.place_moves[3]
+            if self.state[self.place_moves[2][0], self.place_moves[2][1]] == self.player_colour and self.state[self.place_moves[4][0], self.place_moves[4][1]] == UNOCC:
+                return self.place_moves[4]
+            if self.state[self.place_moves[3][0], self.place_moves[3][1]] == self.player_colour and self.state[self.place_moves[5][0], self.place_moves[5][1]] == UNOCC:
+                return self.place_moves[5]
+
+            danger_result = in_danger(self.player_colour)
+            if danger_result != None:
+                return danger_result
+
+            kill_result = in_danger(self.opp_colour)
+            if kill_result != None:
+                return kill_result
+
+
+
+        if self.state[self.place_moves[6][0], self.place_moves[6][1]] == UNOCC:
+            return self.place_moves[6]
+
+        if self.state[self.place_moves[7][0], self.place_moves[7][1]] == UNOCC:
+            return self.place_moves[7]
+
 
     # This is only called by enemy pieces
     def update(self, action):
@@ -338,14 +410,6 @@ class board(object):
 ###############################################################################
 
 
-    # def place_phase(self):
-    #     if self.colour == WHITE:
-    #         moves = [(2,0),(2,7),(4,0),(4,7),(5,0),(5,7),(0,2),(0,5)]
-    #     else:
-    #         moves = [(5,0),(5,7),(3,0),(3,7),(2,0),(2,7),(7,2),(7,5)]
-
-    #     if pos_check(self.state, moves[0][0], moves[0][1], 'N') =
-
 
     def eliminate_board(self, state, colour):
         '''
@@ -427,6 +491,7 @@ class board(object):
 ###############################################################################
 
     def count_legal_moves(self, board, row, col, piece):
+        # ****
         availMoves = 0
         checkCond = {'D':[row+1 < SIZE, row+2 < SIZE],
                      'U':[row-1 >= 0, row-2 >= 0],
@@ -436,7 +501,7 @@ class board(object):
         for m in checkCond:
             if checkCond[m][0]:
                 row2, col2 = pos_check(board, row, col, m, return_rowcol=True)
-                newPos = self.state[row,col]
+                newPos = self.state[row2,col2]
 
                 if newPos == UNOCC and not self.is_eliminated(board, row2, col2, piece):
                     availMoves += 1
@@ -549,13 +614,13 @@ def testrun(me = 'white'):
 #        print(a.eval_node())
 
 
-#    print("This is the current board config")
-#    print(game.node.state)
-#    depth = input("Please select a depth to search on: ")
-#    print("Searching ahead for {} moves...".format(depth))
-#    result = game.miniMax(int(depth))
-#    print("The optimal move for white is: ", end='')
-#    print(result)
+    print("This is the current board config")
+    print(game.node.state)
+    depth = input("Please select a depth to search on: ")
+    print("Searching ahead for {} moves...".format(depth))
+    result = game.miniMax(int(depth))
+    print("The optimal move for white is: ", end='')
+    print(result)
 #
 #    print("this is the current board state at turn 100")
 #    print(game.node.state)
@@ -577,20 +642,20 @@ def testrun(me = 'white'):
 #    print(game.node.calculateScore())
 
 
-#    print(game.node.eval_node())
+    # print(game.node.eval_node())
 
-    
+
     r = zorHash(game.node.state, ZOR)
     print(r)
-    
+
 
     print(hashMove(r, game.node.state, ((3,5), (1,1))))
-    
+
 
     game.update(move3)              # move3 is ((3,5), (1,1))
     a = zorHash(game.node.state, ZOR)
     print(a)
-    
+
     game.node.state[4,6] = UNOCC
     a = zorHash(game.node.state, ZOR)
     print(a)

@@ -76,7 +76,7 @@ X - - - - - - X *
 X - - - - - - X
 - - - - - - - - ///////////////////////////////////////////////
 P - - - - - - P
-P - - - - - - P
+P - P - - - - P
 - - - - - - - -
 P - - - - - - P
 - - - - - - - - *//////////////////////////////////////////////
@@ -89,7 +89,9 @@ POS VALUES (Descending) exactly 12 placements
 
 
 loop counter to save 2 moves for the PRESERVATION
-FROM HERE: check positions below(free+not eliminated), in-danger(place), look for free kill (order priority)
+FROM HERE: check positions below(free+not eliminated)
+in-danger(place)
+look for free kill (order priority)
 (5,1) = (5,8) = 998
 (conditional between row 5,6)
 (6,1) = (6,8) = 997
