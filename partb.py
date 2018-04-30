@@ -18,13 +18,15 @@ BLACK = 2  #'@'
 CORNER = 3  #'X'
 WALL = 4
 
-MINIMAX_DEPTH = 3
+MINIMAX_DEPTH = 2
 
 PHASE1 = 24
 PHASE2 = PHASE1 + 128
 PHASE3 = PHASE2 + 64
 
 MAP = {WHITE:BLACK, BLACK:WHITE}
+
+
 
 MODS = {'R': (0, 1),  # how each direction modifies a position
         '2R': (0, 2),
@@ -37,6 +39,7 @@ MODS = {'R': (0, 1),  # how each direction modifies a position
         'N' : (0,0)}
 
 ###############################################################################
+
 def pos_check(state, row, col, dir, return_rowcol = False):
     '''
     returns symbol at a given board position (modified by direction)
@@ -52,29 +55,48 @@ def pos_check(state, row, col, dir, return_rowcol = False):
 ###############################################################################
 
 def initTable():
-    # ZobristTable = np.empty((SIZE, SIZE, 5))
-    # for i in range(SIZE):
-    #     for j in range(SIZE):
-    #         for k in range(5):
-    #             ZobristTable[i,j,k] = random.randint(0,1e5)
+     ZobristTable = np.empty((SIZE, SIZE, 5))
+     for i in range(SIZE):
+         for j in range(SIZE):
+             for k in range(5):
+                 ZobristTable[i,j,k] = random.randint(0,1e19)
 
-    # return ZobristTable
-    return np.random.randint(1e5, size = (SIZE, SIZE, 5)).astype('float64')
+     return ZobristTable
+#    return np.random.randint(1e5, size = (SIZE, SIZE, 5)).astype('float64')
 
 ###############################################################################
 
 # Zobrist Hashing
-def hash(state, table):
+def zorHash(state, table):
     value = 0
     for i in range(SIZE):
         for j in range(SIZE):
             if state[i, j] == WHITE or state[i, j] == BLACK:
                 piece = state[i, j]
                 value = value^int(table[i, j, piece])
+                
 
     return value
 
 ###############################################################################
+
+def hashMove(hashValue, state, action):
+    originPos = action[0]
+    targetPos = action[1]
+    newHash = copy.deepcopy(hashValue)
+    newHash = newHash^int(ZOR[originPos[0], originPos[1], state[originPos[0]][originPos[1]]])
+    newHash = newHash^int(ZOR[targetPos[0], targetPos[1], state[originPos[0]][originPos[1]]])
+    return newHash
+
+###############################################################################
+
+def hashRemove(hashValue, state, position):
+    newHash = copy.deepcopy(hashValue)
+    newHash = newHash^int(ZOR[position[0], position[1], state[position[0]][position[1]]])
+    return newHash
+
+###############################################################################
+
 class Player():
 
     def __init__(self, colour):
@@ -534,11 +556,11 @@ def testrun(me = 'white'):
 #    result = game.miniMax(int(depth))
 #    print("The optimal move for white is: ", end='')
 #    print(result)
-
-    print("this is the current board state at turn 100")
-    print(game.node.state)
-    game.action(100)
-    print("The ideal move would be: {} for turn 127".format(game.node.move))
+#
+#    print("this is the current board state at turn 100")
+#    print(game.node.state)
+#    game.action(100)
+#    print("The ideal move would be: {} for turn 127".format(game.node.move))
 
 
 #    game.firstShrink()
@@ -557,37 +579,29 @@ def testrun(me = 'white'):
 
 #    print(game.node.eval_node())
 
-
-    zor = initTable()
-    r = hash(game.node.state, zor)
+    
+    r = zorHash(game.node.state, ZOR)
     print(r)
+    
 
-    r = r^int(zor[3,3,WHITE])   # same as putting down a white piece at 3,3
-    print(r)
+    print(hashMove(r, game.node.state, ((3,5), (1,1))))
+    
 
-
-    r = r^int(zor[3,3,WHITE])   # removing the white piece placed at 3,3
-    print(r)
-
-
-    game.put_piece(3, 3, WHITE) # put down a white at 3,3 and recalculate the whole hash
-    g = hash(game.node.state, zor)
-    print(g)
-    game.put_piece(3, 3, UNOCC) # revert the piece put down at 3,3
-
-    game.update(move3)              # move3 is ((3,5), (1,1)), equilvalent to the one below
-    a = hash(game.node.state, zor)
+    game.update(move3)              # move3 is ((3,5), (1,1))
+    a = zorHash(game.node.state, ZOR)
     print(a)
+    
+    game.node.state[4,6] = UNOCC
+    a = zorHash(game.node.state, ZOR)
+    print(a)
+    print(r^int(ZOR[4, 6, UNOCC]))
 
-    r = r^int(zor[3,5,BLACK]) # undo the hash at 3,5 for black so its now blank
-    r = r^int(zor[1,1,BLACK]) # hash 1,1 for black
-    print(r)
 
 
 if __name__ == "__main__":
-    print (timeit.timeit('"Hash(state,table)".join(str(n) for n in range(100))',number=100))
+    print (timeit.timeit('"zorHash(state,table)".join(str(n) for n in range(100))',number=100))
+    print (timeit.timeit('"hash(state,table)".join(str(n) for n in range(100))',number=100))
 
-
-
+ZOR = initTable()
 testrun()
 #testMemUsage()
