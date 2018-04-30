@@ -227,8 +227,7 @@ class Player():
 
     # This is only called by enemy pieces
     def update(self, action):
-        if self.node.state[action[0][0], action[0][1]] <= 0:
-            return None
+
         self.node.update_board_inplace(action, self.opp_colour)
         self.totalTurns += 1
 
