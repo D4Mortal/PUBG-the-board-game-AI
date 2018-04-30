@@ -86,15 +86,15 @@ def hashMove(hashValue, state, action):
     originPos = action[0]
     targetPos = action[1]
     newHash = copy.deepcopy(hashValue)
-    newHash = newHash^int(ZOR[originPos[0], originPos[1], state[originPos[0]][originPos[1]]])
-    newHash = newHash^int(ZOR[targetPos[0], targetPos[1], state[originPos[0]][originPos[1]]])
+    newHash = newHash^int(ZOR[originPos[0], originPos[1], state[originPos[0], originPos[1]]])
+    newHash = newHash^int(ZOR[targetPos[0], targetPos[1], state[originPos[0], originPos[1]]])
     return newHash
 
 ###############################################################################
 
 def hashRemove(hashValue, state, position):
     newHash = copy.deepcopy(hashValue)
-    newHash = newHash^int(ZOR[position[0], position[1], state[position[0]][position[1]]])
+    newHash = newHash^int(ZOR[position[0], position[1], state[position[0], position[1]]])
     return newHash
 
 ###############################################################################
@@ -108,7 +108,7 @@ class Player():
         self.state[7,0] = CORNER
         self.state[7,7] = CORNER
         self.turns = 126
-        self.totalTurns = PHASE1 + 1
+        self.totalTurns = 0
 
         if colour[0] == 'w':
           self.player_colour = WHITE
@@ -143,18 +143,22 @@ class Player():
         else:
             # placing phase
             self.totalTurns += 1
-            return
+            return self.place_phase()
 
 ###############################################################################
     def in_danger(self, piece):
         # return where to place to block danger
-        checkCond = {'D':[row+1 < SIZE, row+2 < SIZE],
+
+        
+        
+        for row, line in enumerate(self.state):
+            for col, symbol in enumerate(line):
+                
+                checkCond = {'D':[row+1 < SIZE, row+2 < SIZE],
                      'U':[row-1 >= 0, row-2 >= 0],
                      'R':[col+1 < SIZE, col+2 < SIZE],
                      'L':[col-1 >= 0, col-2 >= 0]}
-
-        for row, line in enumerate(self.state):
-            for col, symbol in enumerate(line):
+                
                 if symbol == piece:
                     for m in checkCond:
                         if checkCond[m][0]:
@@ -189,7 +193,7 @@ class Player():
             return self.place_moves[1]
 
 # (self, board, row, col, piece)
-        while totalTurns < 21:
+        while self.totalTurns < 21:
             if self.state[self.place_moves[2][0], self.place_moves[2][1]] == UNOCC and not self.node.is_eliminated(self.state, self.place_moves[2][0], self.place_moves[2][1], self.player_colour):
                 return self.place_moves[2]
             if self.state[self.place_moves[3][0], self.place_moves[3][1]] == UNOCC and not self.node.is_eliminated(self.state, self.place_moves[3][0], self.place_moves[3][1], self.player_colour):
@@ -199,11 +203,11 @@ class Player():
             if self.state[self.place_moves[3][0], self.place_moves[3][1]] == self.player_colour and self.state[self.place_moves[5][0], self.place_moves[5][1]] == UNOCC:
                 return self.place_moves[5]
 
-            danger_result = in_danger(self.player_colour)
+            danger_result = self.in_danger(self.player_colour)
             if danger_result != None:
                 return danger_result
 
-            kill_result = in_danger(self.opp_colour)
+            kill_result = self.in_danger(self.opp_colour)
             if kill_result != None:
                 return kill_result
 
@@ -218,8 +222,6 @@ class Player():
 
     # This is only called by enemy pieces
     def update(self, action):
-        if self.node.state[action[0][0], action[0][1]] <= 0:
-            return None
         self.node.update_board_inplace(action, self.opp_colour)
         self.totalTurns += 1
 
@@ -464,6 +466,8 @@ class board(object):
             return -999
         if results[self.colour] > 2 and results[MAP[self.colour]] <= 2:
             return 999
+        if results[self.colour] <= 2 and results[MAP[self.colour]] <= 2:
+            return 100
         else:
             f1= results[self.colour] - results[MAP[self.colour]]
             f2 = self.safeMobility(self.state)
@@ -484,7 +488,7 @@ class board(object):
 
     def is_terminal(self):
         score = self.eval_node()
-        if score == 999 or score == -999:
+        if score == 999 or score == -999 or score == 100:
             return True
         return False
 
@@ -614,13 +618,13 @@ def testrun(me = 'white'):
 #        print(a.eval_node())
 
 
-    print("This is the current board config")
-    print(game.node.state)
-    depth = input("Please select a depth to search on: ")
-    print("Searching ahead for {} moves...".format(depth))
-    result = game.miniMax(int(depth))
-    print("The optimal move for white is: ", end='')
-    print(result)
+#    print("This is the current board config")
+#    print(game.node.state)
+#    depth = input("Please select a depth to search on: ")
+#    print("Searching ahead for {} moves...".format(depth))
+#    result = game.miniMax(int(depth))
+#    print("The optimal move for white is: ", end='')
+#    print(result)
 #
 #    print("this is the current board state at turn 100")
 #    print(game.node.state)
@@ -647,8 +651,6 @@ def testrun(me = 'white'):
 
     r = zorHash(game.node.state, ZOR)
     print(r)
-
-
     print(hashMove(r, game.node.state, ((3,5), (1,1))))
 
 
@@ -656,12 +658,16 @@ def testrun(me = 'white'):
     a = zorHash(game.node.state, ZOR)
     print(a)
 
-    game.node.state[4,6] = UNOCC
+    game.node.state[4,6] = UNOCC      # remove white piece and recalculate hash from scratch
     a = zorHash(game.node.state, ZOR)
     print(a)
-    print(r^int(ZOR[4, 6, UNOCC]))
-
-
+    
+    r = r^int(ZOR[3, 5, BLACK])     # hash the moves ((3,5), (1,1)) from initial state
+    r = r^int(ZOR[1, 1, BLACK])
+    
+    game.node.state[4,6] = WHITE    # put the white piece back in
+    print(hashRemove(r, game.node.state, (4,6))) # compute hash value from removing white piece
+    
 
 if __name__ == "__main__":
     print (timeit.timeit('"zorHash(state,table)".join(str(n) for n in range(100))',number=100))
