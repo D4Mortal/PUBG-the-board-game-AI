@@ -7,10 +7,11 @@
 
 
 game notes
+reason to not use monte carlo: Very simple game, easy to evaluate game state, minimax is more suitable
 
 OPTIMISATIONS
 bitboards NOPE
-transposition table: can be used to store expanded moves, since the opponent is likely to play the move that's expanded, it would sav time
+transposition table: can be used to store expanded moves, since the opponent is likely to play the move that's expanded, it would sav time, reusable tree. Also it's very likely a state is being generated multiple times in the same search.
 numpy array
 class __slots__
 minimax (alpha-beta)

@@ -111,6 +111,7 @@ class Player():
         self.turns = 100
         self.totalTurns = 0
         self.hashTable = dict()
+        self.abHash = dict()
         self.visited = 0
         
         if colour[0] == 'w':
@@ -291,14 +292,20 @@ class Player():
             if nodeHash in self.hashTable:
                 nodeValue = self.hashTable[nodeHash]
                 self.visited+=1
+                if nodeHash in self.abHash:
+                    if turns == self.abHash[nodeHash][1]:
+                        alpha, beta = self.abHash[nodeHash][0]
             else:
                 nodeValue = node.eval_node()
                 self.hashTable[nodeHash] = nodeValue
-
+                if alpha != -np.inf and beta != np.inf:
+                    self.abHash[nodeHash] = ((alpha, beta), turns)
+                
             if  depth <= 0 or nodeValue == -999 or nodeValue == 999 or nodeValue == 100:
                 return nodeValue
-
+            
             v = -np.inf
+
             ordered_child_nodes = sorted(node.genChild(node.colour),
                 key=lambda x: x[0].move_estim, reverse=True)
 
@@ -334,15 +341,20 @@ class Player():
             if nodeHash in self.hashTable:
                 nodeValue = self.hashTable[nodeHash]
                 self.visited+=1
+                if nodeHash in self.abHash:
+                    if turns == self.abHash[nodeHash][1]:
+                        alpha, beta = self.abHash[nodeHash][0]
+                    
             else:
                 nodeValue = node.eval_node()
                 self.hashTable[nodeHash] = nodeValue
+                if alpha != -np.inf and beta != np.inf:
+                    self.abHash[nodeHash] = ((alpha, beta), turns)
                 
             if  depth <= 0 or nodeValue == -999 or nodeValue == 999 or nodeValue == 100:
                 return nodeValue
 
             v = np.inf
-
             ordered_child_nodes = sorted(node.genChild(MAP[node.colour]),
                 key=lambda x: x[0].move_estim)
 
@@ -673,7 +685,7 @@ def testrun(me = 'white'):
     print(result)
     print(len(game.hashTable))
     print(game.visited)
-    
+    print(sys.getsizeof(game.hashTable))
 
     # print("this is the current board state")
     # print(game.node.state)
