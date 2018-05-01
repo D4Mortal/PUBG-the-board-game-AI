@@ -647,8 +647,8 @@ def testrun(me = 'white'):
     game = Player(me)
 
     # update board tests
-    move = ((0,1), (3,4))
-    move2 = ((3,4), (6,6))
+    move = ((2,5), (2,6))
+    move2 = ((2,4), (3,4))
     move3 = ((3,5), (1,1))
     move4 = ((6,6),(5,6))
     place = (6,5)
@@ -683,8 +683,15 @@ def testrun(me = 'white'):
     result = game.miniMax(int(depth))
     print("The optimal move for white is: ", end='')
     print(result)
+    print(sys.getsizeof(game.hashTable))
+    print(game.visited)
+    
+    game.update(move)
+    game.update(move2)
+    game.miniMax(5)
     print(len(game.hashTable))
     print(game.visited)
+    
     print(sys.getsizeof(game.hashTable))
 
     # print("this is the current board state")

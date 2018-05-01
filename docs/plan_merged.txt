@@ -13,11 +13,12 @@ OPTIMISATIONS
 bitboards NOPE
 transposition table: can be used to store expanded moves, since the opponent is likely to play the move that's expanded, it would sav time, reusable tree. Also it's very likely a state is being generated multiple times in the same search.
 numpy array
+iterative deepening: tested to be unsuitable for this particular game, main overhead is from generating nodes rather than evaluating score as a transposition table is used. Can simply estimate the ideal depth to search.
 class __slots__
 minimax (alpha-beta)
 Principal variation search nagascout
 negamax
-
+limit moves searched (reduce branching factor)
 disable eval towards end of game
 
 https://en.wikipedia.org/wiki/Quiescence_search DONE
