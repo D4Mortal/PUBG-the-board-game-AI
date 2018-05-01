@@ -150,12 +150,12 @@ class Player():
 #            print(self.node.state)
             if self.countPieces(self.node) < 8:
                 self.totalTurns += 1
-                action = self.miniMax(2)
+                action = self.miniMax(3)
                 self.node.update_board_inplace(action, self.player_colour)
 
             else:
                 self.totalTurns += 1
-                action = self.miniMax(1)
+                action = self.miniMax(3)
                 self.node.update_board_inplace(action, self.player_colour)
             return ((action[0][1], action[0][0]), (action[1][1], action[1][0]))
         else:

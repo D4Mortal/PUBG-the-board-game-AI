@@ -53,7 +53,7 @@ def removePieceInOrder(state, colour):
 def testRun(random = False):
 
     game = Player('white')
-    if not random:
+    if random:
         file = open("test_result_random.txt", "w")
 
     else:
@@ -123,4 +123,4 @@ def testRun(random = False):
 
 
 
-testRun(True)
+testRun(False)
