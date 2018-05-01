@@ -2,11 +2,10 @@ import copy
 import numpy as np
 import sys
 
-from collections import defaultdict
 
 import time
 import random
-import timeit
+
 
 
 
@@ -73,7 +72,7 @@ def zorHash(state, table):
     value = 0
     for i in range(SIZE):
         for j in range(SIZE):
-            if state[i, j] == WHITE or state[i, j] == BLACK:
+            if state[i, j] != UNOCC:
                 piece = state[i, j]
                 value = value^int(table[i, j, piece])
 
@@ -138,9 +137,12 @@ class Player():
         self.turns = turns + 1
         if self.totalTurns > PHASE1:
             if self.countPieces(self.node) < 8:
+                self.totalTurns += 1
                 action = self.miniMax(MINIMAX_DEPTH)
                 self.node.update_board_inplace(action, self.player_colour)
+                
             else:
+                self.totalTurns += 1
                 action = self.miniMax(MINIMAX_DEPTH)
                 self.node.update_board_inplace(action, self.player_colour)
             return action
@@ -272,7 +274,14 @@ class Player():
 
     def miniMax(self, depth):
         start = time.time()
-        currentHash = zorHash(self.node.state, ZOR)
+
+        if self.turns == 129 or self.turns == 130:
+            self.firstShrink(self.node)
+                
+        elif self.turns == 193 or self.turns == 194:
+            self.secondShrink(self.node)
+            
+        currentHash = zorHash(self.node.state, ZOR)    
         
         def maxValue(nodeInfo, depth, alpha, beta, turns, hashValue):
             node = nodeInfo[0]
@@ -519,11 +528,11 @@ class board(object):
 
     def eval_node(self):
         results = np.bincount(self.state.ravel())
-        if results[self.colour] <= 2 and results[MAP[self.colour]] > 2:
+        if results[self.colour] < 2 and results[MAP[self.colour]] >= 2:
             return -999
-        if results[self.colour] > 2 and results[MAP[self.colour]] <= 2:
+        if results[self.colour] >= 2 and results[MAP[self.colour]] < 2:
             return 999
-        if results[self.colour] <= 2 and results[MAP[self.colour]] <= 2:
+        if results[self.colour] < 2 and results[MAP[self.colour]] < 2:
             return 100
         else:
             f1= results[self.colour] - results[MAP[self.colour]]
@@ -656,13 +665,33 @@ def testrun(me = 'white'):
 
 #    print('before update')
     game.put_piece(4, 3, WHITE)  # example for move
-    game.put_piece(2, 4, BLACK)  # example for move
-    game.put_piece(2, 2, BLACK)  # example for move
     game.put_piece(4, 7, WHITE)  # example for move
     game.put_piece(2, 5, WHITE)  # example for move
     game.put_piece(4, 6, WHITE)  # example for move
+    game.put_piece(1, 1, WHITE)  # example for move
+    game.put_piece(0, 3, WHITE)  # example for move
+    game.put_piece(2, 0, WHITE)  # example for move
+    game.put_piece(6, 3, WHITE)  # example for move
+    game.put_piece(0, 5, WHITE)  # example for move
+    game.put_piece(5, 0, WHITE)  # example for move
+    game.put_piece(4, 1, WHITE)  # example for move
+    game.put_piece(6, 7, WHITE)  # example for move
+    
+    
+    game.put_piece(2, 4, BLACK)  # example for move
+    game.put_piece(2, 2, BLACK)  # example for move
     game.put_piece(3, 5, BLACK)  # example for move
     game.put_piece(3, 6, BLACK)  # example for move
+    game.put_piece(3, 1, BLACK)  # example for move
+    game.put_piece(3, 3, BLACK)  # example for move
+    game.put_piece(5, 4, BLACK)  # example for move
+    game.put_piece(3, 5, BLACK)  # example for move
+    game.put_piece(0, 1, BLACK)  # example for move
+    game.put_piece(2, 7, BLACK)  # example for move
+    game.put_piece(7, 1, BLACK)  # example for move
+    game.put_piece(7, 4, BLACK)  # example for move
+    game.put_piece(6, 6, BLACK)  # example for move
+    
 #    print(game.node.state)
 #    print(game.player_colour)
 #    print(game.node.eval_node())
@@ -686,11 +715,7 @@ def testrun(me = 'white'):
     print(sys.getsizeof(game.hashTable))
     print(game.visited)
     
-    game.update(move)
-    game.update(move2)
-    game.miniMax(5)
-    print(len(game.hashTable))
-    print(game.visited)
+
     
     print(sys.getsizeof(game.hashTable))
 
@@ -747,10 +772,8 @@ def testrun(me = 'white'):
 #    print(hashRemove(r, game.node.state, (4,6))) # compute hash value from removing white piece
     
 
-if __name__ == "__main__":
-    print (timeit.timeit('"zorHash(state,table)".join(str(n) for n in range(100))',number=100))
-    print (timeit.timeit('"hash(state,table)".join(str(n) for n in range(100))',number=100))
+
 
 ZOR = initTable()
-testrun()
+#testrun()
 #testMemUsage()
