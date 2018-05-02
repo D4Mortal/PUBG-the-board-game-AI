@@ -112,7 +112,9 @@ class Player():
         self.hashTable = dict()
         self.abHash = dict()
         self.visited = 0
-
+        self.firstAlreadyShrank = False
+        self.secondAlreadyShrank = False
+        
         if colour[0] == 'w':
           self.player_colour = WHITE
           self.opp_colour = BLACK
@@ -135,27 +137,29 @@ class Player():
 ###############################################################################
 
     def action(self, turns):
-        if turns == 129 or turns == 128:
+        if turns == 128:
             self.firstShrink(self.node)
             self.node.shrinkKill1()
 
-        if turns == 193 or turns == 192:
+
+        if turns == 192:
             self.secondShrink(self.node)
             self.node.shrinkKill2()
+
             
         # This is only used by player pieces
         self.turns = turns + 1
-        
+        print(self.node.state)
         if self.totalTurns > PHASE1:
 #            print(self.node.state)
-            if self.countPieces(self.node) < 8:
+            if self.countPieces(self.node) < 18:
                 self.totalTurns += 1
-                action = self.miniMax(3)
+                action = self.miniMax(2)
                 self.node.update_board_inplace(action, self.player_colour)
 
             else:
                 self.totalTurns += 1
-                action = self.miniMax(3)
+                action = self.miniMax(2)
                 self.node.update_board_inplace(action, self.player_colour)
             return ((action[0][1], action[0][0]), (action[1][1], action[1][0]))
         else:
@@ -255,6 +259,14 @@ class Player():
         action_tuple = np.array(action)
         size = action_tuple.size
         if size == 4:
+            if self.turns == 128:              
+                self.firstShrink(self.node)
+                self.node.shrinkKill1()
+
+                
+            if self.turns == 192:
+                self.secondShrink(self.node)
+                self.node.shrinkKill2()
             newAction1 = action[0][1], action[0][0]
             newAction2 = action[1][1], action[1][0]
             actionTup = (newAction1, newAction2)

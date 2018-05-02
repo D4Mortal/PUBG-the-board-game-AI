@@ -26,6 +26,7 @@ def main():
     # now, play the game!
     player, opponent = white, black # white has first move
     print(game)
+    start = time.time()
     while game.playing():
         if options.delay:
             time.sleep(options.delay)
@@ -42,9 +43,9 @@ def main():
         opponent.update(action)
         # other player's turn!
         player, opponent = opponent, player
-
+    end = time.time()
     print(f'winner: {game.winner}!')
-
+    print("total time taken: {}".format(end-start))
 # --------------------------------------------------------------------------- #
 
 # OPTIONS
