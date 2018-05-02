@@ -169,7 +169,7 @@ class Player():
 
         else:
             self.totalTurns += 1
-            place_move = self.miniMaxPlace(3)
+            place_move = self.place_phase()
             self.node.update_board_inplace(place_move, self.player_colour)
 
             return place_move[::-1]
