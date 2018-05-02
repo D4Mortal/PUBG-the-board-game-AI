@@ -13,7 +13,7 @@ BLACK = 2  #'@'
 CORNER = 3  #'X'
 WALL = 4
 
-MINIMAX_DEPTH_1 = 1
+MINIMAX_DEPTH_1 = 3
 MINIMAX_DEPTH_2 = 4
 GO_HARD = 8  # change minimax depth player pieces
 
@@ -75,7 +75,7 @@ def zorHash(state, table):
 def hashMove(hashValue, colour, action):
     originPos = action[0]
     targetPos = action[1]
-    newHash = copy.deepcopy(hashValue)
+    newHash = copy.copy(hashValue)
     newHash = newHash^int(ZOR[originPos[0], originPos[1], colour])
     newHash = newHash^int(ZOR[targetPos[0], targetPos[1], colour])
     return newHash
@@ -83,7 +83,7 @@ def hashMove(hashValue, colour, action):
 ###############################################################################
 
 def hashRemove(hashValue, colour, position):
-    newHash = copy.deepcopy(hashValue)
+    newHash = copy.copy(hashValue)
     newHash = newHash^int(ZOR[position[0], position[1], colour])
     return newHash
 
@@ -292,7 +292,8 @@ class Player():
     #     node.state[5,5] = CORNER
 
 ###############################################################################
-
+    def put_piece(self, row, col, piece):
+      self.state[row, col] = piece
     def miniMax(self, depth):
         start = time.time()
         currentHash = zorHash(self.node.state, ZOR)
@@ -439,13 +440,13 @@ class board(object):
         self.move_estim = self.pvs_estim()
 
 ###############################################################################
-
+         
     # function that returns a new board object created from the specified move
     def update_board_return(self, action):
-        newState = copy.deepcopy(self.state)
+        newState = np.copy(self.state)
         action_tuple = np.array(action)
         action_size = action_tuple.size
-
+        
         if action_size == 1:
           return
 
@@ -455,15 +456,16 @@ class board(object):
 
         elif action_size == 4:
           # moving phase
-          colour = self.state[action[0][0]][action[0][1]]
+          colour = self.state[action[0][0], action[0][1]]
           # self.put_piece(newState, action_tuple[0][0], action_tuple[0][1], UNOCC)
           # self.put_piece(newState, action_tuple[1][0], action_tuple[1][1], colour)
           newState[action_tuple[0][0], action_tuple[0][1]] = UNOCC
-          newState[action_tuple[1][0], action_tuple[1][1]] = UNOCC
+          newState[action_tuple[1][0], action_tuple[1][1]] = colour
 
         eieminated = self.eliminate_board(newState, colour)
         # print('dog', eieminated)
         # why is this always empty?
+        # hahaha fixed
         return board(newState, action, self.colour), eieminated
 
 ###############################################################################
@@ -473,28 +475,29 @@ class board(object):
         check whether the given piece will be eliminated by the corner
             and/or surrounding opponents
         '''
+        Opp = MAP[piece]
         if row == 0 or row == 7:
             checkLeft = pos_check(board, row, col, 'L')
             checkRight = pos_check(board, row, col, 'R')
-            if checkLeft == MAP[piece] or checkLeft == CORNER:
-                if checkRight == MAP[piece] or checkRight == CORNER:
+            if checkLeft == Opp or checkLeft == CORNER:
+                if checkRight == Opp or checkRight == CORNER:
                     return True
 
         elif col == 0 or col == 7:
             checkUp = pos_check(board, row, col, 'U')
             checkDown = pos_check(board, row, col, 'D')
-            if checkUp == MAP[piece] or checkUp == CORNER:
-                if checkDown == MAP[piece] or checkDown == CORNER:
+            if checkUp == Opp or checkUp == CORNER:
+                if checkDown == Opp or checkDown == CORNER:
                     return True
 
         else:
             # generate positions to check
             check = [pos_check(board,row,col,i) for i in ['L','R','U','D']]
-            if check[0] == MAP[piece] or check[0] == CORNER:
-                if check[1] == MAP[piece] or check[1] == CORNER:
+            if check[0] == Opp or check[0] == CORNER:
+                if check[1] == Opp or check[1] == CORNER:
                     return True
-            if check[2] == MAP[piece] or check[2] == CORNER:
-                if check[3] == MAP[piece] or check[3] == CORNER:
+            if check[2] == Opp or check[2] == CORNER:
+                if check[3] == Opp or check[3] == CORNER:
                     return True
 
         return False
@@ -659,8 +662,8 @@ class board(object):
 
         return playerMoves - oppMoves
 
-###############################################################################
-
+###############################################################################        
+        
     def genChild(self, colour):
         child_nodes = []
         action_tuple = ()
@@ -730,34 +733,33 @@ def testrun(me = 'white'):
     null_move = None
 
 #    print('before update')
-    # game.put_piece(4, 3, WHITE)  # example for move
-    # game.put_piece(4, 7, WHITE)  # example for move
-    # game.put_piece(2, 5, WHITE)  # example for move
-    # game.put_piece(4, 6, WHITE)  # example for move
-    # game.put_piece(1, 1, WHITE)  # example for move
-    # game.put_piece(0, 3, WHITE)  # example for move
-    # game.put_piece(2, 0, WHITE)  # example for move
-    # game.put_piece(6, 3, WHITE)  # example for move
-    # game.put_piece(0, 5, WHITE)  # example for move
-    # game.put_piece(5, 0, WHITE)  # example for move
-    # game.put_piece(4, 1, WHITE)  # example for move
-    # game.put_piece(6, 7, WHITE)  # example for move
+    game.put_piece(4, 3, WHITE)  # example for move
+    game.put_piece(4, 7, WHITE)  # example for move
+    game.put_piece(2, 5, WHITE)  # example for move
+    game.put_piece(4, 6, WHITE)  # example for move
+    game.put_piece(1, 1, WHITE)  # example for move
+    game.put_piece(0, 3, WHITE)  # example for move
+    game.put_piece(2, 0, WHITE)  # example for move
+    game.put_piece(6, 3, WHITE)  # example for move
+    game.put_piece(0, 5, WHITE)  # example for move
+    game.put_piece(5, 0, WHITE)  # example for move
+    game.put_piece(4, 1, WHITE)  # example for move
+    game.put_piece(6, 7, WHITE)  # example for move
 
 
-    # game.put_piece(2, 4, BLACK)  # example for move
-    # game.put_piece(2, 2, BLACK)  # example for move
-    # game.put_piece(3, 5, BLACK)  # example for move
-    # game.put_piece(3, 6, BLACK)  # example for move
-    # game.put_piece(3, 1, BLACK)  # example for move
-    # game.put_piece(3, 3, BLACK)  # example for move
-    # game.put_piece(5, 4, BLACK)  # example for move
-    # game.put_piece(3, 5, BLACK)  # example for move
-    # game.put_piece(0, 1, BLACK)  # example for move
-    # game.put_piece(2, 7, BLACK)  # example for move
-    # game.put_piece(7, 1, BLACK)  # example for move
-    # game.put_piece(7, 4, BLACK)  # example for move
-    # game.put_piece(6, 6, BLACK)  # example for move
-
+    game.put_piece(2, 4, BLACK)  # example for move
+    game.put_piece(2, 2, BLACK)  # example for move
+    game.put_piece(3, 5, BLACK)  # example for move
+    game.put_piece(3, 6, BLACK)  # example for move
+    game.put_piece(3, 1, BLACK)  # example for move
+    game.put_piece(3, 3, BLACK)  # example for move
+    game.put_piece(5, 4, BLACK)  # example for move
+    game.put_piece(3, 5, BLACK)  # example for move
+    game.put_piece(0, 1, BLACK)  # example for move
+    game.put_piece(2, 7, BLACK)  # example for move
+    game.put_piece(7, 1, BLACK)  # example for move
+    game.put_piece(7, 4, BLACK)  # example for move
+    game.put_piece(6, 6, BLACK)  # example for move
 #    print(game.node.state)
 #    print(game.player_colour)
 #    print(game.node.eval_node())
@@ -771,15 +773,15 @@ def testrun(me = 'white'):
 
 
 
-#     print("This is the current board config")
-#     print(game.node.state)
-#     depth = input("Please select a depth to search on: ")
-#     print("Searching ahead for {} moves...".format(depth))
-#     result = game.miniMax(int(depth))
-#     print("The optimal move for white is: ", end='')
-#     print(result)
-#     print(sys.getsizeof(game.hashTable))
-#     print(game.visited)
+    print("This is the current board config")
+    print(game.node.state)
+    depth = input("Please select a depth to search on: ")
+    print("Searching ahead for {} moves...".format(depth))
+    result = game.miniMax(int(depth))
+    print("The optimal move for white is: ", end='')
+    print(result)
+    print(sys.getsizeof(game.hashTable))
+    print(game.visited)
 
 
 # #
@@ -841,5 +843,5 @@ def testrun(me = 'white'):
 
 
 
-#testrun()
+testrun()
 #testMemUsage()

@@ -1,12 +1,8 @@
 import copy
-import numpy as np
 import sys
-
-
 import time
 import random
-
-
+import numpy as np
 
 
 SIZE = 8  # board size
@@ -17,14 +13,15 @@ BLACK = 2  #'@'
 CORNER = 3  #'X'
 WALL = 4
 
-MINIMAX_DEPTH = 1
+MINIMAX_DEPTH_1 = 3
+MINIMAX_DEPTH_2 = 4
+GO_HARD = 8  # change minimax depth player pieces
 
 PHASE1 = 23
 PHASE2 = PHASE1 + 128
 PHASE3 = PHASE2 + 64
 
 MAP = {WHITE:BLACK, BLACK:WHITE}
-
 
 
 MODS = {'R': (0, 1),  # how each direction modifies a position
@@ -45,11 +42,9 @@ def pos_check(state, row, col, dir, return_rowcol = False):
     '''
     x, y = row + MODS[dir][0], col + MODS[dir][1]
 
-    if return_rowcol:
-        return x, y
+    if return_rowcol: return x, y
 
     return state[x, y]
-
 
 ###############################################################################
 
@@ -60,14 +55,10 @@ def initTable():
              for k in range(5):
                  ZobristTable[i,j,k] = random.randint(0,1e19)
 
-    # print(np.random.choice(10000, size = (SIZE, SIZE, 5), replace=False))
      return ZobristTable
-
-
 
 ###############################################################################
 
-# Zobrist Hashing
 def zorHash(state, table):
     value = 0
     for i in range(SIZE):
@@ -84,7 +75,7 @@ def zorHash(state, table):
 def hashMove(hashValue, colour, action):
     originPos = action[0]
     targetPos = action[1]
-    newHash = copy.deepcopy(hashValue)
+    newHash = copy.copy(hashValue)
     newHash = newHash^int(ZOR[originPos[0], originPos[1], colour])
     newHash = newHash^int(ZOR[targetPos[0], targetPos[1], colour])
     return newHash
@@ -92,7 +83,7 @@ def hashMove(hashValue, colour, action):
 ###############################################################################
 
 def hashRemove(hashValue, colour, position):
-    newHash = copy.deepcopy(hashValue)
+    newHash = copy.copy(hashValue)
     newHash = newHash^int(ZOR[position[0], position[1], colour])
     return newHash
 
@@ -112,8 +103,7 @@ class Player():
         self.hashTable = dict()
         self.abHash = dict()
         self.visited = 0
-        self.firstAlreadyShrank = False
-        self.secondAlreadyShrank = False
+
 
         if colour[0] == 'w':
           self.player_colour = WHITE
@@ -131,59 +121,49 @@ class Player():
 
 ###############################################################################
 
-    def put_piece(self, row, col, piece):
-      self.state[row, col] = piece
-
-###############################################################################
-
     def action(self, turns):
         if turns == 128:
-            self.firstShrink(self.node)
-            self.node.shrinkKill1()
-
+            # self.firstShrink(self.node)
+            self.shrink_board(self.node, 1)
+            self.node.shrink_eliminate(1)
 
         if turns == 192:
-            self.secondShrink(self.node)
-            self.node.shrinkKill2()
-
+            # self.secondShrink(self.node)
+            self.shrink_board(self.node, 2)
+            self.node.shrink_eliminate(2)
 
         # This is only used by player pieces
         self.turns = turns + 1
         print(self.node.state)
         if self.totalTurns > PHASE1:
-#            print(self.node.state)
-            if self.countPieces(self.node) < 18:
+
+            total_pieces = np.bincount(self.node.state.ravel())
+            total_player =  total_pieces[WHITE] + total_pieces[BLACK]
+
+            if total_player < GO_HARD:
                 self.totalTurns += 1
-                action = self.miniMax(MINIMAX_DEPTH)
+                action = self.miniMax(MINIMAX_DEPTH_2)
                 self.node.update_board_inplace(action, self.player_colour)
 
             else:
                 self.totalTurns += 1
-                action = self.miniMax(MINIMAX_DEPTH)
+                action = self.miniMax(MINIMAX_DEPTH_1)
                 self.node.update_board_inplace(action, self.player_colour)
-            return ((action[0][1], action[0][0]), (action[1][1], action[1][0]))
+
+            return (action[0][::-1], action[1][::-1])
+
         else:
-           # print('activate placing')
             self.totalTurns += 1
             place_move = self.place_phase()
             self.node.update_board_inplace(place_move, self.player_colour)
 
-            return place_move[1], place_move[0]
-
+            return place_move[::-1]
 
 ###############################################################################
+
     def in_danger(self, piece):
         # return where to place to block danger
-
-        # checkCond = {'D':[row+1 < SIZE, row+2 < SIZE],
-        #              'U':[row-1 >= 0, row-2 >= 0],
-        #              'R':[col+1 < SIZE, col+2 < SIZE],
-        #              'L':[col-1 >= 0, col-2 >= 0]}
-
         checkCond = dict()
-
-
-
 
         for row, line in enumerate(self.state):
             checkCond['D'] = row+1 < SIZE
@@ -194,7 +174,8 @@ class Player():
                 if symbol == piece:
                     for m in checkCond:
                         if checkCond[m]:
-                            row2, col2 = pos_check(board,row,col, m, return_rowcol=True)
+                            row2, col2 = pos_check(board, row, col, m,
+                                return_rowcol=True)
                             newPos = self.state[row2,col2]
                             if newPos == MAP[piece]:
                                 if row2 == row:
@@ -214,17 +195,15 @@ class Player():
                                             return (row+1, col)
         return None
 
-
+###############################################################################
 
     def place_phase(self):
-
         if self.state[self.place_moves[0][0], self.place_moves[0][1]] == UNOCC:
             return self.place_moves[0]
         if self.state[self.place_moves[1][0], self.place_moves[1][1]] == UNOCC:
             return self.place_moves[1]
 
-# (self, board, row, col, piece)
-        while self.totalTurns < 21:
+        if self.totalTurns < 21:
             if self.state[self.place_moves[2][0], self.place_moves[2][1]] == UNOCC and not self.node.is_eliminated(self.state, self.place_moves[2][0], self.place_moves[2][1], self.player_colour):
                 return self.place_moves[2]
             if self.state[self.place_moves[3][0], self.place_moves[3][1]] == UNOCC and not self.node.is_eliminated(self.state, self.place_moves[3][0], self.place_moves[3][1], self.player_colour):
@@ -235,14 +214,10 @@ class Player():
                 return self.place_moves[5]
 
             danger_result = self.in_danger(self.player_colour)
-            if danger_result != None:
-                return danger_result
+            if danger_result != None: return danger_result
 
             kill_result = self.in_danger(self.opp_colour)
-            if kill_result != None:
-                return kill_result
-
-            if danger_result == None and kill_result == None: break
+            if kill_result != None: return kill_result
 
 
         if self.state[self.place_moves[6][0], self.place_moves[6][1]] == UNOCC:
@@ -253,62 +228,74 @@ class Player():
 
         return self.safe_positions.pop(0)
 
+###############################################################################
 
     # This is only called by enemy pieces
     def update(self, action):
         action_tuple = np.array(action)
         size = action_tuple.size
+
+        if size == 2:
+            action = action[::-1]
+            self.node.update_board_inplace(action, self.opp_colour)
+
         if size == 4:
             if self.turns == 128:
-                self.firstShrink(self.node)
-                self.node.shrinkKill1()
-
-
+                # self.firstShrink(self.node)
+                self.shrink_board(self.node, 1)
+                # self.node.shrinkKill1()
+                self.node.shrink_eliminate(1)
             if self.turns == 192:
-                self.secondShrink(self.node)
-                self.node.shrinkKill2()
-            newAction1 = action[0][1], action[0][0]
-            newAction2 = action[1][1], action[1][0]
-            actionTup = (newAction1, newAction2)
-            self.node.update_board_inplace(actionTup, self.opp_colour)
-        if size == 2:
-            action = action[1], action[0]
-            self.node.update_board_inplace(action, self.opp_colour)
+                self.shrink_board(self.node, 2)
+                # self.secondShrink(self.node)
+                # self.node.shrinkKill2()
+                self.node.shrink_eliminate(2)
+
+
+            invert1 = action[0][::-1]
+            invert2 = action[1][::-1]
+            self.node.update_board_inplace((invert1, invert2), self.opp_colour)
+
         self.totalTurns += 1
 
 ###############################################################################
 
-    def countPieces(self, node):
-        results = np.bincount(node.state.ravel())
-        return results[WHITE] + results[BLACK]
+    def shrink_board(self, node, shrink):
+        if shrink == 1:
+            node.state[0, :] = WALL
+            node.state[7, :] = WALL
+            node.state[:, 0] = WALL
+            node.state[:, 7] = WALL
+            node.state[1,1] = CORNER
+            node.state[1,6] = CORNER
+            node.state[6,1] = CORNER
+            node.state[6,6] = CORNER
+
+        if shrink == 2:
+            node.state[1, :] = WALL
+            node.state[6, :] = WALL
+            node.state[:, 1] = WALL
+            node.state[:, 6] = WALL
+            node.state[2,2] = CORNER
+            node.state[2,5] = CORNER
+            node.state[5,2] = CORNER
+            node.state[5,5] = CORNER
+
+    # def secondShrink(self, node):
+    #     node.state[1, :] = WALL
+    #     node.state[6, :] = WALL
+    #     node.state[:, 1] = WALL
+    #     node.state[:, 6] = WALL
+    #     node.state[2,2] = CORNER
+    #     node.state[2,5] = CORNER
+    #     node.state[5,2] = CORNER
+    #     node.state[5,5] = CORNER
 
 ###############################################################################
-
-    def firstShrink(self, node):
-        node.state[0, :] = WALL
-        node.state[7, :] = WALL
-        node.state[:, 0] = WALL
-        node.state[:, 7] = WALL
-        node.state[1,1] = CORNER
-        node.state[1,6] = CORNER
-        node.state[6,1] = CORNER
-        node.state[6,6] = CORNER
-
-    def secondShrink(self, node):
-        node.state[1, :] = WALL
-        node.state[6, :] = WALL
-        node.state[:, 1] = WALL
-        node.state[:, 6] = WALL
-        node.state[2,2] = CORNER
-        node.state[2,5] = CORNER
-        node.state[5,2] = CORNER
-        node.state[5,5] = CORNER
-
-###############################################################################
-
+    def put_piece(self, row, col, piece):
+      self.state[row, col] = piece
     def miniMax(self, depth):
         start = time.time()
-
         currentHash = zorHash(self.node.state, ZOR)
 
         def maxValue(nodeInfo, depth, alpha, beta, turns, hashValue):
@@ -316,14 +303,20 @@ class Player():
             killed = nodeInfo[1]
 
             if turns == 129:
-                self.firstShrink(node)
-                node.shrinkKill1()
+                self.shrink_board(node, 1)
+                # node.shrinkKill1()
+                node.shrink_eliminate(1)
+
                 nodeHash = zorHash(node.state, ZOR)
 
             elif turns == 193:
-                self.secondShrink(node)
-                node.shrinkKill2()
+                self.shrink_board(node, 2)
+                # self.secondShrink(node)
+                # node.shrinkKill2()
+                node.shrink_eliminate(2)
+
                 nodeHash = zorHash(node.state, ZOR)
+
             else:
                 nodeHash = hashMove(hashValue, self.opp_colour, node.move)
                 for dead in killed:
@@ -335,6 +328,7 @@ class Player():
                 if nodeHash in self.abHash:
                     if turns == self.abHash[nodeHash][1]:
                         alpha, beta = self.abHash[nodeHash][0]
+
             else:
                 nodeValue = node.eval_node()
                 self.hashTable[nodeHash] = nodeValue
@@ -356,8 +350,7 @@ class Player():
 #                print("White's move: ", end='')
 #                print(child.move)
 #                print(child.state)
-                if v >= beta:
-                    return v
+                if v >= beta: return v
                 alpha = max(alpha, v)
 
             return v
@@ -368,13 +361,18 @@ class Player():
             killed = nodeInfo[1]
 
             if turns == 129:
-                self.firstShrink(node)
-                node.shrinkKill1()
+                # self.firstShrink(node) self.shrink_board(node, 1)
+                # node.shrinkKill1()
+                node.shrink_eliminate(1)
                 nodeHash = zorHash(node.state, ZOR)
+
             elif turns == 193:
-                self.secondShrink(node)
-                node.shrinkKill2()
+                # self.secondShrink(node)
+                self.shrink_board(node, 2)
+                # node.shrinkKill2()
+                node.shrink_eliminate(2)
                 nodeHash = zorHash(node.state, ZOR)
+
             else:
                 nodeHash = hashMove(hashValue, self.player_colour, node.move)
                 for dead in killed:
@@ -382,7 +380,7 @@ class Player():
 
             if nodeHash in self.hashTable:
                 nodeValue = self.hashTable[nodeHash]
-                self.visited+=1
+                self.visited += 1
                 if nodeHash in self.abHash:
                     if turns == self.abHash[nodeHash][1]:
                         alpha, beta = self.abHash[nodeHash][0]
@@ -401,7 +399,6 @@ class Player():
                 key=lambda x: x[0].move_estim)
 
             for child in ordered_child_nodes:
-
                 v = min(v, maxValue(child, depth-1, alpha, beta, turns+1, nodeHash))
 #                print(child.eval_node(), end='')
 #                print(child.state)
@@ -416,7 +413,7 @@ class Player():
         best_action = None
 
         for child in self.node.genChild(self.player_colour):
-            v = minValue(child, depth-1, best_score, beta, self.turns, currentHash)
+            v = minValue(child, depth-1, best_score, beta, self.turns+1, currentHash)
             if v > best_score:
                 best_score = v
                 best_action = child[0].move
@@ -424,6 +421,7 @@ class Player():
         end = time.time()
         print(end - start)
         return best_action
+
 ###############################################################################
 
 # simple board class that stores the current board config and the move that brought
@@ -440,14 +438,15 @@ class board(object):
         self.move = move
         self.colour = colour
         self.move_estim = self.pvs_estim()
-###############################################################################
 
+###############################################################################
+         
     # function that returns a new board object created from the specified move
     def update_board_return(self, action):
-        newState = copy.deepcopy(self.state)
+        newState = np.copy(self.state)
         action_tuple = np.array(action)
         action_size = action_tuple.size
-
+        
         if action_size == 1:
           return
 
@@ -457,18 +456,17 @@ class board(object):
 
         elif action_size == 4:
           # moving phase
-          colour = self.state[action[0][0]][action[0][1]]
-          self.put_piece(newState, action_tuple[0][0], action_tuple[0][1], UNOCC)
-          self.put_piece(newState, action_tuple[1][0], action_tuple[1][1], colour)
+          colour = self.state[action[0][0], action[0][1]]
+          # self.put_piece(newState, action_tuple[0][0], action_tuple[0][1], UNOCC)
+          # self.put_piece(newState, action_tuple[1][0], action_tuple[1][1], colour)
+          newState[action_tuple[0][0], action_tuple[0][1]] = UNOCC
+          newState[action_tuple[1][0], action_tuple[1][1]] = colour
 
         eieminated = self.eliminate_board(newState, colour)
-
+        # print('dog', eieminated)
+        # why is this always empty?
+        # hahaha fixed
         return board(newState, action, self.colour), eieminated
-
-###############################################################################
-
-    def put_piece(self, state, row, col, piece):
-      state[row, col] = piece
 
 ###############################################################################
 
@@ -477,47 +475,40 @@ class board(object):
         check whether the given piece will be eliminated by the corner
             and/or surrounding opponents
         '''
-        if piece == WHITE:
-            flag = BLACK
-        if piece == BLACK:
-            flag = WHITE
-
+        Opp = MAP[piece]
         if row == 0 or row == 7:
             checkLeft = pos_check(board, row, col, 'L')
             checkRight = pos_check(board, row, col, 'R')
-            if checkLeft == flag or checkLeft == CORNER:
-                if checkRight == flag or checkRight == CORNER:
+            if checkLeft == Opp or checkLeft == CORNER:
+                if checkRight == Opp or checkRight == CORNER:
                     return True
 
         elif col == 0 or col == 7:
             checkUp = pos_check(board, row, col, 'U')
             checkDown = pos_check(board, row, col, 'D')
-            if checkUp == flag or checkUp == CORNER:
-                if checkDown == flag or checkDown == CORNER:
+            if checkUp == Opp or checkUp == CORNER:
+                if checkDown == Opp or checkDown == CORNER:
                     return True
 
         else:
             # generate positions to check
             check = [pos_check(board,row,col,i) for i in ['L','R','U','D']]
-            if check[0] == flag or check[0] == CORNER:
-                if check[1] == flag or check[1] == CORNER:
+            if check[0] == Opp or check[0] == CORNER:
+                if check[1] == Opp or check[1] == CORNER:
                     return True
-            if check[2] == flag or check[2] == CORNER:
-                if check[3] == flag or check[3] == CORNER:
+            if check[2] == Opp or check[2] == CORNER:
+                if check[3] == Opp or check[3] == CORNER:
                     return True
 
         return False
 
 ###############################################################################
 
-
-
     def eliminate_board(self, state, colour):
         '''
         returns updated board after necessary eliminations
         '''
         eliminated = []
-        # numpy ufunc ???
         mapping = {WHITE: [BLACK, WHITE], BLACK: [WHITE, BLACK]}
         # order of elimination
 
@@ -532,42 +523,41 @@ class board(object):
 
 ###############################################################################
 
-    def shrinkKill1(self):
-        if self.state[2, 1] != UNOCC and self.state[3, 1] != UNOCC:
-            if self.state[2, 1] != self.state[3, 1]:
-                self.state[2, 1] = UNOCC
+    def shrink_eliminate(self, shrink):
 
-        if self.state[5, 1] != UNOCC and self.state[4, 1] != UNOCC:
-            if self.state[5, 1] != self.state[4, 1]:
-                self.state[5, 1] = UNOCC
+        if shrink == 1:
+            if self.state[2, 1] != UNOCC and self.state[3, 1] != UNOCC:
+                if self.state[2, 1] != self.state[3, 1]:
+                    self.state[2, 1] = UNOCC
 
-        if self.state[6, 2] != UNOCC and self.state[6, 3] != UNOCC:
-            if self.state[6, 2] != self.state[6, 3]:
-                self.state[6, 2] = UNOCC
+            if self.state[5, 1] != UNOCC and self.state[4, 1] != UNOCC:
+                if self.state[5, 1] != self.state[4, 1]:
+                    self.state[5, 1] = UNOCC
 
-        if self.state[5, 6] != UNOCC and self.state[4, 6] != UNOCC:
-            if self.state[5, 6] != self.state[4, 6]:
-                self.state[5, 6] = UNOCC
+            if self.state[6, 2] != UNOCC and self.state[6, 3] != UNOCC:
+                if self.state[6, 2] != self.state[6, 3]:
+                    self.state[6, 2] = UNOCC
 
+            if self.state[5, 6] != UNOCC and self.state[4, 6] != UNOCC:
+                if self.state[5, 6] != self.state[4, 6]:
+                    self.state[5, 6] = UNOCC
 
-###############################################################################
+        if shrink == 2:
+            if self.state[2, 3] != UNOCC and self.state[2, 4] != UNOCC:
+                if self.state[2, 3] != self.state[2, 4]:
+                    self.state[2, 3] = UNOCC
 
-    def shrinkKill2(self):
-        if self.state[2, 3] != UNOCC and self.state[2, 4] != UNOCC:
-            if self.state[2, 3] != self.state[2, 4]:
-                self.state[2, 3] = UNOCC
+            if self.state[3, 2] != UNOCC and self.state[4, 2] != UNOCC:
+                if self.state[3, 2] != self.state[4, 2]:
+                    self.state[3, 2] = UNOCC
 
-        if self.state[3, 2] != UNOCC and self.state[4, 2] != UNOCC:
-            if self.state[3, 2] != self.state[4, 2]:
-                self.state[3, 2] = UNOCC
+            if self.state[5, 3] != UNOCC and self.state[5, 4] != UNOCC:
+                if self.state[5, 3] != self.state[5, 4]:
+                    self.state[5, 3] = UNOCC
 
-        if self.state[5, 3] != UNOCC and self.state[5, 4] != UNOCC:
-            if self.state[5, 3] != self.state[5, 4]:
-                self.state[5, 3] = UNOCC
-
-        if self.state[4, 5] != UNOCC and self.state[3, 5] != UNOCC:
-            if self.state[4, 5] != self.state[3, 5]:
-                self.state[4, 5] = UNOCC
+            if self.state[4, 5] != UNOCC and self.state[3, 5] != UNOCC:
+                if self.state[4, 5] != self.state[3, 5]:
+                    self.state[4, 5] = UNOCC
 
 ###############################################################################
 
@@ -578,9 +568,7 @@ class board(object):
         action_tuple = np.array(action)
         action_size = action_tuple.size
 
-
-        if action_size == 1:
-          return
+        if action_size == 1: return
 
         elif action_size == 2:
           #placing phase
@@ -588,26 +576,29 @@ class board(object):
 
         elif action_size == 4:
           # moving phase
+          self.state[action_tuple[0][0], action_tuple[0][1]] = UNOCC
+          self.state[action_tuple[1][0], action_tuple[1][1]] = colour
 
-          self.put_piece(self.state, action_tuple[0][0], action_tuple[0][1], UNOCC)
-          self.put_piece(self.state, action_tuple[1][0], action_tuple[1][1], colour)
 
         self.eliminate_board(self.state, colour)
         self.move = action # update the move that brought it to this state
-        return
 
 ###############################################################################
 
     def eval_node(self):
         results = np.bincount(self.state.ravel())
+
         if results[self.colour] < 2 and results[MAP[self.colour]] >= 2:
+            # LOSE
             return -999
         if results[self.colour] >= 2 and results[MAP[self.colour]] < 2:
+            # WIN
             return 999
         if results[self.colour] < 2 and results[MAP[self.colour]] < 2:
+            #TIE
             return 100
         else:
-            f1= results[self.colour] - results[MAP[self.colour]]
+            f1 = results[self.colour] - results[MAP[self.colour]]
             f2 = self.safeMobility(self.state)
             eval_func = 0.8 * f1 + 0.5 * f2
 
@@ -626,8 +617,7 @@ class board(object):
 
     def is_terminal(self):
         score = self.eval_node()
-        if score == 999 or score == -999 or score == 100:
-            return True
+        if score == 999 or score == -999 or score == 100: return True
         return False
 
 ###############################################################################
@@ -647,19 +637,21 @@ class board(object):
 
                 if newPos == UNOCC and not self.is_eliminated(board, row2, col2, piece):
                     availMoves += 1
+
                 if newPos == WHITE or newPos == BLACK:
                     if checkCond[m][1]:
                         row3, col3 = pos_check(board,row,col, '2' + m, return_rowcol=True)
                         if self.state[row3,col3] == UNOCC and not self.is_eliminated(board, row3, col3, piece):
                             availMoves += 1
+
         return availMoves
 
 ###############################################################################
 
     def safeMobility(self, board):
+        oppColour = MAP[self.colour]
         playerMoves = 0
         oppMoves = 0
-        oppColour = MAP[self.colour]
 
         for row, line in enumerate(board):
             for col, symbol in enumerate(line):
@@ -670,8 +662,8 @@ class board(object):
 
         return playerMoves - oppMoves
 
-###############################################################################
-
+###############################################################################        
+        
     def genChild(self, colour):
         child_nodes = []
         action_tuple = ()
@@ -710,6 +702,11 @@ class board(object):
                                         child_nodes.append(self.update_board_return(action_tuple))
 
         return child_nodes
+
+
+###############################################################################
+
+ZOR = initTable()
 
 ###############################################################################
 def testMemUsage():
@@ -763,7 +760,6 @@ def testrun(me = 'white'):
     game.put_piece(7, 1, BLACK)  # example for move
     game.put_piece(7, 4, BLACK)  # example for move
     game.put_piece(6, 6, BLACK)  # example for move
-
 #    print(game.node.state)
 #    print(game.player_colour)
 #    print(game.node.eval_node())
@@ -788,7 +784,7 @@ def testrun(me = 'white'):
     print(game.visited)
 
 
-#
+# #
 #    print(sys.getsizeof(game.hashTable))
 
     # print("this is the current board state")
@@ -846,6 +842,6 @@ def testrun(me = 'white'):
 
 
 
-ZOR = initTable()
+
 #testrun()
 #testMemUsage()
