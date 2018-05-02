@@ -17,7 +17,7 @@ BLACK = 2  #'@'
 CORNER = 3  #'X'
 WALL = 4
 
-MINIMAX_DEPTH = 3
+MINIMAX_DEPTH = 1
 
 PHASE1 = 23
 PHASE2 = PHASE1 + 128
@@ -114,7 +114,7 @@ class Player():
         self.visited = 0
         self.firstAlreadyShrank = False
         self.secondAlreadyShrank = False
-        
+
         if colour[0] == 'w':
           self.player_colour = WHITE
           self.opp_colour = BLACK
@@ -146,7 +146,7 @@ class Player():
             self.secondShrink(self.node)
             self.node.shrinkKill2()
 
-            
+
         # This is only used by player pieces
         self.turns = turns + 1
         print(self.node.state)
@@ -154,12 +154,12 @@ class Player():
 #            print(self.node.state)
             if self.countPieces(self.node) < 18:
                 self.totalTurns += 1
-                action = self.miniMax(2)
+                action = self.miniMax(MINIMAX_DEPTH)
                 self.node.update_board_inplace(action, self.player_colour)
 
             else:
                 self.totalTurns += 1
-                action = self.miniMax(2)
+                action = self.miniMax(MINIMAX_DEPTH)
                 self.node.update_board_inplace(action, self.player_colour)
             return ((action[0][1], action[0][0]), (action[1][1], action[1][0]))
         else:
@@ -259,11 +259,11 @@ class Player():
         action_tuple = np.array(action)
         size = action_tuple.size
         if size == 4:
-            if self.turns == 128:              
+            if self.turns == 128:
                 self.firstShrink(self.node)
                 self.node.shrinkKill1()
 
-                
+
             if self.turns == 192:
                 self.secondShrink(self.node)
                 self.node.shrinkKill2()
@@ -319,7 +319,7 @@ class Player():
                 self.firstShrink(node)
                 node.shrinkKill1()
                 nodeHash = zorHash(node.state, ZOR)
-                
+
             elif turns == 193:
                 self.secondShrink(node)
                 node.shrinkKill2()
@@ -529,46 +529,46 @@ class board(object):
                             state[row][col] = UNOCC
                             eliminated.append(((row, col), piece))
         return eliminated
-    
+
 ###############################################################################
-        
+
     def shrinkKill1(self):
         if self.state[2, 1] != UNOCC and self.state[3, 1] != UNOCC:
             if self.state[2, 1] != self.state[3, 1]:
                 self.state[2, 1] = UNOCC
-                
+
         if self.state[5, 1] != UNOCC and self.state[4, 1] != UNOCC:
             if self.state[5, 1] != self.state[4, 1]:
                 self.state[5, 1] = UNOCC
-        
+
         if self.state[6, 2] != UNOCC and self.state[6, 3] != UNOCC:
             if self.state[6, 2] != self.state[6, 3]:
                 self.state[6, 2] = UNOCC
-                
+
         if self.state[5, 6] != UNOCC and self.state[4, 6] != UNOCC:
             if self.state[5, 6] != self.state[4, 6]:
                 self.state[5, 6] = UNOCC
-                
-                
+
+
 ###############################################################################
-        
+
     def shrinkKill2(self):
         if self.state[2, 3] != UNOCC and self.state[2, 4] != UNOCC:
             if self.state[2, 3] != self.state[2, 4]:
                 self.state[2, 3] = UNOCC
-                
+
         if self.state[3, 2] != UNOCC and self.state[4, 2] != UNOCC:
             if self.state[3, 2] != self.state[4, 2]:
                 self.state[3, 2] = UNOCC
-        
+
         if self.state[5, 3] != UNOCC and self.state[5, 4] != UNOCC:
             if self.state[5, 3] != self.state[5, 4]:
                 self.state[5, 3] = UNOCC
-                
+
         if self.state[4, 5] != UNOCC and self.state[3, 5] != UNOCC:
             if self.state[4, 5] != self.state[3, 5]:
                 self.state[4, 5] = UNOCC
-                
+
 ###############################################################################
 
     # function that make moves on the current object, changes the current state,
@@ -588,7 +588,7 @@ class board(object):
 
         elif action_size == 4:
           # moving phase
-          
+
           self.put_piece(self.state, action_tuple[0][0], action_tuple[0][1], UNOCC)
           self.put_piece(self.state, action_tuple[1][0], action_tuple[1][1], colour)
 
