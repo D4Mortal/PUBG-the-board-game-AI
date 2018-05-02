@@ -13,8 +13,8 @@ BLACK = 2  #'@'
 CORNER = 3  #'X'
 WALL = 4
 
-MINIMAX_DEPTH_1 = 3
-MINIMAX_DEPTH_2 = 4
+MINIMAX_DEPTH_1 = 2
+MINIMAX_DEPTH_2 = 2
 GO_HARD = 8  # change minimax depth player pieces
 
 PHASE1 = 23
@@ -22,6 +22,8 @@ PHASE2 = PHASE1 + 128
 PHASE3 = PHASE2 + 64
 
 MAP = {WHITE:BLACK, BLACK:WHITE}
+
+DEATHMAP= {1: [6,7], 2: [0,1]}
 
 
 MODS = {'R': (0, 1),  # how each direction modifies a position
@@ -109,19 +111,20 @@ class Player():
           self.player_colour = WHITE
           self.opp_colour = BLACK
           self.node = board(self.state, None, WHITE)
-          # self.place_moves = [(2,0),(2,7),(4,0),(4,7),(5,0),(5,7),(0,2),(0,5)]
-          self.safe_positions = [(1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7)]
           self.place_moves = [(3,3),(4,3),(3,4),(4,4),(3,2),(3,5),(4,2),(4,5),
-          (2,2),(2,3),(2,4),(2,5),(5,2),(5,3),(5,4),(5,5)]
+          (2,2),(2,3),(2,4),(2,5),(5,2),(5,3),(5,4),(5,5),
+          (5,6), (1,3),(1,4),(1,5),(3,1),(3,6),(4,1),(4,6),(5,1),
+          (2,1),(2,6)]
 
         else:
           self.player_colour = BLACK
           self.opp_colour = WHITE
           self.node = board(self.state, None, BLACK)
-          #self.place_moves = [(5,0),(5,7),(3,0),(3,7),(2,0),(2,7),(7,2),(7,5)]
-          self.place_moves = [(4,4), (3,3), (4,3),(3,4),
-          (5,5),(5,2),(4,2),(4,5),(5,3),(5,4),(3,2),(3,5)]
-          self.safe_positions = [(6,1),(6,2),(6,3),(6,4),(6,5),(6,6),(6,7)]
+          # finish place_moves for BLACK
+          self.place_moves = [(4,4), (3,3),(4,3),(3,4),(5,5),(5,2),(4,2),(4,5),
+                              (5,3),(5,4),(3,2),(3,5),(6,2),(6,3),(6,4),(6,5),
+                              (5,6),(5,1),(4,1),(6,1),(6,6)]
+
 
 ###############################################################################
 
@@ -138,7 +141,7 @@ class Player():
 
         # This is only used by player pieces
         self.turns = turns + 1
-        print(self.node.state)
+        # print(self.node.state)
         if self.totalTurns > PHASE1:
 
             total_pieces = np.bincount(self.node.state.ravel())
@@ -185,54 +188,38 @@ class Player():
                                 if row2 == row:
                                     if col2 > col:
                                         if self.state[row, col-1] == UNOCC:
-                                            return (row, col-1)
+                                            if row not in DEATHMAP[MAP[piece]]:
+                                                return (row, col-1)
                                     if col2 < col:
                                         if self.state[row, col+1] == UNOCC:
-                                            return (row, col+1)
+                                            if row not in DEATHMAP[MAP[piece]]:
+                                                return (row, col+1)
                                     # row opposite
                                 if col2 == col:
                                     if row2 > row:
                                         if self.state[row-1, col] == UNOCC:
-                                            return (row-1, col)
+                                            if row-1 not in DEATHMAP[MAP[piece]]:
+                                                return (row-1, col)
                                     if row2 < row:
                                         if self.state[row+1, col] == UNOCC:
-                                            return (row+1, col)
+                                            if row+1 not in DEATHMAP[MAP[piece]]:
+                                                return (row+1, col)
         return None
 
 ###############################################################################
 
     def place_phase(self):
         danger_result = self.in_danger(self.player_colour)
-        if danger_result != None: return danger_result
+        if danger_result != None: 
+            return danger_result
 
         kill_result = self.in_danger(self.opp_colour)
-        if kill_result != None: return kill_result
+        if kill_result != None: 
+            return kill_result
 
-        # if self.state[self.place_moves[0][0], self.place_moves[0][1]] == UNOCC:
-        #     return self.place_moves.pop(0)
-        # if self.state[self.place_moves[1][0], self.place_moves[1][1]] == UNOCC:
-        #     return self.place_moves.pop(0)
-
-        # if self.state[self.place_moves[2][0], self.place_moves[2][1]] == UNOCC:
-        #     return self.place_moves.pop(0)
-        # if self.state[self.place_moves[3][0], self.place_moves[3][1]] == UNOCC:
-        #     return self.place_moves.pop(0)
-        # if self.state[self.place_moves[2][0], self.place_moves[2][1]] == self.player_colour:
-        #     return self.place_moves.pop(0)
-        # if self.state[self.place_moves[3][0], self.place_moves[3][1]] == self.player_colour:
-        #     return self.place_moves.pop(0)
-
-
-        # if self.state[self.place_moves[6][0], self.place_moves[6][1]] == UNOCC:
-        #     return self.place_moves.pop(0)
-
-        # if self.state[self.place_moves[7][0], self.place_moves[7][1]] == UNOCC:
-        #     return self.place_moves[7]
-
-        if self.state[self.place_moves[0][0], self.place_moves[0][1]] == UNOCC and not self.node.is_eliminated(self.state, self.place_moves[0][0], self.place_moves[0][1], self.player_colour):
-            return self.place_moves.pop(0)
-
-        return self.safe_positions.pop(0)
+        for i in range(len(self.place_moves)):
+            if self.state[self.place_moves[i][0], self.place_moves[i][1]] == UNOCC and not self.node.is_eliminated(self.state, self.place_moves[i][0], self.place_moves[i][1], self.player_colour):
+                return self.place_moves[i]
 
 
 
@@ -781,15 +768,15 @@ def testrun(me = 'white'):
 
 
 
-#     print("This is the current board config")
-#     print(game.node.state)
-#     depth = input("Please select a depth to search on: ")
-#     print("Searching ahead for {} moves...".format(depth))
-#     result = game.miniMax(int(depth))
-#     print("The optimal move for white is: ", end='')
-#     print(result)
-#     print(sys.getsizeof(game.hashTable))
-#     print(game.visited)
+    print("This is the current board config")
+    print(game.node.state)
+    depth = input("Please select a depth to search on: ")
+    print("Searching ahead for {} moves...".format(depth))
+    result = game.miniMax(int(depth))
+    print("The optimal move for white is: ", end='')
+    print(result)
+    print(sys.getsizeof(game.hashTable))
+    print(game.visited)
 
 
 # # #
@@ -851,5 +838,5 @@ def testrun(me = 'white'):
 
 
 
-testrun()
+#testrun()
 #testMemUsage()
