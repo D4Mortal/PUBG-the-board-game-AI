@@ -109,15 +109,19 @@ class Player():
           self.player_colour = WHITE
           self.opp_colour = BLACK
           self.node = board(self.state, None, WHITE)
-          self.place_moves = [(2,0),(2,7),(4,0),(4,7),(5,0),(5,7),(0,2),(0,5)]
-          self.safe_positions = [(1,1),(1,2),(1,3),(1,4),(1,5),(1,6)]
+          # self.place_moves = [(2,0),(2,7),(4,0),(4,7),(5,0),(5,7),(0,2),(0,5)]
+          self.safe_positions = [(1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7)]
+          self.place_moves = [(3,3),(4,3),(3,4),(4,4),(3,2),(3,5),(4,2),(4,5),
+          (2,2),(2,3),(2,4),(2,5),(5,2),(5,3),(5,4),(5,5)]
 
         else:
           self.player_colour = BLACK
           self.opp_colour = WHITE
           self.node = board(self.state, None, BLACK)
-          self.place_moves = [(5,0),(5,7),(3,0),(3,7),(2,0),(2,7),(7,2),(7,5)]
-          self.safe_positions = [(6,1),(6,2),(6,3),(6,4),(6,5),(6,6)]
+          #self.place_moves = [(5,0),(5,7),(3,0),(3,7),(2,0),(2,7),(7,2),(7,5)]
+          self.place_moves = [(4,4), (3,3), (4,3),(3,4),
+          (5,5),(5,2),(4,2),(4,5),(5,3),(5,4),(3,2),(3,5)]
+          self.safe_positions = [(6,1),(6,2),(6,3),(6,4),(6,5),(6,6),(6,7)]
 
 ###############################################################################
 
@@ -198,35 +202,39 @@ class Player():
 ###############################################################################
 
     def place_phase(self):
-        if self.state[self.place_moves[0][0], self.place_moves[0][1]] == UNOCC:
-            return self.place_moves[0]
-        if self.state[self.place_moves[1][0], self.place_moves[1][1]] == UNOCC:
-            return self.place_moves[1]
+        danger_result = self.in_danger(self.player_colour)
+        if danger_result != None: return danger_result
 
-        if self.totalTurns < 21:
-            if self.state[self.place_moves[2][0], self.place_moves[2][1]] == UNOCC and not self.node.is_eliminated(self.state, self.place_moves[2][0], self.place_moves[2][1], self.player_colour):
-                return self.place_moves[2]
-            if self.state[self.place_moves[3][0], self.place_moves[3][1]] == UNOCC and not self.node.is_eliminated(self.state, self.place_moves[3][0], self.place_moves[3][1], self.player_colour):
-                return self.place_moves[3]
-            if self.state[self.place_moves[2][0], self.place_moves[2][1]] == self.player_colour and self.state[self.place_moves[4][0], self.place_moves[4][1]] == UNOCC:
-                return self.place_moves[4]
-            if self.state[self.place_moves[3][0], self.place_moves[3][1]] == self.player_colour and self.state[self.place_moves[5][0], self.place_moves[5][1]] == UNOCC:
-                return self.place_moves[5]
+        kill_result = self.in_danger(self.opp_colour)
+        if kill_result != None: return kill_result
 
-            danger_result = self.in_danger(self.player_colour)
-            if danger_result != None: return danger_result
+        # if self.state[self.place_moves[0][0], self.place_moves[0][1]] == UNOCC:
+        #     return self.place_moves.pop(0)
+        # if self.state[self.place_moves[1][0], self.place_moves[1][1]] == UNOCC:
+        #     return self.place_moves.pop(0)
 
-            kill_result = self.in_danger(self.opp_colour)
-            if kill_result != None: return kill_result
+        # if self.state[self.place_moves[2][0], self.place_moves[2][1]] == UNOCC:
+        #     return self.place_moves.pop(0)
+        # if self.state[self.place_moves[3][0], self.place_moves[3][1]] == UNOCC:
+        #     return self.place_moves.pop(0)
+        # if self.state[self.place_moves[2][0], self.place_moves[2][1]] == self.player_colour:
+        #     return self.place_moves.pop(0)
+        # if self.state[self.place_moves[3][0], self.place_moves[3][1]] == self.player_colour:
+        #     return self.place_moves.pop(0)
 
 
-        if self.state[self.place_moves[6][0], self.place_moves[6][1]] == UNOCC:
-            return self.place_moves[6]
+        # if self.state[self.place_moves[6][0], self.place_moves[6][1]] == UNOCC:
+        #     return self.place_moves.pop(0)
 
-        if self.state[self.place_moves[7][0], self.place_moves[7][1]] == UNOCC:
-            return self.place_moves[7]
+        # if self.state[self.place_moves[7][0], self.place_moves[7][1]] == UNOCC:
+        #     return self.place_moves[7]
+
+        if self.state[self.place_moves[0][0], self.place_moves[0][1]] == UNOCC and not self.node.is_eliminated(self.state, self.place_moves[0][0], self.place_moves[0][1], self.player_colour):
+            return self.place_moves.pop(0)
 
         return self.safe_positions.pop(0)
+
+
 
 ###############################################################################
 
@@ -413,7 +421,7 @@ class Player():
         best_action = None
 
         for child in self.node.genChild(self.player_colour):
-            v = minValue(child, depth-1, best_score, beta, self.turns+1, currentHash)
+            v = minValue(child, depth-1, best_score, beta, self.turns, currentHash)
             if v > best_score:
                 best_score = v
                 best_action = child[0].move
@@ -440,13 +448,13 @@ class board(object):
         self.move_estim = self.pvs_estim()
 
 ###############################################################################
-         
+
     # function that returns a new board object created from the specified move
     def update_board_return(self, action):
         newState = np.copy(self.state)
         action_tuple = np.array(action)
         action_size = action_tuple.size
-        
+
         if action_size == 1:
           return
 
@@ -662,8 +670,8 @@ class board(object):
 
         return playerMoves - oppMoves
 
-###############################################################################        
-        
+###############################################################################
+
     def genChild(self, colour):
         child_nodes = []
         action_tuple = ()
@@ -773,18 +781,18 @@ def testrun(me = 'white'):
 
 
 
-    print("This is the current board config")
-    print(game.node.state)
-    depth = input("Please select a depth to search on: ")
-    print("Searching ahead for {} moves...".format(depth))
-    result = game.miniMax(int(depth))
-    print("The optimal move for white is: ", end='')
-    print(result)
-    print(sys.getsizeof(game.hashTable))
-    print(game.visited)
+#     print("This is the current board config")
+#     print(game.node.state)
+#     depth = input("Please select a depth to search on: ")
+#     print("Searching ahead for {} moves...".format(depth))
+#     result = game.miniMax(int(depth))
+#     print("The optimal move for white is: ", end='')
+#     print(result)
+#     print(sys.getsizeof(game.hashTable))
+#     print(game.visited)
 
 
-# #
+# # #
 #    print(sys.getsizeof(game.hashTable))
 
     # print("this is the current board state")
@@ -843,5 +851,5 @@ def testrun(me = 'white'):
 
 
 
-#testrun()
+testrun()
 #testMemUsage()

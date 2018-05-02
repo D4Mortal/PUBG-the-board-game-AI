@@ -62,6 +62,10 @@ PLACEMENT
 - aggressive if free kill (e.g. black piece next to white piece)
 
 
+new_plan
+check in-danger
+check free-kills
+loop through list
 
 X - P - - P - X
 - - - - - - - - ///////////////////////////////////////////////

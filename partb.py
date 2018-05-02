@@ -109,8 +109,9 @@ class Player():
           self.player_colour = WHITE
           self.opp_colour = BLACK
           self.node = board(self.state, None, WHITE)
-          self.place_moves = [(2,0),(2,7),(4,0),(4,7),(5,0),(5,7),(0,2),(0,5)]
+          # self.place_moves = [(2,0),(2,7),(4,0),(4,7),(5,0),(5,7),(0,2),(0,5)]
           self.safe_positions = [(1,1),(1,2),(1,3),(1,4),(1,5),(1,6)]
+          self.place_moves = [(3,3), (3,4), ]
 
         else:
           self.player_colour = BLACK
@@ -440,13 +441,13 @@ class board(object):
         self.move_estim = self.pvs_estim()
 
 ###############################################################################
-         
+
     # function that returns a new board object created from the specified move
     def update_board_return(self, action):
         newState = np.copy(self.state)
         action_tuple = np.array(action)
         action_size = action_tuple.size
-        
+
         if action_size == 1:
           return
 
@@ -662,8 +663,8 @@ class board(object):
 
         return playerMoves - oppMoves
 
-###############################################################################        
-        
+###############################################################################
+
     def genChild(self, colour):
         child_nodes = []
         action_tuple = ()
@@ -773,18 +774,18 @@ def testrun(me = 'white'):
 
 
 
-    print("This is the current board config")
-    print(game.node.state)
-    depth = input("Please select a depth to search on: ")
-    print("Searching ahead for {} moves...".format(depth))
-    result = game.miniMax(int(depth))
-    print("The optimal move for white is: ", end='')
-    print(result)
-    print(sys.getsizeof(game.hashTable))
-    print(game.visited)
+#     print("This is the current board config")
+#     print(game.node.state)
+#     depth = input("Please select a depth to search on: ")
+#     print("Searching ahead for {} moves...".format(depth))
+#     result = game.miniMax(int(depth))
+#     print("The optimal move for white is: ", end='')
+#     print(result)
+#     print(sys.getsizeof(game.hashTable))
+#     print(game.visited)
 
 
-# #
+# # #
 #    print(sys.getsizeof(game.hashTable))
 
     # print("this is the current board state")
