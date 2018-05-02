@@ -25,12 +25,12 @@ MAP = {WHITE:BLACK, BLACK:WHITE}
 
 DEATHMAP= {1: [6,7], 2: [0,1]}
 
-PLACEMAP = [[0,0,0,0,0,0,0,0],
+PLACEMAP = [[0,0,0,0,0,0,0,0],    # this is designed to tell white to play aggressive
             [0,1,1,1,1,1,1,0],
             [0,1,2,2,2,2,1,0],
             [0,1,2,3,3,2,1,0],
-            [0,1,2,3,3,2,1,0],
-            [0,1,2,2,2,2,1,0],
+            [0,1,3,3,3,3,1,0],
+            [0,1,1.8,1.8,1.8,1.8,1,0],
             [0,1,1,1,1,1,1,1],
             [0,0,0,0,0,0,0,0]]
 
@@ -139,6 +139,7 @@ class Player():
     def action(self, turns):
         if turns == 128:
             # self.firstShrink(self.node)
+            print("i hope this is proc")
             self.shrink_board(self.node, 1)
             self.node.shrink_eliminate(1)
 
@@ -151,7 +152,6 @@ class Player():
         self.turns = turns + 1
         # print(self.node.state)
         if self.totalTurns > PHASE1:
-
             total_pieces = np.bincount(self.node.state.ravel())
             total_player =  total_pieces[WHITE] + total_pieces[BLACK]
 
@@ -241,13 +241,14 @@ class Player():
         if size == 2:
             action = action[::-1]
             self.node.update_board_inplace(action, self.opp_colour)
-
+        
         if size == 4:
             if self.turns == 128:
                 # self.firstShrink(self.node)
                 self.shrink_board(self.node, 1)
                 # self.node.shrinkKill1()
                 self.node.shrink_eliminate(1)
+                print(self.node.state)
             if self.turns == 192:
                 self.shrink_board(self.node, 2)
                 # self.secondShrink(self.node)
@@ -617,6 +618,14 @@ class board(object):
     def shrink_eliminate(self, shrink):
 
         if shrink == 1:
+            if self.state[1, 2] != UNOCC and self.state[1, 3] != UNOCC:
+                if self.state[1, 2] != self.state[1, 3]:
+                    self.state[1, 2] = UNOCC
+                    
+            if self.state[1, 4] != UNOCC and self.state[1, 4] != UNOCC:
+                if self.state[1, 4] != self.state[1, 4]:
+                    self.state[1, 5] = UNOCC
+                    
             if self.state[2, 1] != UNOCC and self.state[3, 1] != UNOCC:
                 if self.state[2, 1] != self.state[3, 1]:
                     self.state[2, 1] = UNOCC
@@ -628,11 +637,19 @@ class board(object):
             if self.state[6, 2] != UNOCC and self.state[6, 3] != UNOCC:
                 if self.state[6, 2] != self.state[6, 3]:
                     self.state[6, 2] = UNOCC
-
+                    
+            if self.state[6, 6] != UNOCC and self.state[6, 5] != UNOCC:
+                if self.state[6, 6] != self.state[6, 5]:
+                    self.state[6, 6] = UNOCC
+                    
             if self.state[5, 6] != UNOCC and self.state[4, 6] != UNOCC:
                 if self.state[5, 6] != self.state[4, 6]:
                     self.state[5, 6] = UNOCC
-
+            
+            if self.state[2, 6] != UNOCC and self.state[3, 6] != UNOCC:
+                if self.state[2, 6] != self.state[3, 6]:
+                    self.state[2, 6] = UNOCC
+                
         if shrink == 2:
             if self.state[2, 3] != UNOCC and self.state[2, 4] != UNOCC:
                 if self.state[2, 3] != self.state[2, 4]:

@@ -527,6 +527,14 @@ class board(object):
     def shrink_eliminate(self, shrink):
 
         if shrink == 1:
+            if self.state[1, 2] != UNOCC and self.state[1, 3] != UNOCC:
+                if self.state[1, 2] != self.state[1, 3]:
+                    self.state[1, 2] = UNOCC
+                    
+            if self.state[1, 4] != UNOCC and self.state[1, 4] != UNOCC:
+                if self.state[1, 4] != self.state[1, 4]:
+                    self.state[1, 5] = UNOCC
+                    
             if self.state[2, 1] != UNOCC and self.state[3, 1] != UNOCC:
                 if self.state[2, 1] != self.state[3, 1]:
                     self.state[2, 1] = UNOCC
@@ -538,10 +546,18 @@ class board(object):
             if self.state[6, 2] != UNOCC and self.state[6, 3] != UNOCC:
                 if self.state[6, 2] != self.state[6, 3]:
                     self.state[6, 2] = UNOCC
-
+                    
+            if self.state[6, 6] != UNOCC and self.state[6, 5] != UNOCC:
+                if self.state[6, 6] != self.state[6, 5]:
+                    self.state[6, 6] = UNOCC
+                    
             if self.state[5, 6] != UNOCC and self.state[4, 6] != UNOCC:
                 if self.state[5, 6] != self.state[4, 6]:
                     self.state[5, 6] = UNOCC
+            
+            if self.state[2, 6] != UNOCC and self.state[3, 6] != UNOCC:
+                if self.state[2, 6] != self.state[3, 6]:
+                    self.state[2, 6] = UNOCC
 
         if shrink == 2:
             if self.state[2, 3] != UNOCC and self.state[2, 4] != UNOCC:
