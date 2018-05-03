@@ -24,30 +24,29 @@ disable eval towards end of game
 https://en.wikipedia.org/wiki/Quiescence_search DONE
 https://en.wikipedia.org/wiki/Killer_heuristic DONE
 https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning
+https://en.wikipedia.org/wiki/Zobrist_hashing
 
 
 EVALUATION features
 piece-square tables
-http://chessprogramming.wikispaces.com/Simplified+evaluation+functio
+http://chessprogramming.wikispaces.com/Simplified+evaluation+function
 https://chessprogramming.wikispaces.com/Endgame
 https://www.quora.com/How-do-I-make-Minimax-algorithm-incredibly-fast-How-do-I-deepen-the-game-search-tree
-https://en.wikipedia.org/wiki/Zobrist_hashing
 
-legal moves white - legal moves black
+
 (safe mobility)
+legal moves white - legal moves black
+
+     A study by Eliot Slater of 350 tournament games in which the material balance was still even after the 20th move showed a definite correlation between a player's mobility and the number of games won [1] .
 
 
- A study by Eliot Slater of 350 tournament games in which the material balance was still even after the 20th move showed a definite correlation between a player's mobility and the number of games won [1] .
-
-
-Freedom and Papa both use mobility as their primary term in their evaluation functions. As with Wita, both use the ratio of computer's moves / opponent moves. Papa and Wita also multiply by the ratio of the squares controlled and Papa goes one step further and takes the logarithm of this product to form the "entropy" of the position. The true merit of this entropy over the product ratio was not made clear, but it does ensure that in extreme situations the evaluation remains more closely bounded.
+    Freedom and Papa both use mobility as their primary term in their evaluation functions. As with Wita, both use the ratio of computer's moves / opponent moves. Papa and Wita also multiply by the ratio of the squares controlled and Papa goes one step further and takes the logarithm of this product to form the "entropy" of the position. The true merit of this entropy over the product ratio was not made clear, but it does ensure that in extreme situations the evaluation remains more closely bounded.
 
 
 center control
 https://chessprogramming.wikispaces.com/Center%20Control
 
 Trapped Pieces
-
 
 lazy evaluation - calculate cheap first then more if necessary
 
@@ -57,7 +56,14 @@ Isolated pawns (pawns with nothing around them) are not good
 
 
 
-PLACEMENT
+
+
+
+
+
+
+
+OLD PLACEMENT
 - assigning values and sort by best position
 - aggressive if free kill (e.g. black piece next to white piece)
 

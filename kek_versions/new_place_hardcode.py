@@ -21,37 +21,18 @@ PHASE1 = 23
 PHASE2 = PHASE1 + 128
 PHASE3 = PHASE2 + 64
 
-WIN = 9999
-LOSE = -1 * WIN
-TIE = 1000
-
-WEIGHTS = [10, 20, 30, 50, 20]
-
 MAP = {WHITE:BLACK, BLACK:WHITE}
 
-DEATHMAP= {WHITE: [6,7], BLACK: [0,1]}
+DEATHMAP= {1: [6,7], 2: [0,1]}
 
-PLACEMAP_WHITE = [[0,0,0,0,0,0,0,0],    # this is designed to tell white to play aggressive
-                  [0,1,1,1,1,1,1,0],
-                  [0,1,2,2,2,2,1,0],
-                  [0,1,2,3,3,2,1,0],
-                  [0,1,3,3,3,3,1,0],
-                  [0,1,1.8,1.8,1.8,1.8,1,0],
-                  [0,1,1,1,1,1,1,1],
-                  [0,0,0,0,0,0,0,0]]
-
-PLACEMAP_BLACK =   [[0,0,0,0,0,0,0,0],
-                    [0,1,1,1,1,1,1,0],
-                    [0,1,1.8,1.8,1.8,1.8,1,0],
-                    [0,1,3,3,3,3,1,0],
-                    [0,1,2,3,3,2,1,0],
-                    [0,1,2,2,2,2,1,0],
-                    [0,1,1,1,1,1,1,1],
-                    [0,0,0,0,0,0,0,0]]
-
-
-PLACEMAP = {WHITE: PLACEMAP_WHITE, BLACK: PLACEMAP_BLACK}
-
+PLACEMAP = [[0,0,0,0,0,0,0,0],
+            [0,1,1,1,1,1,1,0],
+            [0,1,2,2,2,2,1,0],
+            [0,1,2,3,3,2,1,0],
+            [0,1,2,3,3,2,1,0],
+            [0,1,2,2,2,2,1,0],
+            [0,1,1,1,1,1,1,1],
+            [0,0,0,0,0,0,0,0]]
 
 MODS = {'R': (0, 1),  # how each direction modifies a position
         '2R': (0, 2),
@@ -158,7 +139,6 @@ class Player():
     def action(self, turns):
         if turns == 128:
             # self.firstShrink(self.node)
-            print("i hope this is proc")
             self.shrink_board(self.node, 1)
             self.node.shrink_eliminate(1)
 
@@ -170,7 +150,6 @@ class Player():
         # This is only used by player pieces
         self.turns = turns + 1
         # print(self.node.state)
-
         if self.totalTurns > PHASE1:
 
             total_pieces = np.bincount(self.node.state.ravel())
@@ -190,25 +169,67 @@ class Player():
 
         else:
             self.totalTurns += 1
-            place_move = self.miniMaxPlace(3)
+            place_move = self.place_phase()
             self.node.update_board_inplace(place_move, self.player_colour)
 
             return place_move[::-1]
 
 ###############################################################################
 
+    def in_danger(self, piece):
+        # return where to place to block danger
+        checkCond = dict()
+
+        for row, line in enumerate(self.state):
+            checkCond['D'] = row+1 < SIZE
+            checkCond['U'] = row-1 >= 0
+            for col, symbol in enumerate(line):
+                checkCond['R'] = col+1 < SIZE
+                checkCond['L'] = col-1 >= 0
+                if symbol == piece:
+                    for m in checkCond:
+                        if checkCond[m]:
+                            row2, col2 = pos_check(board, row, col, m,
+                                return_rowcol=True)
+                            newPos = self.state[row2,col2]
+                            if newPos == MAP[piece]:
+                                if row2 == row:
+                                    if col2 > col:
+                                        if self.state[row, col-1] == UNOCC:
+                                            if row not in DEATHMAP[MAP[piece]]:
+                                                return (row, col-1)
+                                    if col2 < col:
+                                        if self.state[row, col+1] == UNOCC:
+                                            if row not in DEATHMAP[MAP[piece]]:
+                                                return (row, col+1)
+                                    # row opposite
+                                if col2 == col:
+                                    if row2 > row:
+                                        if self.state[row-1, col] == UNOCC:
+                                            if row-1 not in DEATHMAP[MAP[piece]]:
+                                                return (row-1, col)
+                                    if row2 < row:
+                                        if self.state[row+1, col] == UNOCC:
+                                            if row+1 not in DEATHMAP[MAP[piece]]:
+                                                return (row+1, col)
+        return None
+
+###############################################################################
+
     def place_phase(self):
         danger_result = self.in_danger(self.player_colour)
-        if danger_result != None:
+        if danger_result != None: 
             return danger_result
 
         kill_result = self.in_danger(self.opp_colour)
-        if kill_result != None:
+        if kill_result != None: 
             return kill_result
 
         for i in range(len(self.place_moves)):
             if self.state[self.place_moves[i][0], self.place_moves[i][1]] == UNOCC and not self.node.is_eliminated(self.state, self.place_moves[i][0], self.place_moves[i][1], self.player_colour):
                 return self.place_moves[i]
+
+
 
 ###############################################################################
 
@@ -227,7 +248,6 @@ class Player():
                 self.shrink_board(self.node, 1)
                 # self.node.shrinkKill1()
                 self.node.shrink_eliminate(1)
-                print(self.node.state)
             if self.turns == 192:
                 self.shrink_board(self.node, 2)
                 # self.secondShrink(self.node)
@@ -264,11 +284,21 @@ class Player():
             node.state[5,2] = CORNER
             node.state[5,5] = CORNER
 
-###############################################################################
+    # def secondShrink(self, node):
+    #     node.state[1, :] = WALL
+    #     node.state[6, :] = WALL
+    #     node.state[:, 1] = WALL
+    #     node.state[:, 6] = WALL
+    #     node.state[2,2] = CORNER
+    #     node.state[2,5] = CORNER
+    #     node.state[5,2] = CORNER
+    #     node.state[5,5] = CORNER
 
+###############################################################################
+    
     def put_piece(self, row, col, piece):
       self.state[row, col] = piece
-
+      
 ###############################################################################
     def miniMax(self, depth):
         start = time.time()
@@ -306,12 +336,12 @@ class Player():
                         alpha, beta = self.abHash[nodeHash][0]
 
             else:
-                nodeValue = node.eval_func(2)
+                nodeValue = node.eval_node(True)
                 self.hashTable[nodeHash] = nodeValue
                 if alpha != -np.inf and beta != np.inf:
                     self.abHash[nodeHash] = ((alpha, beta), turns)
 
-            if  depth <= 0 or nodeValue == LOSE or nodeValue == WIN or nodeValue == TIE:
+            if  depth <= 0 or nodeValue == -999 or nodeValue == 999 or nodeValue == 100:
                 return nodeValue
 
             v = -np.inf
@@ -362,12 +392,12 @@ class Player():
                         alpha, beta = self.abHash[nodeHash][0]
 
             else:
-                nodeValue = node.eval_func(2)
+                nodeValue = node.eval_node(True)
                 self.hashTable[nodeHash] = nodeValue
                 if alpha != -np.inf and beta != np.inf:
                     self.abHash[nodeHash] = ((alpha, beta), turns)
 
-            if  depth <= 0 or nodeValue == LOSE or nodeValue == WIN or nodeValue == TIE:
+            if  depth <= 0 or nodeValue == -999 or nodeValue == 999 or nodeValue == 100:
                 return nodeValue
 
             v = np.inf
@@ -407,8 +437,8 @@ class Player():
         def maxValue(nodeInfo, depth, alpha, beta):
             node = nodeInfo[0]
 
-            nodeValue = node.eval_func(1)
-            if  depth <= 0 or nodeValue == LOSE or nodeValue == WIN or nodeValue == TIE:
+            nodeValue = node.eval_node(False)
+            if  depth <= 0 or nodeValue == -999 or nodeValue == 999 or nodeValue == 100:
                 return nodeValue
 
             v = -np.inf
@@ -431,9 +461,9 @@ class Player():
         def minValue(nodeInfo, depth, alpha, beta):
             node = nodeInfo[0]
 
-            nodeValue = node.eval_func(1)
+            nodeValue = node.eval_node(False)
 
-            if  depth <= 0 or nodeValue == LOSE or nodeValue == WIN or nodeValue == TIE:
+            if  depth <= 0 or nodeValue == -999 or nodeValue == 999 or nodeValue == 100:
                 return nodeValue
 
             v = np.inf
@@ -463,6 +493,23 @@ class Player():
         end = time.time()
         print(end - start)
         return best_action
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ###############################################################################
 
@@ -500,10 +547,15 @@ class board(object):
         elif action_size == 4:
           # moving phase
           colour = self.state[action[0][0], action[0][1]]
+          # self.put_piece(newState, action_tuple[0][0], action_tuple[0][1], UNOCC)
+          # self.put_piece(newState, action_tuple[1][0], action_tuple[1][1], colour)
           newState[action_tuple[0][0], action_tuple[0][1]] = UNOCC
           newState[action_tuple[1][0], action_tuple[1][1]] = colour
 
         eleminated = self.eliminate_board(newState, colour)
+        # print('dog', eieminated)
+        # why is this always empty?
+        # hahaha fixed
 
         return board(newState, action, self.colour), eleminated
 
@@ -568,11 +620,11 @@ class board(object):
             if self.state[1, 2] != UNOCC and self.state[1, 3] != UNOCC:
                 if self.state[1, 2] != self.state[1, 3]:
                     self.state[1, 2] = UNOCC
-
+                    
             if self.state[1, 4] != UNOCC and self.state[1, 4] != UNOCC:
                 if self.state[1, 4] != self.state[1, 4]:
                     self.state[1, 5] = UNOCC
-
+                    
             if self.state[2, 1] != UNOCC and self.state[3, 1] != UNOCC:
                 if self.state[2, 1] != self.state[3, 1]:
                     self.state[2, 1] = UNOCC
@@ -584,15 +636,15 @@ class board(object):
             if self.state[6, 2] != UNOCC and self.state[6, 3] != UNOCC:
                 if self.state[6, 2] != self.state[6, 3]:
                     self.state[6, 2] = UNOCC
-
-            if self.state[6, 5] != UNOCC and self.state[6, 4] != UNOCC:
-                if self.state[6, 5] != self.state[6, 4]:
-                    self.state[6, 5] = UNOCC
-
+                    
+            if self.state[6, 6] != UNOCC and self.state[6, 5] != UNOCC:
+                if self.state[6, 6] != self.state[6, 5]:
+                    self.state[6, 6] = UNOCC
+                    
             if self.state[5, 6] != UNOCC and self.state[4, 6] != UNOCC:
                 if self.state[5, 6] != self.state[4, 6]:
                     self.state[5, 6] = UNOCC
-
+            
             if self.state[2, 6] != UNOCC and self.state[3, 6] != UNOCC:
                 if self.state[2, 6] != self.state[3, 6]:
                     self.state[2, 6] = UNOCC
@@ -640,12 +692,47 @@ class board(object):
 
 ###############################################################################
 
+    def eval_node(self, isMove):
+        results = np.bincount(self.state.ravel())
+        position = 0
+        if isMove:
+            if results[self.colour] < 2 and results[MAP[self.colour]] >= 2:
+                # LOSE
+                return -999
+            if results[self.colour] >= 2 and results[MAP[self.colour]] < 2:
+                # WIN
+                return 999
+            if results[self.colour] < 2 and results[MAP[self.colour]] < 2:
+                #TIE
+                return 100
+            else:
+                f1 = results[self.colour] - results[MAP[self.colour]]
+                f2 = self.safeMobility(self.state)
+                eval_func = 0.8 * f1 + 0.5 * f2
+                return eval_func
+        else:
+            f1 = results[self.colour] - results[MAP[self.colour]]
+            for row, line in enumerate(self.state):
+                for col, symbol in enumerate(line):
+                    if self.state[row, col] == self.colour:
+                        position += PLACEMAP[row][col]
+            eval_func = f1 + 0.5 * position
+            return eval_func
+###############################################################################
+
     def pvs_estim(self):
         '''
         principal variation estimation function
         '''
         results = np.bincount(self.state.ravel())
         return results[self.colour] - results[MAP[self.colour]]
+
+###############################################################################
+
+    def is_terminal(self):
+        score = self.eval_node()
+        if score == 999 or score == -999 or score == 100: return True
+        return False
 
 ###############################################################################
 
@@ -675,56 +762,19 @@ class board(object):
 
 ###############################################################################
 
-    def eval_func(self, phase):
+    def safeMobility(self, board):
         oppColour = MAP[self.colour]
-        results = np.bincount(self.state.ravel())
+        playerMoves = 0
+        oppMoves = 0
 
-        # simple piece counter
-        f1 = results[self.colour] - results[MAP[self.colour]]
-        f2 = 0
-        f3 = 0
-        f4 = 0  # connectdness
+        for row, line in enumerate(board):
+            for col, symbol in enumerate(line):
+                if symbol == self.colour:
+                    playerMoves += self.count_legal_moves(board, row , col, self.colour)
+                if symbol == oppColour:
+                    oppMoves += self.count_legal_moves(board,row,col, oppColour)
 
-        if phase == 1:  #placing
-            # center control + connectedness
-            for row, line in enumerate(self.state):
-                for col, symbol in enumerate(line):
-                    if symbol  == self.colour:
-                        f2 += PLACEMAP[self.colour][row][col]
-                        checkCond = {'D':row+1 < SIZE,
-                                 'U':row-1 >= 0,
-                                 'R':col+1 < SIZE,
-                                 'L':col-1 >= 0}
-
-                        for m in checkCond:
-                            if checkCond[m]:
-                                if pos_check(self.state, row, col, m) == self.colour:
-                                    f4 += 1
-
-
-        if phase == 2:  #all moving phases
-            # safe mobility + center control
-            if results[self.colour] < 2 and results[oppColour] >= 2: return LOSE
-            if results[self.colour] >= 2 and results[oppColour] < 2: return WIN
-            if results[self.colour] < 2 and results[oppColour] < 2: return TIE
-
-            for row, line in enumerate(self.state):
-                for col, symbol in enumerate(line):
-                    if symbol == self.colour:
-                        f2 += PLACEMAP[self.colour][row][col]
-                        f3 += self.count_legal_moves(self.state, row , col, self.colour)
-                        checkCond = {'D':row+1 < SIZE,
-                                 'U':row-1 >= 0,
-                                 'R':col+1 < SIZE,
-                                 'L':col-1 >= 0}
-
-                        for m in checkCond:
-                            if checkCond[m]:
-                                if pos_check(self.state, row, col, m) == self.colour:
-                                    f4 += 1
-
-
-        return f1*WEIGHTS[0] + f2*WEIGHTS[1] + f3*WEIGHTS[2] + f4*WEIGHTS[3]
+        return playerMoves - oppMoves
 
 ###############################################################################
 
@@ -779,7 +829,7 @@ class board(object):
                     if self.state[row, col] == UNOCC:
                         child_nodes.append(self.update_board_return((row, col), colour))
         return child_nodes
-
+                
 ZOR = initTable()
 
 ###############################################################################
@@ -837,6 +887,9 @@ def testrun(me = 'white'):
 #    print(game.node.state)
 #    print(game.player_colour)
 #    print(game.node.eval_node())
+#
+#    print(game.node.is_terminal())
+
 #    for a in game.node.genChild(BLACK):
 #        print("this this generated")
 #        print(a.state)
@@ -844,16 +897,16 @@ def testrun(me = 'white'):
 
 
 
-    # print("This is the current board config")
-    # print(game.node.state)
-    # depth = input("Please select a depth to search on: ")
-    # print("Searching ahead for {} moves...".format(depth))
-    # result = game.miniMax(int(depth))
-    # print("The optimal move for white is: ", end='')
-    # print(result)
-    # print(sys.getsizeof(game.hashTable))
-    # print(game.visited)
-    # print(game.miniMaxPlace(4))
+    print("This is the current board config")
+    print(game.node.state)
+    depth = input("Please select a depth to search on: ")
+    print("Searching ahead for {} moves...".format(depth))
+    result = game.miniMax(int(depth))
+    print("The optimal move for white is: ", end='')
+    print(result)
+    print(sys.getsizeof(game.hashTable))
+    print(game.visited)
+    print(game.miniMaxPlace(4))
 
 # # #
 #    print(sys.getsizeof(game.hashTable))
