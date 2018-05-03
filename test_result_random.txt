@@ -1,100 +1,69 @@
-#Black: 12, #White: 12, Depth: 1, Elapsed: 0.024565696716308594 seconds
-#Black: 12, #White: 12, Depth: 2, Elapsed: 0.30686044692993164 seconds
-#Black: 12, #White: 12, Depth: 3, Elapsed: 1.7998301982879639 seconds
-#Black: 12, #White: 12, Depth: 4, Elapsed: 11.438937902450562 seconds
-#Black: 11, #White: 12, Depth: 1, Elapsed: 0.02154397964477539 seconds
-#Black: 11, #White: 12, Depth: 2, Elapsed: 0.27977609634399414 seconds
-#Black: 11, #White: 12, Depth: 3, Elapsed: 1.4930930137634277 seconds
-#Black: 11, #White: 12, Depth: 4, Elapsed: 9.66495394706726 seconds
-#Black: 11, #White: 11, Depth: 1, Elapsed: 0.02108478546142578 seconds
-#Black: 11, #White: 11, Depth: 2, Elapsed: 0.26818275451660156 seconds
-#Black: 11, #White: 11, Depth: 3, Elapsed: 1.3563005924224854 seconds
-#Black: 11, #White: 11, Depth: 4, Elapsed: 8.55993390083313 seconds
-#Black: 10, #White: 11, Depth: 1, Elapsed: 0.019051313400268555 seconds
-#Black: 10, #White: 11, Depth: 2, Elapsed: 0.22858238220214844 seconds
-#Black: 10, #White: 11, Depth: 3, Elapsed: 1.3393652439117432 seconds
-#Black: 10, #White: 11, Depth: 4, Elapsed: 11.007181644439697 seconds
-#Black: 10, #White: 10, Depth: 1, Elapsed: 0.017053604125976562 seconds
-#Black: 10, #White: 10, Depth: 2, Elapsed: 0.19651317596435547 seconds
-#Black: 10, #White: 10, Depth: 3, Elapsed: 0.9121935367584229 seconds
-#Black: 10, #White: 10, Depth: 4, Elapsed: 8.402261734008789 seconds
-#Black: 9, #White: 10, Depth: 1, Elapsed: 0.018572330474853516 seconds
-#Black: 9, #White: 10, Depth: 2, Elapsed: 0.1809978485107422 seconds
-#Black: 9, #White: 10, Depth: 3, Elapsed: 0.8390300273895264 seconds
-#Black: 9, #White: 10, Depth: 4, Elapsed: 6.281790256500244 seconds
-#Black: 9, #White: 9, Depth: 1, Elapsed: 0.014571189880371094 seconds
-#Black: 9, #White: 9, Depth: 2, Elapsed: 0.16089463233947754 seconds
-#Black: 9, #White: 9, Depth: 3, Elapsed: 0.7901759147644043 seconds
-#Black: 9, #White: 9, Depth: 4, Elapsed: 5.6720452308654785 seconds
-#Black: 8, #White: 9, Depth: 1, Elapsed: 0.014018535614013672 seconds
-#Black: 8, #White: 9, Depth: 2, Elapsed: 0.13385653495788574 seconds
-#Black: 8, #White: 9, Depth: 3, Elapsed: 0.768120288848877 seconds
-#Black: 8, #White: 9, Depth: 4, Elapsed: 5.022207975387573 seconds
-#Black: 8, #White: 8, Depth: 1, Elapsed: 0.011530876159667969 seconds
-#Black: 8, #White: 8, Depth: 2, Elapsed: 0.13034582138061523 seconds
-#Black: 8, #White: 8, Depth: 3, Elapsed: 0.5619940757751465 seconds
-#Black: 8, #White: 8, Depth: 4, Elapsed: 4.4713099002838135 seconds
-#Black: 7, #White: 8, Depth: 1, Elapsed: 0.011002779006958008 seconds
-#Black: 7, #White: 8, Depth: 2, Elapsed: 0.11480522155761719 seconds
-#Black: 7, #White: 8, Depth: 3, Elapsed: 0.5094213485717773 seconds
-#Black: 7, #White: 8, Depth: 4, Elapsed: 3.4169435501098633 seconds
-#Black: 7, #White: 7, Depth: 1, Elapsed: 0.008021354675292969 seconds
-#Black: 7, #White: 7, Depth: 2, Elapsed: 0.09074115753173828 seconds
-#Black: 7, #White: 7, Depth: 3, Elapsed: 0.4998939037322998 seconds
-#Black: 7, #White: 7, Depth: 4, Elapsed: 3.7222862243652344 seconds
-#Black: 6, #White: 7, Depth: 1, Elapsed: 0.006517171859741211 seconds
-#Black: 6, #White: 7, Depth: 2, Elapsed: 0.076751708984375 seconds
-#Black: 6, #White: 7, Depth: 3, Elapsed: 0.3719913959503174 seconds
-#Black: 6, #White: 7, Depth: 4, Elapsed: 2.2177586555480957 seconds
-#Black: 6, #White: 6, Depth: 1, Elapsed: 0.006043672561645508 seconds
-#Black: 6, #White: 6, Depth: 2, Elapsed: 0.06514549255371094 seconds
-#Black: 6, #White: 6, Depth: 3, Elapsed: 0.29246950149536133 seconds
-#Black: 6, #White: 6, Depth: 4, Elapsed: 1.7093544006347656 seconds
-#Black: 6, #White: 6, Depth: 5, Elapsed: 5.302906036376953 seconds
-#Black: 5, #White: 6, Depth: 1, Elapsed: 0.006015300750732422 seconds
-#Black: 5, #White: 6, Depth: 2, Elapsed: 0.05364203453063965 seconds
-#Black: 5, #White: 6, Depth: 3, Elapsed: 0.22108840942382812 seconds
-#Black: 5, #White: 6, Depth: 4, Elapsed: 1.0755536556243896 seconds
-#Black: 5, #White: 6, Depth: 5, Elapsed: 4.774938583374023 seconds
-#Black: 5, #White: 5, Depth: 1, Elapsed: 0.00452876091003418 seconds
-#Black: 5, #White: 5, Depth: 2, Elapsed: 0.036573171615600586 seconds
-#Black: 5, #White: 5, Depth: 3, Elapsed: 0.13089680671691895 seconds
-#Black: 5, #White: 5, Depth: 4, Elapsed: 0.6092698574066162 seconds
-#Black: 5, #White: 5, Depth: 5, Elapsed: 2.2213640213012695 seconds
-#Black: 4, #White: 5, Depth: 1, Elapsed: 0.004492282867431641 seconds
-#Black: 4, #White: 5, Depth: 2, Elapsed: 0.034108638763427734 seconds
-#Black: 4, #White: 5, Depth: 3, Elapsed: 0.22961831092834473 seconds
-#Black: 4, #White: 5, Depth: 4, Elapsed: 1.3334379196166992 seconds
-#Black: 4, #White: 5, Depth: 5, Elapsed: 5.463047027587891 seconds
-#Black: 4, #White: 4, Depth: 1, Elapsed: 0.0035097599029541016 seconds
-#Black: 4, #White: 4, Depth: 2, Elapsed: 0.028574228286743164 seconds
-#Black: 4, #White: 4, Depth: 3, Elapsed: 0.10781002044677734 seconds
-#Black: 4, #White: 4, Depth: 4, Elapsed: 1.0563287734985352 seconds
-#Black: 4, #White: 4, Depth: 5, Elapsed: 4.4707207679748535 seconds
-#Black: 3, #White: 4, Depth: 1, Elapsed: 0.003006458282470703 seconds
-#Black: 3, #White: 4, Depth: 2, Elapsed: 0.020559310913085938 seconds
-#Black: 3, #White: 4, Depth: 3, Elapsed: 0.061659812927246094 seconds
-#Black: 3, #White: 4, Depth: 4, Elapsed: 0.4598085880279541 seconds
-#Black: 3, #White: 4, Depth: 5, Elapsed: 1.8264985084533691 seconds
-#Black: 3, #White: 4, Depth: 6, Elapsed: 7.22925329208374 seconds
-#Black: 3, #White: 3, Depth: 1, Elapsed: 0.0025033950805664062 seconds
-#Black: 3, #White: 3, Depth: 2, Elapsed: 0.01453852653503418 seconds
-#Black: 3, #White: 3, Depth: 3, Elapsed: 0.04361605644226074 seconds
-#Black: 3, #White: 3, Depth: 4, Elapsed: 0.2296299934387207 seconds
-#Black: 3, #White: 3, Depth: 5, Elapsed: 0.6759247779846191 seconds
-#Black: 3, #White: 3, Depth: 6, Elapsed: 3.5726747512817383 seconds
-#Black: 2, #White: 3, Depth: 1, Elapsed: 0.002005338668823242 seconds
-#Black: 2, #White: 3, Depth: 2, Elapsed: 0.00902414321899414 seconds
-#Black: 2, #White: 3, Depth: 3, Elapsed: 0.03559470176696777 seconds
-#Black: 2, #White: 3, Depth: 4, Elapsed: 0.1248314380645752 seconds
-#Black: 2, #White: 3, Depth: 5, Elapsed: 0.3365640640258789 seconds
-#Black: 2, #White: 3, Depth: 6, Elapsed: 1.7305917739868164 seconds
-#Black: 2, #White: 3, Depth: 7, Elapsed: 4.112581968307495 seconds
-#Black: 2, #White: 2, Depth: 1, Elapsed: 0.0020041465759277344 seconds
-#Black: 2, #White: 2, Depth: 2, Elapsed: 0.0060160160064697266 seconds
-#Black: 2, #White: 2, Depth: 3, Elapsed: 0.018074989318847656 seconds
-#Black: 2, #White: 2, Depth: 4, Elapsed: 0.06970787048339844 seconds
-#Black: 2, #White: 2, Depth: 5, Elapsed: 0.2346019744873047 seconds
-#Black: 2, #White: 2, Depth: 6, Elapsed: 0.7741568088531494 seconds
-#Black: 2, #White: 2, Depth: 7, Elapsed: 2.472646474838257 seconds
-#Black: 1, #White: 2, Depth: 1, Elapsed: 0.0010027885437011719 seconds
+#Black braches: 39, #White branches: 41, total: 80, Depth: 1, Elapsed: 0.020024538040161133 seconds
+#Black braches: 39, #White branches: 41, total: 80, Depth: 2, Elapsed: 0.29501962661743164 seconds
+#Black braches: 39, #White branches: 41, total: 80, Depth: 3, Elapsed: 1.2777554988861084 seconds
+#Black braches: 39, #White branches: 41, total: 80, Depth: 4, Elapsed: 12.616977214813232 seconds
+#Black braches: 39, #White branches: 38, total: 77, Depth: 1, Elapsed: 0.025098562240600586 seconds
+#Black braches: 39, #White branches: 38, total: 77, Depth: 2, Elapsed: 0.27870941162109375 seconds
+#Black braches: 39, #White branches: 38, total: 77, Depth: 3, Elapsed: 1.400989055633545 seconds
+#Black braches: 39, #White branches: 38, total: 77, Depth: 4, Elapsed: 12.97599172592163 seconds
+#Black braches: 36, #White branches: 38, total: 74, Depth: 1, Elapsed: 0.024506807327270508 seconds
+#Black braches: 36, #White branches: 38, total: 74, Depth: 2, Elapsed: 0.33672022819519043 seconds
+#Black braches: 36, #White branches: 38, total: 74, Depth: 3, Elapsed: 1.4358162879943848 seconds
+#Black braches: 36, #White branches: 38, total: 74, Depth: 4, Elapsed: 8.903076887130737 seconds
+#Black braches: 36, #White branches: 35, total: 71, Depth: 1, Elapsed: 0.019032955169677734 seconds
+#Black braches: 36, #White branches: 35, total: 71, Depth: 2, Elapsed: 0.2150707244873047 seconds
+#Black braches: 36, #White branches: 35, total: 71, Depth: 3, Elapsed: 1.068880319595337 seconds
+#Black braches: 36, #White branches: 35, total: 71, Depth: 4, Elapsed: 6.668013572692871 seconds
+#Black braches: 33, #White branches: 35, total: 68, Depth: 1, Elapsed: 0.018576860427856445 seconds
+#Black braches: 33, #White branches: 35, total: 68, Depth: 2, Elapsed: 0.18095660209655762 seconds
+#Black braches: 33, #White branches: 35, total: 68, Depth: 3, Elapsed: 0.7166690826416016 seconds
+#Black braches: 33, #White branches: 35, total: 68, Depth: 4, Elapsed: 5.938964128494263 seconds
+#Black braches: 33, #White branches: 31, total: 64, Depth: 1, Elapsed: 0.01907944679260254 seconds
+#Black braches: 33, #White branches: 31, total: 64, Depth: 2, Elapsed: 0.15188121795654297 seconds
+#Black braches: 33, #White branches: 31, total: 64, Depth: 3, Elapsed: 0.6567986011505127 seconds
+#Black braches: 33, #White branches: 31, total: 64, Depth: 4, Elapsed: 5.256845235824585 seconds
+#Black braches: 30, #White branches: 31, total: 61, Depth: 1, Elapsed: 0.015023946762084961 seconds
+#Black braches: 30, #White branches: 31, total: 61, Depth: 2, Elapsed: 0.1514267921447754 seconds
+#Black braches: 30, #White branches: 31, total: 61, Depth: 3, Elapsed: 0.7223978042602539 seconds
+#Black braches: 30, #White branches: 31, total: 61, Depth: 4, Elapsed: 4.081759691238403 seconds
+#Black braches: 28, #White branches: 32, total: 60, Depth: 1, Elapsed: 0.014540910720825195 seconds
+#Black braches: 28, #White branches: 32, total: 60, Depth: 2, Elapsed: 0.13086652755737305 seconds
+#Black braches: 28, #White branches: 32, total: 60, Depth: 3, Elapsed: 0.4918956756591797 seconds
+#Black braches: 28, #White branches: 32, total: 60, Depth: 4, Elapsed: 4.727766752243042 seconds
+#Black braches: 28, #White branches: 28, total: 56, Depth: 1, Elapsed: 0.017546892166137695 seconds
+#Black braches: 28, #White branches: 28, total: 56, Depth: 2, Elapsed: 0.16294479370117188 seconds
+#Black braches: 28, #White branches: 28, total: 56, Depth: 3, Elapsed: 0.6332423686981201 seconds
+#Black braches: 28, #White branches: 28, total: 56, Depth: 4, Elapsed: 4.381998300552368 seconds
+#Black braches: 28, #White branches: 26, total: 54, Depth: 1, Elapsed: 0.017044782638549805 seconds
+#Black braches: 28, #White branches: 26, total: 54, Depth: 2, Elapsed: 0.15491318702697754 seconds
+#Black braches: 28, #White branches: 26, total: 54, Depth: 3, Elapsed: 0.5985903739929199 seconds
+#Black braches: 28, #White branches: 26, total: 54, Depth: 4, Elapsed: 4.1327221393585205 seconds
+#Black braches: 25, #White branches: 26, total: 51, Depth: 1, Elapsed: 0.015038728713989258 seconds
+#Black braches: 25, #White branches: 26, total: 51, Depth: 2, Elapsed: 0.1248328685760498 seconds
+#Black braches: 25, #White branches: 26, total: 51, Depth: 3, Elapsed: 0.4030725955963135 seconds
+#Black braches: 25, #White branches: 26, total: 51, Depth: 4, Elapsed: 2.591010808944702 seconds
+#Black braches: 22, #White branches: 26, total: 48, Depth: 1, Elapsed: 0.01453852653503418 seconds
+#Black braches: 22, #White branches: 26, total: 48, Depth: 2, Elapsed: 0.09926509857177734 seconds
+#Black braches: 22, #White branches: 26, total: 48, Depth: 3, Elapsed: 0.3173410892486572 seconds
+#Black braches: 22, #White branches: 26, total: 48, Depth: 4, Elapsed: 1.4955472946166992 seconds
+#Black braches: 22, #White branches: 26, total: 48, Depth: 5, Elapsed: 4.171472787857056 seconds
+#Black braches: 19, #White branches: 26, total: 45, Depth: 1, Elapsed: 0.010527372360229492 seconds
+#Black braches: 19, #White branches: 26, total: 45, Depth: 2, Elapsed: 0.08672976493835449 seconds
+#Black braches: 19, #White branches: 26, total: 45, Depth: 3, Elapsed: 0.2266407012939453 seconds
+#Black braches: 19, #White branches: 26, total: 45, Depth: 4, Elapsed: 1.5002973079681396 seconds
+#Black braches: 19, #White branches: 26, total: 45, Depth: 5, Elapsed: 3.6592843532562256 seconds
+#Black braches: 19, #White branches: 22, total: 41, Depth: 1, Elapsed: 0.008016347885131836 seconds
+#Black braches: 19, #White branches: 22, total: 41, Depth: 2, Elapsed: 0.05965280532836914 seconds
+#Black braches: 19, #White branches: 22, total: 41, Depth: 3, Elapsed: 0.1669178009033203 seconds
+#Black braches: 19, #White branches: 22, total: 41, Depth: 4, Elapsed: 1.2520027160644531 seconds
+#Black braches: 19, #White branches: 22, total: 41, Depth: 5, Elapsed: 6.577283143997192 seconds
+#Black braches: 16, #White branches: 22, total: 38, Depth: 1, Elapsed: 0.009525775909423828 seconds
+#Black braches: 16, #White branches: 22, total: 38, Depth: 2, Elapsed: 0.0691828727722168 seconds
+#Black braches: 16, #White branches: 22, total: 38, Depth: 3, Elapsed: 0.1488959789276123 seconds
+#Black braches: 16, #White branches: 22, total: 38, Depth: 4, Elapsed: 1.2103607654571533 seconds
+#Black braches: 16, #White branches: 22, total: 38, Depth: 5, Elapsed: 7.64155387878418 seconds
+#Black braches: 16, #White branches: 18, total: 34, Depth: 1, Elapsed: 0.0060160160064697266 seconds
+#Black braches: 16, #White branches: 18, total: 34, Depth: 2, Elapsed: 0.03361201286315918 seconds
+#Black braches: 16, #White branches: 18, total: 34, Depth: 3, Elapsed: 0.08976888656616211 seconds
+#Black braches: 16, #White branches: 18, total: 34, Depth: 4, Elapsed: 0.46828341484069824 seconds
+#Black braches: 16, #White branches: 18, total: 34, Depth: 5, Elapsed: 1.1998412609100342 seconds

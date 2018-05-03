@@ -5,7 +5,7 @@
 # different number of pieces on the board
 
 ###############################################################################
-
+import json
 from partb import Player
 
 from random import randint
@@ -21,6 +21,8 @@ WALL = 4
 
 black = 12
 white = 12
+
+result = {}
 
 def removeRandomPiece(state):
     global black
@@ -94,11 +96,25 @@ def testRun(random = False):
         global black
         global white
         start = time.time()
-        game.miniMax(depth)
+
+        child_nodes_friendly = game.node.genChild(game.player_colour)
+        child_nodes_enemy = game.node.genChild(game.opp_colour)
+        total_branch = len(child_nodes_friendly) + len(child_nodes_enemy)
+        
+        game.miniMax(depth,child_nodes_friendly)
         end = time.time()
         timeTaken = end - start
-        file.write("#Black: {}, #White: {}, Depth: {}, Elapsed: {} seconds\n".format(black, white, depth, timeTaken))
+#        file.write("#Black: {}, #White: {}, Depth: {}, Elapsed: {} seconds\n".format(black, white, depth, timeTaken))
+        file.write("#Black braches: {}, #White branches: {}, total: {}, Depth: {}, Elapsed: {} seconds\n"
+                   .format(len(child_nodes_friendly), len(child_nodes_enemy), total_branch, depth, timeTaken))
         
+        if timeTaken < 1:
+            if total_branch not in result:
+                result[total_branch] = depth,timeTaken
+                
+            elif result[total_branch][0] < depth:
+                result[total_branch] = depth,timeTaken
+                
         if timeTaken > 2:
             depth = 1
             
@@ -118,9 +134,24 @@ def testRun(random = False):
                   
         if black == 1 or white == 1:
             break
-        
+    file.close()  
     return
 
 
 
-testRun(False)
+for a in range(2):
+    black = 12
+    white = 12
+    testRun(True)
+
+final_results = open("branching_results.txt", "w")
+for key, value in sorted(result.items(), reverse = True):
+    final_results.write((key, value))
+
+final_results.close()
+print(result)
+
+
+
+
+

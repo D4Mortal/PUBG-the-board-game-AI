@@ -27,6 +27,9 @@ TIE = 1000
 
 WEIGHTS = [1, 0.5, 0, 0]
 
+IDEAL_DEPTH = {24:2,23:2,22:2,21:2,20:3,19:3,18:3,17:3,16:3,16:3,15:3,14:3,13:3,
+               12:3,11:3,10:4,9:4,8:4,7:5,6:5,5:6,4:7,3:7}
+
 MAP = {WHITE:BLACK, BLACK:WHITE}
 
 DEATHMAP= {WHITE: [6,7], BLACK: [0,1]}
@@ -201,26 +204,24 @@ class Player():
         # print(self.node.state)
 
         if self.totalTurns > PHASE1:
-
-            total_pieces = np.bincount(self.node.state.ravel())
-            total_player =  total_pieces[WHITE] + total_pieces[BLACK]
-
-            if total_player < GO_HARD:
-                self.totalTurns += 1
-                action = self.miniMax(MINIMAX_DEPTH_2)
-                self.node.update_board_inplace(action, self.player_colour)
-
-            else:
-                self.totalTurns += 1
-                action = self.miniMax(MINIMAX_DEPTH_1)
-                self.node.update_board_inplace(action, self.player_colour)
+           
+            child_nodes_friendly = self.node.genChild(self.player_colour)
+            child_nodes_enemy = self.node.genChild(self.opp_colour)
+            
+            total_branching = len(child_nodes_friendly) + (child_nodes_enemy)
+            
+            action = self.miniMax(IDEAL_DEPTH[total_branching],child_nodes_friendly)
+            
+            self.totalTurns += 1
+            self.node.update_board_inplace(action, self.player_colour)
+            
             if action == None:
                 return None
             return (action[0][::-1], action[1][::-1])
 
         else:
             self.totalTurns += 1
-            place_move = self.miniMaxPlace(4)
+            place_move = self.miniMaxPlace(1)
             self.node.update_board_inplace(place_move, self.player_colour)
 
             return place_move[::-1]
@@ -300,7 +301,7 @@ class Player():
       self.state[row, col] = piece
 
 ###############################################################################
-    def miniMax(self, depth):
+    def miniMax(self, depth, child):
         start = time.time()
         currentHash = zorHash(self.node.state, ZOR)
 
@@ -417,8 +418,9 @@ class Player():
         best_score = -np.inf
         beta = np.inf
         best_action = None
-
-        for child in self.node.genChild(self.player_colour):
+        
+        child_nodes = sorted(child, key=lambda x: x[0].move_estim, reverse=True)
+        for child in child_nodes:
             v = minValue(child, depth-1, best_score, beta, self.turns, currentHash)
             if v > best_score:
                 best_score = v
