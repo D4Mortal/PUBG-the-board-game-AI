@@ -108,13 +108,16 @@ def testRun(random = False):
         file.write("#Black braches: {}, #White branches: {}, total: {}, Depth: {}, Elapsed: {} seconds\n"
                    .format(len(child_nodes_friendly), len(child_nodes_enemy), total_branch, depth, timeTaken))
         
-        if timeTaken < 1:
+        if timeTaken < 0.75:
             if total_branch not in result:
                 result[total_branch] = depth,timeTaken
                 
             elif result[total_branch][0] < depth:
                 result[total_branch] = depth,timeTaken
-                
+            elif result[total_branch][0] == depth:
+                average = result[total_branch][1] + timeTaken
+                average = average/2
+                result[total_branch] = depth,average
         if timeTaken > 2:
             depth = 1
             
@@ -139,14 +142,15 @@ def testRun(random = False):
 
 
 
-for a in range(2):
+for a in range(15):
     black = 12
     white = 12
     testRun(True)
 
 final_results = open("branching_results.txt", "w")
 for key, value in sorted(result.items(), reverse = True):
-    final_results.write((key, value))
+    final_results.write("{}:{},".format(key,value[0]))
+
 
 final_results.close()
 print(result)
