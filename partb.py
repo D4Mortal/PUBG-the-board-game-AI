@@ -13,10 +13,6 @@ BLACK = 2  #'@'
 CORNER = 3  #'X'
 WALL = 4
 
-MINIMAX_DEPTH_1 = 2
-MINIMAX_DEPTH_2 = 2
-GO_HARD = 8  # change minimax depth player pieces
-
 PHASE1 = 23
 PHASE2 = PHASE1 + 128
 PHASE3 = PHASE2 + 64
@@ -38,7 +34,7 @@ MAP = {WHITE:BLACK, BLACK:WHITE}
 
 DEATHMAP= {WHITE: [6,7], BLACK: [0,1]}
 
-PLACEMAP_WHITE = [[0,0,0,0,0,0,0,0],    
+PLACEMAP_WHITE = [[0,0,0,0,0,0,0,0],
                   [0,0,1,1,1,1,0,0],
                   [0,1,2,3,3,2,1,0],
                   [0,1,2,4,4,2,1,0],
@@ -47,7 +43,7 @@ PLACEMAP_WHITE = [[0,0,0,0,0,0,0,0],
                   [0,0,1,1,1,1,0,0],
                   [0,0,0,0,0,0,0,0]]
 
-PLACEMAP_BLACK = [[0,0,0,0,0,0,0,0],    
+PLACEMAP_BLACK = [[0,0,0,0,0,0,0,0],
                   [0,0,1,1,1,1,0,0],
                   [0,1,1,1,1,1,1,0],
                   [0,1,2,4,4,2,1,0],
@@ -56,7 +52,7 @@ PLACEMAP_BLACK = [[0,0,0,0,0,0,0,0],
                   [0,0,1,1,1,1,0,0],
                   [0,0,0,0,0,0,0,0]]
 
-PLACEMAP_WHITE2 = [[-1,-1,-1,-1,-1,-1,-1,-1],    
+PLACEMAP_WHITE2 = [[-1,-1,-1,-1,-1,-1,-1,-1],
                   [-1,-1,0,0,0,0,-1,-1],
                   [-1,0,1,2,2,1,0,-1],
                   [-1,0,2,4,4,2,0,-1],
@@ -65,7 +61,7 @@ PLACEMAP_WHITE2 = [[-1,-1,-1,-1,-1,-1,-1,-1],
                   [-1,-1,0,0,0,0,-1,-1],
                   [-1,-1,-1,-1,-1,-1,-1,-1]]
 
-PLACEMAP_BLACK2 =  [[-1,-1,-1,-1,-1,-1,-1,-1],    
+PLACEMAP_BLACK2 =  [[-1,-1,-1,-1,-1,-1,-1,-1],
                   [-1,-1,0,0,0,0,-1,-1],
                   [-1,0,0,1,1,0,0,-1],
                   [-1,0,3,4,4,3,0,-1],
@@ -78,7 +74,7 @@ CHECK_ORDER_WHITE = [(3,3),(4,3),(3,4),(4,4),(3,2),(3,5),(4,2),(4,5),(2,2),(2,3)
                      (1,2),(1,3),(1,4),(1,5),(2,0),(2,7),
                      (3,0),(3,7),(4,0),(4,7),
                      (5,2),(5,3),(5,4),(5,5),(2,1),(2,6),(3,1),(3,6),(4,1),(4,6),(1,1),(1,6),(1,0),(1,7),
-                     (5,0),(5,7),(5,1),(5,6),(0,0),           
+                     (5,0),(5,7),(5,1),(5,6),(0,0),
                      (0,1),(0,2),(0,3),(0,4),(0,5),(0,6)]
 
 CHECK_ORDER_BLACK = [(3,3),(4,3),(3,4),(4,4),(4,2),(4,5),(3,2),(3,5),(5,2),(5,3),(5,4),
@@ -195,7 +191,7 @@ class Player():
     def action(self, turns):
         if turns == 128:
             # self.firstShrink(self.node)
-            print("i hope this is proc")
+            # print("i hope this is proc")
             self.shrink_board(self.node, 1)
             self.node.shrink_eliminate(1)
 
@@ -209,17 +205,17 @@ class Player():
         # print(self.node.state)
 
         if self.totalTurns > PHASE1:
-           
+
             child_nodes_friendly = self.node.genChild(self.player_colour)
             child_nodes_enemy = self.node.genChild(self.opp_colour)
-            
+
             total_branching = len(child_nodes_friendly) + len(child_nodes_enemy)
-            
+
             action = self.miniMax(IDEAL_DEPTH[total_branching],child_nodes_friendly)
-            
+
             self.totalTurns += 1
             self.node.update_board_inplace(action, self.player_colour)
-            
+
             if action == None:
                 return None
             return (action[0][::-1], action[1][::-1])
@@ -263,7 +259,7 @@ class Player():
                 self.shrink_board(self.node, 1)
                 # self.node.shrinkKill1()
                 self.node.shrink_eliminate(1)
-                print(self.node.state)
+                # print(self.node.state)
             if self.turns == 192:
                 self.shrink_board(self.node, 2)
                 # self.secondShrink(self.node)
@@ -423,7 +419,7 @@ class Player():
         best_score = -np.inf
         beta = np.inf
         best_action = None
-        
+
         child_nodes = sorted(child, key=lambda x: x[0].move_estim, reverse=True)
         for child in child_nodes:
             v = minValue(child, depth-1, best_score, beta, self.turns, currentHash)
@@ -717,7 +713,7 @@ class board(object):
         results = np.bincount(self.state.ravel())
 
         # simple piece counter
-        f1 = results[self.colour] - results[MAP[self.colour]]
+        f1 = results[self.colour] - results[oppColour]
         f2 = 0
         f3 = 0
         f4 = 0  # connectdness
@@ -756,7 +752,7 @@ class board(object):
                                  'L':col-1 >= 0}
 
                         for m in checkCond:
-                            if checkCond[m]:    
+                            if checkCond[m]:
                                 if pos_check(self.state, row, col, m) == self.colour:
                                     f4 += 1     # surrounding friendly pieces
 
@@ -817,8 +813,8 @@ class board(object):
                         child_nodes.append(self.update_board_return((row, col), colour))
         return child_nodes
 
-###############################################################################  
-    
+###############################################################################
+
     # This aggressively prunes by only only expanding 22 nodes, based on the assumption
     # that the opponent would try to play in the middle.
     def genChildPlaceAgressive(self, colour):
@@ -827,16 +823,16 @@ class board(object):
             mapping = CHECK_ORDER_WHITE
         elif colour == 2:
             mapping = CHECK_ORDER_BLACK
-        
+
         for placements in mapping:
 
             if placements[0] not in DEATHMAP[colour]:
                 if self.state[placements[0], placements[1]] == UNOCC:
                         child_nodes.append(self.update_board_return((placements[0], placements[1]), colour))
 
-        
-        return child_nodes    
-    
+
+        return child_nodes
+
 ZOR = initTable()
 
 ###############################################################################
@@ -852,45 +848,45 @@ def testMemUsage():
 
 ###############################################################################
 
-def testrun(me = 'white'):
-    game = Player(me)
+# def testrun(me = 'white'):
+#     game = Player(me)
 
-    # update board tests
-    move = ((2,5), (2,6))
-    move2 = ((2,4), (3,4))
-    move3 = ((3,5), (1,1))
-    move4 = ((6,6),(5,6))
-    place = (6,5)
-    null_move = None
+#     # update board tests
+#     move = ((2,5), (2,6))
+#     move2 = ((2,4), (3,4))
+#     move3 = ((3,5), (1,1))
+#     move4 = ((6,6),(5,6))
+#     place = (6,5)
+#     null_move = None
 
-#    print('before update')
-    game.put_piece(4, 3, WHITE)  # example for move
-    game.put_piece(4, 7, WHITE)  # example for move
-    game.put_piece(2, 5, WHITE)  # example for move
-    game.put_piece(4, 6, WHITE)  # example for move
-    game.put_piece(1, 1, WHITE)  # example for move
-    game.put_piece(0, 3, WHITE)  # example for move
-    game.put_piece(2, 0, WHITE)  # example for move
-    game.put_piece(6, 3, WHITE)  # example for move
-    game.put_piece(0, 5, WHITE)  # example for move
-    game.put_piece(5, 0, WHITE)  # example for move
-    game.put_piece(4, 1, WHITE)  # example for move
-    game.put_piece(6, 7, WHITE)  # example for move
+# #    print('before update')
+#     game.put_piece(4, 3, WHITE)  # example for move
+#     game.put_piece(4, 7, WHITE)  # example for move
+#     game.put_piece(2, 5, WHITE)  # example for move
+#     game.put_piece(4, 6, WHITE)  # example for move
+#     game.put_piece(1, 1, WHITE)  # example for move
+#     game.put_piece(0, 3, WHITE)  # example for move
+#     game.put_piece(2, 0, WHITE)  # example for move
+#     game.put_piece(6, 3, WHITE)  # example for move
+#     game.put_piece(0, 5, WHITE)  # example for move
+#     game.put_piece(5, 0, WHITE)  # example for move
+#     game.put_piece(4, 1, WHITE)  # example for move
+#     game.put_piece(6, 7, WHITE)  # example for move
 
 
-    game.put_piece(2, 4, BLACK)  # example for move
-    game.put_piece(2, 2, BLACK)  # example for move
-    game.put_piece(3, 5, BLACK)  # example for move
-    game.put_piece(3, 6, BLACK)  # example for move
-    game.put_piece(3, 1, BLACK)  # example for move
-    game.put_piece(3, 3, BLACK)  # example for move
-    game.put_piece(5, 4, BLACK)  # example for move
-    game.put_piece(3, 5, BLACK)  # example for move
-    game.put_piece(0, 1, BLACK)  # example for move
-    game.put_piece(2, 7, BLACK)  # example for move
-    game.put_piece(7, 1, BLACK)  # example for move
-    game.put_piece(7, 4, BLACK)  # example for move
-    game.put_piece(6, 6, BLACK)  # example for move
+#     game.put_piece(2, 4, BLACK)  # example for move
+#     game.put_piece(2, 2, BLACK)  # example for move
+#     game.put_piece(3, 5, BLACK)  # example for move
+#     game.put_piece(3, 6, BLACK)  # example for move
+#     game.put_piece(3, 1, BLACK)  # example for move
+#     game.put_piece(3, 3, BLACK)  # example for move
+#     game.put_piece(5, 4, BLACK)  # example for move
+#     game.put_piece(3, 5, BLACK)  # example for move
+#     game.put_piece(0, 1, BLACK)  # example for move
+#     game.put_piece(2, 7, BLACK)  # example for move
+#     game.put_piece(7, 1, BLACK)  # example for move
+#     game.put_piece(7, 4, BLACK)  # example for move
+#     game.put_piece(6, 6, BLACK)  # example for move
 #    print(game.node.state)
 #    print(game.player_colour)
 #    print(game.node.eval_node())
