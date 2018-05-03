@@ -25,29 +25,58 @@ WIN = 9999
 LOSE = -1 * WIN
 TIE = 1000
 
-WEIGHTS = [10, 20, 30, 50, 20]
+WEIGHTS = [1, 0.5, 0, 0]
 
 MAP = {WHITE:BLACK, BLACK:WHITE}
 
 DEATHMAP= {WHITE: [6,7], BLACK: [0,1]}
 
-PLACEMAP_WHITE = [[0,0,0,0,0,0,0,0],    # this is designed to tell white to play aggressive
-                  [0,1,1,1,1,1,1,0],
+PLACEMAP_WHITE = [[0,0,0,0,0,0,0,0],    
+                  [0,0,1,1,1,1,0,0],
                   [0,1,2,2,2,2,1,0],
-                  [0,1,2,3,3,2,1,0],
-                  [0,1,3,3,3,3,1,0],
-                  [0,1,1.8,1.8,1.8,1.8,1,0],
-                  [0,1,1,1,1,1,1,1],
+                  [0,1,2,4,4,2,1,0],
+                  [0,1,3,4,4,3,1,0],
+                  [0,1,1,1,1,1,1,0],
+                  [0,0,1,1,1,1,0,0],
                   [0,0,0,0,0,0,0,0]]
 
-PLACEMAP_BLACK =   [[0,0,0,0,0,0,0,0],
-                    [0,1,1,1,1,1,1,0],
-                    [0,1,1.8,1.8,1.8,1.8,1,0],
-                    [0,1,3,3,3,3,1,0],
-                    [0,1,2,3,3,2,1,0],
-                    [0,1,2,2,2,2,1,0],
-                    [0,1,1,1,1,1,1,1],
-                    [0,0,0,0,0,0,0,0]]
+PLACEMAP_BLACK =   [[0,0,0,0,0,0,0,0],    
+                  [0,0,1,1,1,1,0,0],
+                  [0,1,1,1,1,1,1,0],
+                  [0,1,3,4,4,3,1,0],
+                  [0,1,2,4,4,2,1,0],
+                  [0,1,2,2,2,2,1,0],
+                  [0,0,1,1,1,1,0,0],
+                  [0,0,0,0,0,0,0,0]]
+
+PLACEMAP_WHITE2 = [[-1,-1,-1,-1,-1,-1,-1,-1],    
+                  [-1,-1,0,0,0,0,-1,-1],
+                  [-1,0,1,2,2,1,0,-1],
+                  [-1,0,2,4,4,2,0,-1],
+                  [-1,0,3,4,4,3,0,-1],
+                  [-1,0,0,1,1,0,0,-1],
+                  [-1,-1,0,0,0,0,-1,-1],
+                  [-1,-1,-1,-1,-1,-1,-1,-1]]
+
+PLACEMAP_BLACK2 =  [[-1,-1,-1,-1,-1,-1,-1,-1],    
+                  [-1,-1,0,0,0,0,-1,-1],
+                  [-1,0,0,1,1,0,0,-1],
+                  [-1,0,3,4,4,3,0,-1],
+                  [-1,0,2,4,4,2,0,-1],
+                  [-1,0,1,2,2,1,0,-1],
+                  [-1,-1,0,0,0,0,-1,-1],
+                  [-1,-1,-1,-1,-1,-1,-1,-1]]
+
+CHECK_ORDER_WHITE = [(3,3),(4,3),(3,4),(4,4),(3,2),(3,5),(4,2),(4,5),(2,2),(2,3),(2,4),(2,5),
+                     (1,2),(1,3),(1,4),(1,5),
+                     (5,2),(5,3),(5,4),(5,5),(2,1),(2,6),(3,1),(3,6),(4,1),(4,6),(1,1), (1,6),(1,0),(1,7),(2,0),(2,7),
+                     (3,0),(3,7),(4,0),(4,7),(5,0),(5,7),(5,1),(5,6),(0,0),           
+                     (0,1),(0,2),(0,3),(0,4),(0,5),(0,6)]
+
+CHECK_ORDER_BLACK = [(3,3),(4,3),(3,4),(4,4),(4,2),(4,5),(3,2),(3,5),(5,2),(5,3),(5,4),
+          (5,5),(6,2),(6,3),(6,4),(6,5),(2,2),(2,3),(2,4),(2,5),(5,1),(5,6),(4,1),(4,6),(3,1),
+          (3,6),(2,1),(2,6),(6,1),(6,6),(5,0),(5,7),(6,0),(6,7),(4,0),(4,7),(3,0),(3,7),
+          (2,0),(2,7),(7,1),(7,2),(7,3),(7,4),(7,5),(7,6)]
 
 
 PLACEMAP = {WHITE: PLACEMAP_WHITE, BLACK: PLACEMAP_BLACK}
@@ -185,12 +214,13 @@ class Player():
                 self.totalTurns += 1
                 action = self.miniMax(MINIMAX_DEPTH_1)
                 self.node.update_board_inplace(action, self.player_colour)
-
+            if action == None:
+                return None
             return (action[0][::-1], action[1][::-1])
 
         else:
             self.totalTurns += 1
-            place_move = self.miniMaxPlace(3)
+            place_move = self.miniMaxPlace(4)
             self.node.update_board_inplace(place_move, self.player_colour)
 
             return place_move[::-1]
@@ -413,7 +443,7 @@ class Player():
 
             v = -np.inf
 
-            ordered_child_nodes = sorted(node.genChildPlace(node.colour),
+            ordered_child_nodes = sorted(node.genChildPlaceAgressive(node.colour),
                 key=lambda x: x[0].move_estim, reverse=True)
 
             for child in ordered_child_nodes:
@@ -437,7 +467,7 @@ class Player():
                 return nodeValue
 
             v = np.inf
-            ordered_child_nodes = sorted(node.genChildPlace(MAP[node.colour]),
+            ordered_child_nodes = sorted(node.genChildPlaceAgressive(MAP[node.colour]),
                 key=lambda x: x[0].move_estim)
 
             for child in ordered_child_nodes:
@@ -690,7 +720,7 @@ class board(object):
             for row, line in enumerate(self.state):
                 for col, symbol in enumerate(line):
                     if symbol  == self.colour:
-                        f2 += PLACEMAP[self.colour][row][col]
+                        f2 += PLACEMAP_WHITE[row][col]
                         checkCond = {'D':row+1 < SIZE,
                                  'U':row-1 >= 0,
                                  'R':col+1 < SIZE,
@@ -711,17 +741,17 @@ class board(object):
             for row, line in enumerate(self.state):
                 for col, symbol in enumerate(line):
                     if symbol == self.colour:
-                        f2 += PLACEMAP[self.colour][row][col]
-                        f3 += self.count_legal_moves(self.state, row , col, self.colour)
+                        f2 += PLACEMAP[self.colour][row][col]   # placements scoring
+                        f3 += self.count_legal_moves(self.state, row , col, self.colour) # safe mobility
                         checkCond = {'D':row+1 < SIZE,
                                  'U':row-1 >= 0,
                                  'R':col+1 < SIZE,
                                  'L':col-1 >= 0}
 
                         for m in checkCond:
-                            if checkCond[m]:
+                            if checkCond[m]:    
                                 if pos_check(self.state, row, col, m) == self.colour:
-                                    f4 += 1
+                                    f4 += 1     # surrounding friendly pieces
 
 
         return f1*WEIGHTS[0] + f2*WEIGHTS[1] + f3*WEIGHTS[2] + f4*WEIGHTS[3]
@@ -780,6 +810,27 @@ class board(object):
                         child_nodes.append(self.update_board_return((row, col), colour))
         return child_nodes
 
+###############################################################################  
+    
+    # This aggressively prunes by only only expanding 22 nodes, based on the assumption
+    # that the opponent would try to play in the middle.
+    def genChildPlaceAgressive(self, colour):
+        child_nodes = []
+        if colour == 1:
+            mapping = CHECK_ORDER_WHITE
+        elif colour == 2:
+            mapping = CHECK_ORDER_BLACK
+        
+        for placements in mapping:
+
+            if placements[0] not in DEATHMAP[colour]:
+                if self.state[placements[0], placements[1]] == UNOCC:
+                        child_nodes.append(self.update_board_return((placements[0], placements[1]), colour))
+                        if len(child_nodes) == 22:
+                            return child_nodes
+        
+        return child_nodes    
+    
 ZOR = initTable()
 
 ###############################################################################

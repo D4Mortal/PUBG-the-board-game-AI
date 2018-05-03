@@ -139,7 +139,6 @@ class Player():
     def action(self, turns):
         if turns == 128:
             # self.firstShrink(self.node)
-            print("i hope this is proc")
             self.shrink_board(self.node, 1)
             self.node.shrink_eliminate(1)
 
@@ -164,7 +163,8 @@ class Player():
                 self.totalTurns += 1
                 action = self.miniMax(MINIMAX_DEPTH_1)
                 self.node.update_board_inplace(action, self.player_colour)
-
+            if action == None:
+                return None
             return (action[0][::-1], action[1][::-1])
 
         else:
@@ -248,7 +248,6 @@ class Player():
                 self.shrink_board(self.node, 1)
                 # self.node.shrinkKill1()
                 self.node.shrink_eliminate(1)
-                print(self.node.state)
             if self.turns == 192:
                 self.shrink_board(self.node, 2)
                 # self.secondShrink(self.node)
@@ -621,11 +620,11 @@ class board(object):
             if self.state[1, 2] != UNOCC and self.state[1, 3] != UNOCC:
                 if self.state[1, 2] != self.state[1, 3]:
                     self.state[1, 2] = UNOCC
-                    
+
             if self.state[1, 4] != UNOCC and self.state[1, 4] != UNOCC:
                 if self.state[1, 4] != self.state[1, 4]:
                     self.state[1, 5] = UNOCC
-                    
+
             if self.state[2, 1] != UNOCC and self.state[3, 1] != UNOCC:
                 if self.state[2, 1] != self.state[3, 1]:
                     self.state[2, 1] = UNOCC
@@ -637,15 +636,15 @@ class board(object):
             if self.state[6, 2] != UNOCC and self.state[6, 3] != UNOCC:
                 if self.state[6, 2] != self.state[6, 3]:
                     self.state[6, 2] = UNOCC
-                    
-            if self.state[6, 6] != UNOCC and self.state[6, 5] != UNOCC:
-                if self.state[6, 6] != self.state[6, 5]:
-                    self.state[6, 6] = UNOCC
-                    
+
+            if self.state[6, 5] != UNOCC and self.state[6, 4] != UNOCC:
+                if self.state[6, 5] != self.state[6, 4]:
+                    self.state[6, 5] = UNOCC
+
             if self.state[5, 6] != UNOCC and self.state[4, 6] != UNOCC:
                 if self.state[5, 6] != self.state[4, 6]:
                     self.state[5, 6] = UNOCC
-            
+
             if self.state[2, 6] != UNOCC and self.state[3, 6] != UNOCC:
                 if self.state[2, 6] != self.state[3, 6]:
                     self.state[2, 6] = UNOCC
