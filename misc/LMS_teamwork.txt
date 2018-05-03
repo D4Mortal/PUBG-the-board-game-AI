@@ -1,0 +1,43 @@
+# Chirag Rao Sahib      : 836011
+# Daniel Hao            : 834496
+# Date                  : 16/04/2018
+
+##############################PLAN ############################################
+
+A breakdown of how you plan on sharing the workload of this project
+between you and your partner.
+
+* researching the game playing agents and deciding on which algorithm/technique
+    to implement will be shared equally between us
+* for the implementation stage we plan to work on it currently using git for
+    version control
+
+
+A summary of where and how regularly you plan on communicating about the
+project with your partner (e.g. weekly meetings after tutorials, video chat,
+email).
+
+* as we did in partA, we will have weekly meetings after tutorials
+* we also use Discord and Facebook Messenger to communicate via messages and/or
+    voice chat
+* we occasionally have additional meetings at the Bailieu Library
+    (in a project room)
+
+
+A list of upcoming deadlines for work in other subjects between now and the
+end of semester.
+
+CHIRAG
+# 23/04 Chinese in-class test
+* 26/04 Chinese essay
+* 27/04 Linear Statistical Models assignment
+* 9/05 Machine Learning project
+
+DANIEL
+* 19/04 Computer Systems Assignment
+* 29/04 Software Modelling and Design Assignment 2
+* wk9 Japanese Kanji test
+* wk11 Software Modelling and Design Assignment 3
+* wk11 Japanese Oral test
+* wk12 Japanese research essay
+* wk11 Computer Systems Assignment 2
