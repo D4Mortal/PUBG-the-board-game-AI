@@ -23,12 +23,12 @@ TIE = 1000
 
 WEIGHTS = [1000, 5, 0.2, 2]
 
-IDEAL_DEPTH = {80:2,79:2,78:2,77:2,76:2,75:2,74:2,73:3,72:3,71:3,70:3,69:3,68:3,
-               67:3,66:3,65:3,64:3,63:3,62:3,61:3,60:3,59:3,58:3,57:3,56:3,55:3,
-               54:3,53:3,52:3,51:3,50:3,49:3,48:3,47:3,46:3,45:3,44:3,43:3,42:3,
-               41:3,40:3,39:3,38:3,37:3,36:4,35:3,34:4,33:4,32:4,31:4,30:4,29:3,
-               28:4,27:4,26:4,25:4,24:5,23:4,22:5,21:5,20:4,19:5,18:5,17:4,16:5,
-               15:5,14:6,13:5,12:5,11:6,10:6,9:6,8:6,7:6,6:6,5:6,4:6,3:6,2:6}
+IDEAL_DEPTH = {80:2,79:2,78:2,77:2,76:2,75:2,74:2,73:2,72:2,71:2,70:2,69:2,68:2,
+               67:2,66:2,65:2,64:2,63:2,62:2,61:2,60:2,59:3,58:3,57:3,56:3,55:3,
+               54:3,53:3,52:3,51:3,50:3,49:2,48:2,47:2,46:3,45:3,44:3,43:3,42:3,
+               41:3,40:3,39:3,38:3,37:3,36:3,35:3,34:3,33:3,32:3,31:3,30:3,29:3,
+               28:4,27:4,26:4,25:4,24:4,23:4,22:4,21:4,20:4,19:5,18:5,17:5,16:4,
+               15:4,14:5,13:5,12:5,11:5,10:5,9:6,8:6,7:6,6:6,5:7,4:7,3:7,2:7}
 
 MAP = {WHITE:BLACK, BLACK:WHITE}
 
@@ -61,7 +61,7 @@ PLACEMAP_WHITE2 = [[-1,-1,-1,-1,-1,-1,-1,-1],
                   [-1,-1,0,0,0,0,-1,-1],
                   [-1,-1,-1,-1,-1,-1,-1,-1]]
 
-PLACEMAP_BLACK2 =  [[-1,-1,-1,-1,-1,-1,-1,-1],
+PLACEMAP_BLACK2 =[[-1,-1,-1,-1,-1,-1,-1,-1],
                   [-1,-1,0,0,0,0,-1,-1],
                   [-1,0,0,1,1,0,0,-1],
                   [-1,0,3,4,4,3,0,-1],
@@ -210,7 +210,7 @@ class Player():
             child_nodes_enemy = self.node.genChild(self.opp_colour)
 
             total_branching = len(child_nodes_friendly) + len(child_nodes_enemy)
-
+            print(total_branching)
             action = self.miniMax(IDEAL_DEPTH[total_branching],child_nodes_friendly)
 
             self.totalTurns += 1
@@ -309,7 +309,6 @@ class Player():
         def maxValue(nodeInfo, depth, alpha, beta, turns, hashValue):
             node = nodeInfo[0]
             killed = nodeInfo[1]
-
             if turns == 129:
                 self.shrink_board(node, 1)
                 # node.shrinkKill1()
@@ -334,14 +333,14 @@ class Player():
                 nodeValue = self.hashTable[nodeHash]
                 self.visited+=1
                 if nodeHash in self.abHash:
-                    if turns == self.abHash[nodeHash][1]:
+                    if depth == self.abHash[nodeHash][1]:
                         alpha, beta = self.abHash[nodeHash][0]
 
             else:
                 nodeValue = node.eval_func(2)
                 self.hashTable[nodeHash] = nodeValue
                 if alpha != -np.inf and beta != np.inf:
-                    self.abHash[nodeHash] = ((alpha, beta), turns)
+                    self.abHash[nodeHash] = ((alpha, beta), depth)
 
             if  depth <= 0 or nodeValue == LOSE or nodeValue == WIN or nodeValue == TIE:
                 return nodeValue
@@ -390,14 +389,14 @@ class Player():
                 nodeValue = self.hashTable[nodeHash]
                 self.visited += 1
                 if nodeHash in self.abHash:
-                    if turns == self.abHash[nodeHash][1]:
+                    if depth == self.abHash[nodeHash][1]:
                         alpha, beta = self.abHash[nodeHash][0]
 
             else:
                 nodeValue = node.eval_func(2)
                 self.hashTable[nodeHash] = nodeValue
                 if alpha != -np.inf and beta != np.inf:
-                    self.abHash[nodeHash] = ((alpha, beta), turns)
+                    self.abHash[nodeHash] = ((alpha, beta), depth)
 
             if  depth <= 0 or nodeValue == LOSE or nodeValue == WIN or nodeValue == TIE:
                 return nodeValue
@@ -407,11 +406,11 @@ class Player():
                 key=lambda x: x[0].move_estim)
 
             for child in ordered_child_nodes:
+
                 v = min(v, maxValue(child, depth-1, alpha, beta, turns+1, nodeHash))
 #                print(child.eval_node(), end='')
 #                print(child.state)
-                if v <= alpha:
-                    return v
+                if v <= alpha: return v
                 beta = min(beta, v)
 
             return v

@@ -5,7 +5,7 @@
 # different number of pieces on the board
 
 ###############################################################################
-import json
+
 from partb import Player
 
 from random import randint
@@ -23,7 +23,7 @@ black = 12
 white = 12
 
 result = {}
-
+result2 = {}
 def removeRandomPiece(state):
     global black
     global white
@@ -56,10 +56,10 @@ def testRun(random = False):
 
     game = Player('white')
     if random:
-        file = open("test_result_random.txt", "w")
+        file = open("test_result_random.txt", "a")
 
     else:
-        file = open("test_result_in_order.txt", "w")
+        file = open("test_result_in_order.txt", "a")
 #    print('before update')
     game.put_piece(4, 3, WHITE)  # example for move
     game.put_piece(4, 7, WHITE)  # example for move
@@ -108,7 +108,7 @@ def testRun(random = False):
         file.write("#Black braches: {}, #White branches: {}, total: {}, Depth: {}, Elapsed: {} seconds\n"
                    .format(len(child_nodes_friendly), len(child_nodes_enemy), total_branch, depth, timeTaken))
         
-        if timeTaken < 0.75:
+        if timeTaken < 0.6:
             if total_branch not in result:
                 result[total_branch] = depth,timeTaken
                 
@@ -118,6 +118,17 @@ def testRun(random = False):
                 average = result[total_branch][1] + timeTaken
                 average = average/2
                 result[total_branch] = depth,average
+                
+
+        if total_branch not in result2:
+            result2[total_branch] = depth, timeTaken
+        elif result2[total_branch][0] < depth:
+                result2[total_branch] = depth,timeTaken
+        elif result2[total_branch][0] == depth:
+            average2 = result2[total_branch][1] + timeTaken
+            average2 = average2/2
+
+            
         if timeTaken > 2:
             depth = 1
             
@@ -142,7 +153,7 @@ def testRun(random = False):
 
 
 
-for a in range(15):
+for a in range(100):
     black = 12
     white = 12
     testRun(True)
@@ -151,8 +162,12 @@ final_results = open("branching_results.txt", "w")
 for key, value in sorted(result.items(), reverse = True):
     final_results.write("{}:{},".format(key,value[0]))
 
-
+final_results2 = open("branching_results_detailed_average.txt", "w")
+for key, value in sorted(result2.items(), reverse = True):
+    final_results2.write("{}:{}\n".format(key,value))
+    
 final_results.close()
+final_results2.close()
 print(result)
 
 
