@@ -1,13 +1,13 @@
 # Date                  : 01/05/2018
 # Python version        : 3.6.4
 
-# This is a test program that records the time to do minimax search with
-# different number of pieces on the board
+# This is a sampling program that records the time to do minimax search with
+# different number of pieces on the board and branching factor
 
 ###############################################################################
 
-from partb import Player
-
+from partb import Player, board
+import numpy as np
 from random import randint
 import time
 
@@ -24,6 +24,8 @@ white = 12
 
 result = {}
 result2 = {}
+###############################################################################
+
 def removeRandomPiece(state):
     global black
     global white
@@ -32,7 +34,7 @@ def removeRandomPiece(state):
         for row, line in enumerate(state):
             for col, symbol in enumerate(line):
                 if symbol == WHITE or symbol == BLACK:
-                    if randint(0,24) == 10:
+                    if randint(0,63) == 10:
                         if state[row, col] == WHITE:
                             white -= 1
                         else:
@@ -41,18 +43,61 @@ def removeRandomPiece(state):
                         removed = True
                         return
 
-
+###############################################################################
+                        
 def removePieceInOrder(state, colour):
     for row, line in enumerate(state):
         for col, symbol in enumerate(line):
             if symbol == colour:
                 state[row, col] = UNOCC
                 return
-
-
+            
+###############################################################################
+                                    
+def generateRandomBoard(whiteNum, blackNum):
+    state = np.full((SIZE, SIZE), UNOCC, dtype=int)
+    state[0,0] = CORNER
+    state[0,7] = CORNER
+    state[7,0] = CORNER
+    state[7,7] = CORNER
+    temp = board(state,(),WHITE)
+    
+    while not (whiteNum == 0 and blackNum == 0):
+        for row, line in enumerate(state):
+            for col, symbol in enumerate(line):
+                if symbol == UNOCC:
+                    random = randint(0,63)
+                    if random == 31 or random == 32:
+                        if random % 2 == 0 and whiteNum > 0:
+                            state[row, col] = WHITE
+                            isElim = temp.eliminate_board(state, WHITE)
+                            if len(isElim) == 0:
+                                whiteNum -= 1
+                            else:
+                                whiteNum -= 1
+                                for killed in isElim:
+                                    if killed[1] == WHITE:
+                                        whiteNum += 1
+                                    else:
+                                        blackNum += 1
+                       
+                        elif random % 2 != 0 and blackNum > 0:
+                            state[row, col] = BLACK
+                            isElim = temp.eliminate_board(state, BLACK)
+                            if len(isElim) == 0:
+                                blackNum -= 1
+                            else:
+                                blackNum -= 1
+                                for killed in isElim:
+                                    if killed[1] == WHITE:
+                                        whiteNum += 1
+                                    else:
+                                       blackNum += 1
+    return state
+###############################################################################
+    
 # random specifies if the peices are removed randomly or in order
-
-def testRun(random = False):
+def sampling(random = False):
 
     game = Player('white')
     if random:
@@ -60,35 +105,9 @@ def testRun(random = False):
 
     else:
         file = open("test_result_in_order.txt", "a")
-#    print('before update')
-    game.put_piece(4, 3, WHITE)  # example for move
-    game.put_piece(4, 7, WHITE)  # example for move
-    game.put_piece(2, 5, WHITE)  # example for move
-    game.put_piece(4, 6, WHITE)  # example for move
-    game.put_piece(1, 1, WHITE)  # example for move
-    game.put_piece(0, 3, WHITE)  # example for move
-    game.put_piece(2, 0, WHITE)  # example for move
-    game.put_piece(6, 3, WHITE)  # example for move
-    game.put_piece(0, 5, WHITE)  # example for move
-    game.put_piece(5, 0, WHITE)  # example for move
-    game.put_piece(4, 1, WHITE)  # example for move
-    game.put_piece(6, 7, WHITE)  # example for move
 
-
-    game.put_piece(2, 4, BLACK)  # example for move
-    game.put_piece(2, 2, BLACK)  # example for move
-    game.put_piece(3, 5, BLACK)  # example for move
-    game.put_piece(3, 6, BLACK)  # example for move
-    game.put_piece(3, 1, BLACK)  # example for move
-    game.put_piece(3, 3, BLACK)  # example for move
-    game.put_piece(5, 4, BLACK)  # example for move
-    game.put_piece(3, 5, BLACK)  # example for move
-    game.put_piece(0, 1, BLACK)  # example for move
-    game.put_piece(2, 7, BLACK)  # example for move
-    game.put_piece(7, 1, BLACK)  # example for move
-    game.put_piece(7, 4, BLACK)  # example for move
-    game.put_piece(6, 6, BLACK)  # example for move
-
+    game.node.state = generateRandomBoard(12,12)
+    print(game.node.state)
     depth = 1
     removed = 1
 
@@ -119,8 +138,6 @@ def testRun(random = False):
                 average = average/2
                 result[total_branch] = depth,average
 
-
-
         if (total_branch,depth) not in result:
             result2[total_branch,depth] = timeTaken
         elif result[(total_branch,depth)] == depth:
@@ -131,7 +148,6 @@ def testRun(random = False):
 
         if timeTaken > 2:
             depth = 1
-
             if not random:
                 if removed % 2 == 1:
                     removePieceInOrder(game.node.state, BLACK)
@@ -151,21 +167,22 @@ def testRun(random = False):
     file.close()
     return
 
+###############################################################################
 
-
-for a in range(10):
+for numOfRuns in range(1):
     black = 12
     white = 12
-    testRun(True)
+    sampling(True)
 
-final_results = open("branching_results.txt", "w")
-for key, value in sorted(result.items(), reverse = True):
-    final_results.write("{}:{},".format(key,value[0]))
 
-final_results2 = open("branching_results_detailed_average.txt", "w")
-for key, value in sorted(result2.items(), reverse = True):
-    final_results2.write("{}:{}\n".format(key,value))
+with open("branching_results.txt", "w") as final_results:
+    for key, value in sorted(result.items(), reverse = True):
+        final_results.write("{}:{},".format(key,value[0]))
 
-final_results.close()
-final_results2.close()
+with open("branching_results_detailed_average.txt", "w") as final_results2:
+    for key, value in sorted(result2.items(), reverse = True):
+        final_results2.write("{}:{}\n".format(key,value))
+    
+
+
 print(result)
