@@ -1,7 +1,7 @@
 # Date                  : 01/05/2018
 # Python version        : 3.6.4
 
-# This is a test program that records the time to do minimax search with 
+# This is a test program that records the time to do minimax search with
 # different number of pieces on the board
 
 ###############################################################################
@@ -28,7 +28,7 @@ def removeRandomPiece(state):
     global black
     global white
     removed = False
-    while not removed: 
+    while not removed:
         for row, line in enumerate(state):
             for col, symbol in enumerate(line):
                 if symbol == WHITE or symbol == BLACK:
@@ -40,17 +40,17 @@ def removeRandomPiece(state):
                         state[row, col] = UNOCC
                         removed = True
                         return
-                
-    
+
+
 def removePieceInOrder(state, colour):
     for row, line in enumerate(state):
         for col, symbol in enumerate(line):
             if symbol == colour:
                 state[row, col] = UNOCC
-                return 
+                return
 
 
-# random specifies if the peices are removed randomly or in order    
+# random specifies if the peices are removed randomly or in order
 
 def testRun(random = False):
 
@@ -73,8 +73,8 @@ def testRun(random = False):
     game.put_piece(5, 0, WHITE)  # example for move
     game.put_piece(4, 1, WHITE)  # example for move
     game.put_piece(6, 7, WHITE)  # example for move
-    
-    
+
+
     game.put_piece(2, 4, BLACK)  # example for move
     game.put_piece(2, 2, BLACK)  # example for move
     game.put_piece(3, 5, BLACK)  # example for move
@@ -88,10 +88,10 @@ def testRun(random = False):
     game.put_piece(7, 1, BLACK)  # example for move
     game.put_piece(7, 4, BLACK)  # example for move
     game.put_piece(6, 6, BLACK)  # example for move
-    
+
     depth = 1
     removed = 1
-    
+
     while True:
         global black
         global white
@@ -100,38 +100,38 @@ def testRun(random = False):
         child_nodes_friendly = game.node.genChild(game.player_colour)
         child_nodes_enemy = game.node.genChild(game.opp_colour)
         total_branch = len(child_nodes_friendly) + len(child_nodes_enemy)
-        
+
         game.miniMax(depth,child_nodes_friendly)
         end = time.time()
         timeTaken = end - start
 #        file.write("#Black: {}, #White: {}, Depth: {}, Elapsed: {} seconds\n".format(black, white, depth, timeTaken))
         file.write("#Black braches: {}, #White branches: {}, total: {}, Depth: {}, Elapsed: {} seconds\n"
                    .format(len(child_nodes_friendly), len(child_nodes_enemy), total_branch, depth, timeTaken))
-        
-        if timeTaken < 0.6:
+
+        if timeTaken < 0.5:
             if total_branch not in result:
                 result[total_branch] = depth,timeTaken
-                
+
             elif result[total_branch][0] < depth:
                 result[total_branch] = depth,timeTaken
             elif result[total_branch][0] == depth:
                 average = result[total_branch][1] + timeTaken
                 average = average/2
                 result[total_branch] = depth,average
-                
 
-        if total_branch not in result2:
-            result2[total_branch] = depth, timeTaken
-        elif result2[total_branch][0] < depth:
-                result2[total_branch] = depth,timeTaken
-        elif result2[total_branch][0] == depth:
-            average2 = result2[total_branch][1] + timeTaken
+
+
+        if (total_branch,depth) not in result:
+            result2[total_branch,depth] = timeTaken
+        elif result[(total_branch,depth)] == depth:
+            average2 = result2[(total_branch,depth)] + timeTaken
             average2 = average2/2
+            result2[(total_branch,depth)] = average
 
-            
+
         if timeTaken > 2:
             depth = 1
-            
+
             if not random:
                 if removed % 2 == 1:
                     removePieceInOrder(game.node.state, BLACK)
@@ -145,15 +145,15 @@ def testRun(random = False):
             continue
         else:
             depth += 1
-                  
+
         if black == 1 or white == 1:
             break
-    file.close()  
+    file.close()
     return
 
 
 
-for a in range(100):
+for a in range(10):
     black = 12
     white = 12
     testRun(True)
@@ -165,12 +165,7 @@ for key, value in sorted(result.items(), reverse = True):
 final_results2 = open("branching_results_detailed_average.txt", "w")
 for key, value in sorted(result2.items(), reverse = True):
     final_results2.write("{}:{}\n".format(key,value))
-    
+
 final_results.close()
 final_results2.close()
 print(result)
-
-
-
-
-
