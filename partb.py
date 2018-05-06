@@ -24,10 +24,10 @@ TIE = 1000
 WEIGHTS = [1000, 5, 0.2, 2]
 
 IDEAL_DEPTH = {80:2,79:2,78:2,77:2,76:2,75:2,74:2,73:2,72:2,71:2,70:2,69:2,68:2,
-               67:2,66:2,65:2,64:2,63:2,62:2,61:2,60:2,59:3,58:3,57:3,56:3,55:3,
-               54:3,53:3,52:3,51:3,50:3,49:2,48:2,47:2,46:3,45:3,44:3,43:3,42:3,
+               67:2,66:2,65:2,64:2,63:2,62:2,61:2,60:2,59:2,58:2,57:2,56:2,55:2,
+               54:2,53:3,52:3,51:3,50:3,49:2,48:2,47:2,46:3,45:3,44:3,43:3,42:3,
                41:3,40:3,39:3,38:3,37:3,36:3,35:3,34:3,33:3,32:3,31:3,30:3,29:3,
-               28:4,27:4,26:4,25:4,24:4,23:4,22:4,21:4,20:4,19:5,18:5,17:5,16:4,
+               28:3,27:3,26:4,25:4,24:4,23:4,22:4,21:4,20:4,19:5,18:5,17:5,16:4,
                15:4,14:5,13:5,12:5,11:5,10:5,9:6,8:6,7:6,6:6,5:7,4:7,3:7,2:7}
 
 MAP = {WHITE:BLACK, BLACK:WHITE}
@@ -722,7 +722,7 @@ class board(object):
             for row, line in enumerate(self.state):
                 for col, symbol in enumerate(line):
                     if symbol  == self.colour:
-                        f2 += PLACEMAP_WHITE[row][col]
+                        f2 += PLACEMAP[self.colour][row][col]
                         checkCond = {'D':row+1 < SIZE,
                                  'U':row-1 >= 0,
                                  'R':col+1 < SIZE,
@@ -814,8 +814,8 @@ class board(object):
 
 ###############################################################################
 
-    # This aggressively prunes by only only expanding 22 nodes, based on the assumption
-    # that the opponent would try to play in the middle.
+    # This aggressively prunes by only only expanding nodes in a particular 
+    # order
     def genChildPlaceAgressive(self, colour):
         child_nodes = []
         if colour == 1:
@@ -847,10 +847,10 @@ def testMemUsage():
 
 ###############################################################################
 
-# def testrun(me = 'white'):
-#     game = Player(me)
+def testrun(me = 'white'):
+     game = Player(me)
 
-#     # update board tests
+     # update board tests
 #     move = ((2,5), (2,6))
 #     move2 = ((2,4), (3,4))
 #     move3 = ((3,5), (1,1))
@@ -858,34 +858,34 @@ def testMemUsage():
 #     place = (6,5)
 #     null_move = None
 
-# #    print('before update')
-#     game.put_piece(4, 3, WHITE)  # example for move
-#     game.put_piece(4, 7, WHITE)  # example for move
-#     game.put_piece(2, 5, WHITE)  # example for move
-#     game.put_piece(4, 6, WHITE)  # example for move
-#     game.put_piece(1, 1, WHITE)  # example for move
-#     game.put_piece(0, 3, WHITE)  # example for move
-#     game.put_piece(2, 0, WHITE)  # example for move
-#     game.put_piece(6, 3, WHITE)  # example for move
-#     game.put_piece(0, 5, WHITE)  # example for move
-#     game.put_piece(5, 0, WHITE)  # example for move
-#     game.put_piece(4, 1, WHITE)  # example for move
-#     game.put_piece(6, 7, WHITE)  # example for move
+ #    print('before update')
+     game.put_piece(4, 3, WHITE)  # example for move
+     game.put_piece(4, 7, WHITE)  # example for move
+     game.put_piece(2, 5, WHITE)  # example for move
+     game.put_piece(4, 6, WHITE)  # example for move
+     game.put_piece(1, 1, WHITE)  # example for move
+     game.put_piece(0, 3, WHITE)  # example for move
+     game.put_piece(2, 0, WHITE)  # example for move
+     game.put_piece(6, 3, WHITE)  # example for move
+     game.put_piece(0, 5, WHITE)  # example for move
+     game.put_piece(5, 0, WHITE)  # example for move
+     game.put_piece(4, 1, WHITE)  # example for move
+     game.put_piece(6, 7, WHITE)  # example for move
 
 
-#     game.put_piece(2, 4, BLACK)  # example for move
-#     game.put_piece(2, 2, BLACK)  # example for move
-#     game.put_piece(3, 5, BLACK)  # example for move
-#     game.put_piece(3, 6, BLACK)  # example for move
-#     game.put_piece(3, 1, BLACK)  # example for move
-#     game.put_piece(3, 3, BLACK)  # example for move
-#     game.put_piece(5, 4, BLACK)  # example for move
-#     game.put_piece(3, 5, BLACK)  # example for move
-#     game.put_piece(0, 1, BLACK)  # example for move
-#     game.put_piece(2, 7, BLACK)  # example for move
-#     game.put_piece(7, 1, BLACK)  # example for move
-#     game.put_piece(7, 4, BLACK)  # example for move
-#     game.put_piece(6, 6, BLACK)  # example for move
+     game.put_piece(2, 4, BLACK)  # example for move
+     game.put_piece(2, 2, BLACK)  # example for move
+     game.put_piece(3, 5, BLACK)  # example for move
+     game.put_piece(3, 6, BLACK)  # example for move
+     game.put_piece(3, 1, BLACK)  # example for move
+     game.put_piece(3, 3, BLACK)  # example for move
+     game.put_piece(5, 4, BLACK)  # example for move
+     game.put_piece(3, 5, BLACK)  # example for move
+     game.put_piece(0, 1, BLACK)  # example for move
+     game.put_piece(2, 7, BLACK)  # example for move
+     game.put_piece(7, 1, BLACK)  # example for move
+     game.put_piece(7, 4, BLACK)  # example for move
+     game.put_piece(6, 6, BLACK)  # example for move
 #    print(game.node.state)
 #    print(game.player_colour)
 #    print(game.node.eval_node())
@@ -896,16 +896,16 @@ def testMemUsage():
 
 
 
-    # print("This is the current board config")
-    # print(game.node.state)
-    # depth = input("Please select a depth to search on: ")
-    # print("Searching ahead for {} moves...".format(depth))
-    # result = game.miniMax(int(depth))
-    # print("The optimal move for white is: ", end='')
-    # print(result)
-    # print(sys.getsizeof(game.hashTable))
-    # print(game.visited)
-    # print(game.miniMaxPlace(4))
+     print("This is the current board config")
+     print(game.node.state)
+     depth = input("Please select a depth to search on: ")
+     print("Searching ahead for {} moves...".format(depth))
+     result = game.miniMax(int(depth), game.node.genChild(game.player_colour))
+     print("The optimal move for white is: ", end='')
+     print(result)
+#     print(sys.getsizeof(game.hashTable))
+#     print(game.visited)
+#     print(game.miniMaxPlace(4))
 
 # # #
 #    print(sys.getsizeof(game.hashTable))
@@ -966,5 +966,5 @@ def testMemUsage():
 
 
 
-#testrun()
+testrun()
 #testMemUsage()

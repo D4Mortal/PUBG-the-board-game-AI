@@ -66,8 +66,8 @@ def generateRandomBoard(whiteNum, blackNum):
         for row, line in enumerate(state):
             for col, symbol in enumerate(line):
                 if symbol == UNOCC:
-                    random = randint(0,63)
-                    if random == 31 or random == 32:
+                    random = randint(0,127)
+                    if random == 1 or random == 2:
                         if random % 2 == 0 and whiteNum > 0:
                             state[row, col] = WHITE
                             isElim = temp.eliminate_board(state, WHITE)
