@@ -35,12 +35,16 @@ def removeRandomPiece(state):
             for col, symbol in enumerate(line):
                 if symbol == WHITE or symbol == BLACK:
                     if randint(0,63) == 10:
-                        if state[row, col] == WHITE:
+                        if state[row, col] == WHITE and white > 0:
                             white -= 1
-                        else:
+                            state[row, col] = UNOCC
+                            removed = True
+                            
+                        elif state[row, col] == BLACK and black > 0:
                             black -= 1
-                        state[row, col] = UNOCC
-                        removed = True
+                            state[row, col] = UNOCC
+                            removed = True
+                            
                         return
 
 ###############################################################################
@@ -146,23 +150,25 @@ def sampling(random = False):
             result2[(total_branch,depth)] = average
 
 
-        if timeTaken > 2:
+        if timeTaken > 2 or depth > 30:
             depth = 1
             if not random:
-                if removed % 2 == 1:
+                if removed % 2 == 1 and black > 0:
                     removePieceInOrder(game.node.state, BLACK)
                     black -= 1
-                else:
+                    removed += 1
+                    
+                elif removed % 2 == 0 and white > 0:
                     removePieceInOrder(game.node.state, WHITE)
                     white -= 1
+                    removed += 1
             else:
                 removeRandomPiece(game.node.state)
-            removed += 1
+                removed += 1
             continue
         else:
             depth += 1
-
-        if black == 1 or white == 1:
+        if black <= 1 and white <= 1:
             break
     file.close()
     return
