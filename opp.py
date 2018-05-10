@@ -21,7 +21,7 @@ WIN = 9999
 LOSE = -1 * WIN
 TIE = 1000
 
-WEIGHTS = [1000, 5, 0.2, 2]
+WEIGHTS = [5, -5, 5, 5, 5]
 
 IDEAL_DEPTH = {96:2,95:2,94:2,93:2,92:2,91:2,90:2,89:2,88:2,87:2,86:2,86:2,
                86:2,85:2,84:2,83:2,82:2,81:2,80:2,79:2,78:2,77:2,76:2,75:2,
@@ -192,7 +192,7 @@ class Player():
                 # self.secondShrink(self.node)
                 self.shrink_board(self.node, 2)
                 self.node.shrink_eliminate(2)
-        
+
         
 
         # This is only used by player pieces
@@ -711,17 +711,19 @@ class board(object):
         results = np.bincount(self.state.ravel())
 
         # simple piece counter
-        f1 = results[self.colour] - results[opp_colour]
-        f2 = 0
-        f3 = 0
-        f4 = 0  # connectdness
+        f1 = results[self.colour]
+        f2 = results[opp_colour]
+        f3 = 0  # board val
+        f4 = 0  # safe mob
+        f5 = 0  # connectdness
+
 
         if phase == 1:  #placing
             # center control + connectedness
             for row, line in enumerate(self.state):
                 for col, symbol in enumerate(line):
                     if symbol  == self.colour:
-                        f2 += PLACEMAP[self.colour][row][col]
+                        f3 += PLACEMAP[self.colour][row][col]
                         check_dir = {'D':row+1 < SIZE,
                                      'U':row-1 >= 0,
                                      'R':col+1 < SIZE,
@@ -731,7 +733,7 @@ class board(object):
                             if check_dir[m]:
                                 if (pos_check(self.state, row, col, m) ==
                                     self.colour):
-                                    f4 += 1
+                                    f5 += 1
 
 
         if phase == 2:  #all moving phases
@@ -746,8 +748,8 @@ class board(object):
             for row, line in enumerate(self.state):
                 for col, symbol in enumerate(line):
                     if symbol == self.colour:
-                        f2 += PLACEMAP[self.colour][row][col]   # placements scoring
-                        f3 += self.count_legal_moves(self.state, row , col,
+                        f3 += PLACEMAP[self.colour][row][col]   # placements scoring
+                        f4 += self.count_legal_moves(self.state, row , col,
                                                      self.colour) # safe mobility
                         check_dir = {'D':row+1 < SIZE,
                                      'U':row-1 >= 0,
@@ -758,10 +760,11 @@ class board(object):
                             if check_dir[m]:
                                 if (pos_check(self.state, row, col, m) ==
                                     self.colour):
-                                    f4 += 1     # surrounding friendly pieces
+                                    f5 += 1     # surrounding friendly pieces
 
 
-        return f1*WEIGHTS[0] + f2*WEIGHTS[1] + f3*WEIGHTS[2] + f4*WEIGHTS[3]
+        return (f1*WEIGHTS[0] + f2*WEIGHTS[1] + f3*WEIGHTS[2] + f4*WEIGHTS[3]
+                    + f5*WEIGHTS[4])
 
 ###############################################################################
 
