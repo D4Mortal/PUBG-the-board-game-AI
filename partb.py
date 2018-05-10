@@ -28,8 +28,8 @@ IDEAL_DEPTH = {96:2,95:2,94:2,93:2,92:2,91:2,90:2,89:2,88:2,87:2,86:2,86:2,
                74:2,73:2,72:2,71:2,70:2,69:2,68:2,67:2,66:2,65:3,64:3,63:3,
                62:3,61:3,60:3,59:3,58:3,57:3,56:3,55:3,54:3,53:3,52:3,51:3,
                50:3,49:2,48:2,47:2,46:2,45:3,44:3,43:3,42:3,41:3,40:3,39:3,
-               38:3,37:3,36:3,35:3,34:3,33:3,32:3,31:3,30:3,29:3,28:3,27:3,
-               26:3,25:4,24:4,23:4,22:4,21:4,20:4,19:5,18:5,17:5,16:5,15:5,
+               38:3,37:3,36:3,35:3,34:3,33:3,32:3,31:3,30:4,29:4,28:4,27:4,
+               26:4,25:4,24:4,23:4,22:4,21:4,20:4,19:5,18:5,17:5,16:5,15:5,
                14:6,13:6,12:6,11:6,10:6,9:6,8:6,7:6,6:7,5:7,4:8,3:9,2:10,1:30,
                0:30}
 
@@ -181,14 +181,29 @@ class Player():
 ###############################################################################
 
     def action(self, turns):
-        if turns == PHASE2-1:
-            # print("i hope this is proc")
-            self.shrink_board(self.node, 1)
-            self.node.shrink_eliminate(1)
+        if self.player_colour == WHITE:
+            if turns == 128:
+                # self.firstShrink(self.node)
+                # print("i hope this is proc")
+                self.shrink_board(self.node, 1)
+                self.node.shrink_eliminate(1)
 
-        if turns == PHASE3-1:
-            self.shrink_board(self.node, 2)
-            self.node.shrink_eliminate(2)
+            if turns == 192:
+                # self.secondShrink(self.node)
+                self.shrink_board(self.node, 2)
+                self.node.shrink_eliminate(2)
+        
+        if self.player_colour == BLACK:
+            if turns == 129:
+                # self.firstShrink(self.node)
+                # print("i hope this is proc")
+                self.shrink_board(self.node, 1)
+                self.node.shrink_eliminate(1)
+
+            if turns == 193:
+                # self.secondShrink(self.node)
+                self.shrink_board(self.node, 2)
+                self.node.shrink_eliminate(2)
 
         # This is only used by player pieces
         self.turns = turns + 1
@@ -250,14 +265,6 @@ class Player():
             self.node.update_board_inplace(action, self.opp_colour)
 
         if size == 4:
-            if self.turns == PHASE2-1:
-                self.shrink_board(self.node, 1)
-                self.node.shrink_eliminate(1)
-
-            if self.turns == PHAE3-1:
-                self.shrink_board(self.node, 2)
-                self.node.shrink_eliminate(2)
-
             invert1 = action[0][::-1]
             invert2 = action[1][::-1]
             self.node.update_board_inplace((invert1, invert2), self.opp_colour)
