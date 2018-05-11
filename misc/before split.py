@@ -808,6 +808,7 @@ class board(object):
     def gen_child_place_agr(self, colour):
         '''
         aggressively prunes by only expanding nodes in a particular order
+            (placing)
         '''
         child_nodes = []
         board_val = ORDERMAP[colour]
