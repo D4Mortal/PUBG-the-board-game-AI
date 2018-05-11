@@ -1,4 +1,6 @@
-# Date                  : 01/05/2018
+# Chirag Rao Sahib      : 836011
+# Daniel Hao            : 834496
+# Date                  : 10/05/2018
 # Python version        : 3.6.4
 
 # This is a sampling program that records the time to do minimax search with
@@ -39,25 +41,25 @@ def removeRandomPiece(state):
                             white -= 1
                             state[row, col] = UNOCC
                             removed = True
-                            
+
                         elif state[row, col] == BLACK and black > 0:
                             black -= 1
                             state[row, col] = UNOCC
                             removed = True
-                            
+
                         return
 
 ###############################################################################
-                        
+
 def removePieceInOrder(state, colour):
     for row, line in enumerate(state):
         for col, symbol in enumerate(line):
             if symbol == colour:
                 state[row, col] = UNOCC
                 return
-            
+
 ###############################################################################
-                                    
+
 def generateRandomBoard(whiteNum, blackNum):
     state = np.full((SIZE, SIZE), UNOCC, dtype=int)
     state[0,0] = CORNER
@@ -65,7 +67,7 @@ def generateRandomBoard(whiteNum, blackNum):
     state[7,0] = CORNER
     state[7,7] = CORNER
     temp = board(state,(),WHITE)
-    
+
     while not (whiteNum == 0 and blackNum == 0):
         for row, line in enumerate(state):
             for col, symbol in enumerate(line):
@@ -84,7 +86,7 @@ def generateRandomBoard(whiteNum, blackNum):
                                         whiteNum += 1
                                     else:
                                         blackNum += 1
-                       
+
                         elif random % 2 != 0 and blackNum > 0:
                             state[row, col] = BLACK
                             isElim = temp.eliminate_board(state, BLACK)
@@ -99,7 +101,7 @@ def generateRandomBoard(whiteNum, blackNum):
                                        blackNum += 1
     return state
 ###############################################################################
-    
+
 # random specifies if the peices are removed randomly or in order
 def sampling(random = False):
 
@@ -157,7 +159,7 @@ def sampling(random = False):
                     removePieceInOrder(game.node.state, BLACK)
                     black -= 1
                     removed += 1
-                    
+
                 elif removed % 2 == 0 and white > 0:
                     removePieceInOrder(game.node.state, WHITE)
                     white -= 1
@@ -188,7 +190,7 @@ with open("branching_results.txt", "w") as final_results:
 with open("branching_results_detailed_average.txt", "w") as final_results2:
     for key, value in sorted(result2.items(), reverse = True):
         final_results2.write("{}:{}\n".format(key,value))
-    
+
 
 
 print(result)

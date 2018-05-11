@@ -203,7 +203,8 @@ class Player():
                 node_hash = zor_hash(self.zob, node.state)
 
             else:
-                node_hash = hash_mv(self.zob, hash_val, self.player_colour, node.move)
+                node_hash = hash_mv(self.zob, hash_val, self.player_colour,
+                                    node.move)
                 for dead in killed:
                     node_hash = hash_rm(self.zob, node_hash, dead[1], dead[0])
 

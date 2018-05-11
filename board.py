@@ -255,22 +255,22 @@ class board(object):
 ###############################################################################
 
     def eval_func(self, phase):
-        # ***
+        '''
+        '''
         opp_colour = MAP[self.colour]
         results = np.bincount(self.state.ravel())
 
-        # simple piece counter
-        f1 = results[self.colour] - results[opp_colour]
-        f2 = 0
-        f3 = 0
-        f4 = 0  # connectdness
+        f1 = results[self.colour]  # player pieces
+        f2 = results[opp_colour]  # enemy pieces
+        f3 = 0  # count internal position score
+        f4 = 0  # safe mobility
+        f5 = 0  # connectedness
 
-        if phase == 1:  #placing
-            # center control + connectedness
+        if phase == 1:  # placing
             for row, line in enumerate(self.state):
                 for col, symbol in enumerate(line):
                     if symbol  == self.colour:
-                        f2 += PLACEMAP[self.colour][row][col]
+                        f3 += PLACEMAP[self.colour][row][col]
                         check_dir = {'D':row+1 < SIZE,
                                      'U':row-1 >= 0,
                                      'R':col+1 < SIZE,
@@ -280,11 +280,10 @@ class board(object):
                             if check_dir[m]:
                                 if (self.pos_check(self.state, row, col, m) ==
                                     self.colour):
-                                    f4 += 1
+                                    f5 += 1
 
 
         if phase == 2:  #all moving phases
-            # safe mobility + center control
             if results[self.colour] < 2 and results[opp_colour] >= 2:
                 return LOSE
             if results[self.colour] >= 2 and results[opp_colour] < 2:
@@ -295,9 +294,9 @@ class board(object):
             for row, line in enumerate(self.state):
                 for col, symbol in enumerate(line):
                     if symbol == self.colour:
-                        f2 += PLACEMAP[self.colour][row][col]   # placements scoring
-                        f3 += self.count_legal_moves(self.state, row , col,
-                                                     self.colour) # safe mobility
+                        f3 += PLACEMAP[self.colour][row][col]
+                        f4 += self.count_legal_moves(self.state, row , col,
+                                                     self.colour)
                         check_dir = {'D':row+1 < SIZE,
                                      'U':row-1 >= 0,
                                      'R':col+1 < SIZE,
@@ -307,9 +306,10 @@ class board(object):
                             if check_dir[m]:
                                 if (self.pos_check(self.state, row, col, m) ==
                                     self.colour):
-                                    f4 += 1     # surrounding friendly pieces
+                                    f5 += 1
 
-        return (f1*WEIGHTS[0] + f2*WEIGHTS[1] + f3*WEIGHTS[2] + f4*WEIGHTS[3])
+        return (f1*WEIGHTS[0] + f2*WEIGHTS[1] + f3*WEIGHTS[2] + f4*WEIGHTS[3]
+                + f5*WEIGHTS[4])
 
 ###############################################################################
 
