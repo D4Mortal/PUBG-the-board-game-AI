@@ -11,11 +11,11 @@ import copy
 import numpy as np
 from constants import *
 
+###############################################################################
+
 class board(object):
     '''
-    simple board class that stores the current board config and the move that
-    brought it there.class inherits from object and uses slots instead of dict
-    to reduce memory usuage and faster attribute access
+    stores the current board config and the move that brought it there
     '''
     __slots__ = ('state', 'move', 'colour', 'move_estim')
 
@@ -43,21 +43,20 @@ class board(object):
 
     def update_board_return(self, action, colour):
         '''
-        function that returns a new board object created from the specified
-            move
+        returns new board object resulting from specified action
         '''
         new_state = np.copy(self.state)
         action_tuple = np.array(action)
         action_size = action_tuple.size
 
-        if action_size == 1:
+        if action_size == 1:  # action is None
           return
 
         elif action_size == 2:  # placing phase
           new_state[action_tuple[0], action_tuple[1]] = colour
 
         elif action_size == 4:  # moving phase
-          colour = self.state[action[0][0], action[0][1]]
+          colour = self.state[action[0][0], action[0][1]] # ***
           new_state[action_tuple[0][0], action_tuple[0][1]] = UNOCC
           new_state[action_tuple[1][0], action_tuple[1][1]] = colour
 
@@ -90,7 +89,8 @@ class board(object):
 
         else:
             # generate positions to check
-            check = [self.pos_check(board,row,col,i) for i in ['L','R','U','D']]
+            check = ([self.pos_check(board,row,col,i) for i in
+                      ['L','R','U','D']])
             if check[0] == opp_colour or check[0] == CORNER:
                 if check[1] == opp_colour or check[1] == CORNER:
                     return True
@@ -193,13 +193,12 @@ class board(object):
 
     def update_board_inplace(self, action, colour):
         '''
-        function that make moves on the current object, changes the
-            current state, does not create a new board
+        updates the internal board representation in-place
         '''
         action_tuple = np.array(action)
         action_size = action_tuple.size
 
-        if action_size == 1:  # no action
+        if action_size == 1:  # action is None
             return
 
         elif action_size == 2:  # placing phase
@@ -216,7 +215,7 @@ class board(object):
 
     def pvs_estim(self):
         '''
-        principal variation estimation function (see comments)
+        principal variation estimation function (see comments.txt)
         '''
         results = np.bincount(self.state.ravel())
 
@@ -225,7 +224,9 @@ class board(object):
 ###############################################################################
 
     def count_legal_moves(self, board, row, col, piece):
-        # ****
+        '''
+        count number of safe + legal moves available for 'piece'
+        '''
         legal_moves = 0
         check_dir = {'D':[row+1 < SIZE, row+2 < SIZE],
                      'U':[row-1 >= 0, row-2 >= 0],
@@ -236,13 +237,14 @@ class board(object):
             if check_dir[m][0]:
                 row2, col2 = self.pos_check(board, row, col, m,
                                             return_rowcol=True)
-                new_pos = self.state[row2,col2]
+                new_pos = self.state[row2, col2]
 
                 if new_pos == UNOCC and not self.is_eliminated(board, row2,
                                                                col2, piece):
                     legal_moves += 1
 
                 if new_pos == WHITE or new_pos == BLACK:
+                    # check for jumps
                     if check_dir[m][1]:
                         row3, col3 = self.pos_check(board, row, col, '2' + m,
                                                     return_rowcol=True)
@@ -253,9 +255,10 @@ class board(object):
         return legal_moves
 
 ###############################################################################
-
+# here
     def eval_func(self, phase):
         '''
+        evaluation function for minimax (see comments.txt)
         '''
         opp_colour = MAP[self.colour]
         results = np.bincount(self.state.ravel())

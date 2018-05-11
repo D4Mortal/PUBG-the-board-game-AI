@@ -60,7 +60,7 @@ class Player():
             child_nodes_enemy = self.node.gen_child(self.opp_colour)
             total_branching = (len(child_nodes_friendly) +
                                len(child_nodes_enemy))
-            action = self.mini_max(IDEAL_DEPTH[total_branching],
+            action = self.mini_max(D_DEPTH[total_branching],
                                    child_nodes_friendly)
 
             self.total_turns += 1

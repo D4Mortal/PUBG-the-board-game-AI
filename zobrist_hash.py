@@ -11,11 +11,14 @@ import copy
 import numpy as np
 from constants import SIZE, UNOCC
 
+###############################################################################
+
 def init_table():
     '''
     initialise zobrist hashing table
     '''
     zob_table = np.empty((SIZE, SIZE, 5))
+    # 5, since 5 possible values for each position
 
     for i in range(SIZE):
         for j in range(SIZE):
@@ -28,6 +31,7 @@ def init_table():
 
 def zor_hash(table, state):
     '''
+    ***
     '''
     value = 0
 
@@ -43,6 +47,7 @@ def zor_hash(table, state):
 
 def hash_mv(table, hash_val, colour, action):
     '''
+    update hash table with action (uses XOR operations)
     '''
     new_hash = copy.copy(hash_val)
     new_hash = new_hash^int(table[action[0][0], action[0][1], colour])
@@ -54,6 +59,7 @@ def hash_mv(table, hash_val, colour, action):
 
 def hash_rm(table, hash_val, colour, position):
     '''
+    update hash table with removed colour from position (uses XOR)
     '''
     new_hash = copy.copy(hash_val)
     new_hash = new_hash^int(table[position[0], position[1], colour])

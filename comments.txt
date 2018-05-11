@@ -1,4 +1,11 @@
-Program structure:
+Chirag Rao Sahib      : 836011
+Daniel Hao            : 834496
+Date                  : 10/05/2018
+
+###############################################################################
+
+                                Program structure
+
 board.py        - contains board() class
                 - functions in relation to minimax node generation
                 - includes evaluation function
@@ -8,16 +15,20 @@ player.py       - contains Player() class
                 - controls game playing
                 - includes minimax functions for both phases
 zobrist_hash.py - contains functions related to Zobrist hashing
-                - further explained in creativity section
+                - explained in creativity section
 
 Non-essential files:
 minimax_sampler.py - compute ideal depth per move forgiven time/space
                      constraints
 extra.py           - independent testing of game functions
 
+Note: minimax algorithm has been heavily adapted from AIMA library
 
 
-Search strategy:
+###############################################################################
+
+                                Search strategy
+
 After researching Google's AlphaGo AI we explored a new search tree algorithm
 called Monte Carlo Tree Search. However as the name suggests, Monte Carlo tree
 search makes use of simulated game playouts. Considering the original time and
@@ -32,8 +43,10 @@ our logic was flawed. We decided that minimax for the placing phase is the
 smartest choice since it produces dynamic moves in response to the other
 player.
 
+###############################################################################
 
-Evaluation function:
+                                Evaluation function
+
 Our evaluation function consists of 5 features.
 f1 - simply count of how many player pieces currently on the board
 f2 - same as above but for the enemy, ALWAYS negatively weighted
@@ -58,14 +71,17 @@ concept of 'connectedness'. f5 aims to quantify this, by counting the number
 of surrounding friendly pieces. This is a defensive tactic where we assume a
 lone piece is much more likely to be eliminated by the enemy.
 
+###############################################################################
 
-Creative techniques:
+                                Creative techniques
+
 We have made use of a variety of optimisations and techniques commonly found in
 game playing agents. Firstly the simplest optimisation is using a numpy array
 to represent the board. numpy has a C backend, and hence any operations
 (of which there are many) involving the board representation is likely to be
 faster. Another simple optimisation is the use of slots in the board() class
-for faster attribute access.
+for faster attribute access. Loops were reused where possible to minimise
+any impact on performance, though readability suffers slightly.
 
 We have also made use of transposition tables in combination with Zobrist
 hashing. During minimax node generation, there are likely to be many states
@@ -100,6 +116,10 @@ the idea of 'quiescence search' in which states with more friendly pieces
 the move ordering (principal variation) mentioned above and helps reduce the
 horizon effect.
 
+We also incorporate strict move ordering into our placing phase by aggressively
+pruning nodes outside of our defined ORDERMAP. This ORDERMAP is based on the
+idea of centre control discussed below.
+
 Again considering our evaluation function it is worth justifying our
 piece-square tables defined in constants.py. Firstly it can be argued that the
 main strategy for the game is maintaining control of the board centre. This
@@ -111,9 +131,10 @@ PLACEMAP_BLACK, PLACEMAP_WHITE is that positions closer to the 'colours side'
 are valued slightly more. Furthermore we assign 0 to positions such as (1,2),
 and shrinking areas, where pieces will be eliminated instantly on board shrink.
 
+###############################################################################
 
+                                Machine learning
 
-Machine learning:
 We did try to implement the TDLeaf(lambda) algorithm however had significant
 difficulty in implementation. As this was not possible we tried to bruteforce
 the weight optimisation by testing values 0-100 (or -100to0 for f2) for each
@@ -122,3 +143,4 @@ simulated. We planned to simply use the weights with the highest win
 proportion. However as can be expected, the computation time required for this
 is extremely high and it is in fact still running as we write this.
 
+###############################################################################
