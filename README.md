@@ -1,4 +1,4 @@
-# Artificial Intelligence Project Part B - Playing a Game of *Watch Your Back* (I like to call it *pubg the board game*)
+# Artificial Intelligence Project Part B - Playing a Game of *Watch Your Back* (or I'd like to call it *pubg the board game*)
 
 ### COMP30024 Artificial Intelligence - Semester 1 2018
 
@@ -9,23 +9,23 @@
 
 ##                                Program structure
 
- board.py        - contains board() class
+###### board.py        - contains board() class
                  - functions in relation to minimax node generation
                  - includes evaluation function
- constants.py    - hard-coded constants including those learned through
+###### constants.py    - hard-coded constants including those learned through
                   external means
- player.py       - contains Player() class
+###### player.py       - contains Player() class
                  - controls game playing
                  - includes minimax functions for both phases
- zobrist_hash.py - contains functions related to Zobrist hashing
+###### zobrist_hash.py - contains functions related to Zobrist hashing
                  - explained in creativity section
 
 Note: wildcard's were used for importing because there were no redundant
       variables or functions
 
 #### Non-essential files:
- minimax_sampler.p- compute ideal depth per move forgiven time/space constraints
- extra.py         - independent testing of game functions
+###### minimax_sampler.p- compute ideal depth per move forgiven time/space constraints
+###### extra.py         - independent testing of game functions
 
 Note: minimax algorithm has been adapted from AIMA library
 
