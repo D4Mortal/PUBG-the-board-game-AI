@@ -107,10 +107,10 @@ def sampling(random = False):
 
     game = Player('white')
     if random:
-        file = open("test_result_random.txt", "a")
+        file = open("test_result_random.txt", "w")
 
     else:
-        file = open("test_result_in_order.txt", "a")
+        file = open("test_result_in_order.txt", "w")
 
     game.node.state = generateRandomBoard(12,12)
     print(game.node.state)
