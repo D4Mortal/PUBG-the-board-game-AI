@@ -4,6 +4,13 @@ Date                  : 10/05/2018
 
 ###############################################################################
 
+Use player.py as the Player class.
+
+Note: on some systems combined.py may be faster. For some reasons splitting
+up the python files reduces performance on some systems.
+
+###############################################################################
+
                                 Program structure
 
 board.py        - contains board() class
@@ -16,6 +23,9 @@ player.py       - contains Player() class
                 - includes minimax functions for both phases
 zobrist_hash.py - contains functions related to Zobrist hashing
                 - explained in creativity section
+
+Note: wildcard's were used for importing because there were no redundant
+      variables or functions
 
 Non-essential files:
 minimax_sampler.py - compute ideal depth per move forgiven time/space
@@ -98,9 +108,14 @@ minimax search however the main overhead was from generating nodes rather than
 evaluation (since this is stored by our transposition table). As an alternative
 we decided to use a sampling/simulation program (minimax_sampler.py) to
 estimate the ideal search depth in relation to the current branching factor.
-(the number of child nodes for both players) Our results were then stored in
-the constants.py (IDEAL_DEPTH) file and is made use of by our game to
-essentially produce a minimax search with a dynamic depth.
+(the number of child nodes for both players). Using the total branching factor
+overestimates the time usage for different depths, just to be safe and remain
+within the given limits. Our results were then stored in the constants.py
+(IDEAL_DEPTH) file and is made use of by our game to essentially produce a
+minimax search with a dynamic depth.
+
+Note: a constant minimax search depth is used in the placing phase, as a depth
+of 3 offers the best balance between time and space usage
 
 As mentioned in the lectures, "Good move ordering improves effectiveness of
 pruning" of search tree algorithms. This idea is also similar to the principal
@@ -141,6 +156,18 @@ the weight optimisation by testing values 0-100 (or -100to0 for f2) for each
 evaluation feature. For each feature, for each weight value, 20 games were
 simulated. We planned to simply use the weights with the highest win
 proportion. However as can be expected, the computation time required for this
-is extremely high and it is in fact still running as we write this.
+is extremely high and it is in fact still running as we write this. Another
+issue was of what exactly to use for the error function, thus we weren't able
+to define exactly which function we needed to minimise. (for gradient descent).
+Ultimately we chose our weights by playing against multiple class mates and
+modifying where necessary.
+
+The bounds for the evaluation function features are as follows:
+
+f1 : (0,12)
+f2 : (0,12)
+f3 : (0,36)
+f4 : (0,48)
+f5 : (0,48)
 
 ###############################################################################

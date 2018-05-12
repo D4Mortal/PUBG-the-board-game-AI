@@ -56,7 +56,6 @@ class board(object):
           new_state[action_tuple[0], action_tuple[1]] = colour
 
         elif action_size == 4:  # moving phase
-          colour = self.state[action[0][0], action[0][1]] # ***
           new_state[action_tuple[0][0], action_tuple[0][1]] = UNOCC
           new_state[action_tuple[1][0], action_tuple[1][1]] = colour
 
@@ -255,7 +254,7 @@ class board(object):
         return legal_moves
 
 ###############################################################################
-# here
+
     def eval_func(self, phase):
         '''
         evaluation function for minimax (see comments.txt)
@@ -264,7 +263,7 @@ class board(object):
         results = np.bincount(self.state.ravel())
 
         f1 = results[self.colour]  # player pieces
-        f2 = results[opp_colour]  # enemy pieces
+        f2 = results[opp_colour]  # enemy pieces (-ve weight)
         f3 = 0  # count internal position score
         f4 = 0  # safe mobility
         f5 = 0  # connectedness
@@ -318,7 +317,7 @@ class board(object):
 
     def gen_child(self, colour):
         '''
-        generate child nodes of a state (from parta)
+        generate child nodes of a state for colour (from parta)
         '''
         child_nodes = []
         action_tuple = ()
@@ -365,7 +364,7 @@ class board(object):
 
     def gen_child_place(self, colour):
         '''
-        generate child nodes
+        generate child nodes for placing phase (non-aggressive, unused)
         '''
         child_nodes = []
 
@@ -382,7 +381,7 @@ class board(object):
 
     def gen_child_place_agr(self, colour):
         '''
-        aggressively prunes by only expanding nodes in a particular order
+        aggressively prunes by only generating nodes in a particular order
             (placing)
         '''
         child_nodes = []

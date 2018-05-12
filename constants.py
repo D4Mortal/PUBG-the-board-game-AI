@@ -23,7 +23,9 @@ PHASE3 = 193
 WIN = 9999
 LOSE = -WIN
 TIE = 1000
-WEIGHTS = [100, -50, 0.2, 2, 10]  # eval_func weights ***
+WEIGHTS = [100, -60, 2, 0.2, 1]  # eval_func weights
+
+PLACE_DEPTH = 3  # minimax depth for placing
 
 # dynamic minimax search depth
 D_DEPTH = {96:2,95:2,94:2,93:2,92:2,91:2,90:2,89:2,88:2,87:2,86:2,86:2,

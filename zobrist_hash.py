@@ -31,7 +31,7 @@ def init_table():
 
 def zor_hash(table, state):
     '''
-    ***
+    recomputes the hash for the entire board (uses XOR operations)
     '''
     value = 0
 
