@@ -28,9 +28,11 @@
 ###### extra.py         
 - independent testing of game functions
 ###### referee.py  
-- A referee program that simulates game play between 2 gaming playing agents
+- Created by Matt Farrugia and Shreyash Patodia
+- Referee program that simulates game play between 2 gaming playing agents
 - How to run: python referee.py *player_agent_1* *player_agent_2* (must be in the same directory as essential files)
-Note: minimax algorithm has been adapted from AIMA library, using Python 3.6
+
+###### Note: minimax algorithm has been adapted from AIMA library, using Python 3.6
 
 
 
