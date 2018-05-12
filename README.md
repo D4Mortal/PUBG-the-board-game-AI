@@ -23,7 +23,7 @@
 - constants including those learned through external means
 
 #### Non-essential files:
-###### minimax_sampler.p
+###### minimax_sampler.py
 - Generates random board configurations to compute ideal depth per move for given time/space constraints
 ###### extra.py         
 - independent testing of game functions
