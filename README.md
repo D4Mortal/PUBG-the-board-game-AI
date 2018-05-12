@@ -1,4 +1,4 @@
-# Artificial Intelligence Project Part B - Playing a Game of *Watch Your Back* (or I'd like to call it *pubg the board game*)
+# Artificial Intelligence Project Part B - Playing a Game of *Watch Your Back* (#*pubg the board game*)
 
 ### COMP30024 Artificial Intelligence - Semester 1 2018
 
