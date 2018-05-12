@@ -7,33 +7,33 @@
 #### Date                  : 10/05/2018
 
 
-                                ## Program structure
+##                                Program structure
 
-## board.py        - contains board() class
+##### board.py        - contains board() class
                 - functions in relation to minimax node generation
                 - includes evaluation function
-## constants.py  - hard-coded constants including those learned through
+##### constants.py  - hard-coded constants including those learned through
                   external means
-## player.py     - contains Player() class
+##### player.py     - contains Player() class
                 - controls game playing
                 - includes minimax functions for both phases
-## zobrist_hash.py - contains functions related to Zobrist hashing
+##### zobrist_hash.py - contains functions related to Zobrist hashing
                   - explained in creativity section
 
 Note: wildcard's were used for importing because there were no redundant
       variables or functions
 
-Non-essential files:
-## minimax_sampler.p- compute ideal depth per move forgiven time/space
+#### Non-essential files:
+##### minimax_sampler.p- compute ideal depth per move forgiven time/space
                      constraints
-## extra.py         - independent testing of game functions
+##### extra.py         - independent testing of game functions
 
-Note: minimax algorithm has been heavily adapted from AIMA library
+Note: minimax algorithm has been adapted from AIMA library
 
 
-###############################################################################
 
-                                ## Search strategy
+
+##                                Search strategy
 
 After researching Google's AlphaGo AI we explored a new search tree algorithm
 called Monte Carlo Tree Search. However as the name suggests, Monte Carlo tree
@@ -51,7 +51,7 @@ player.
 
 ###############################################################################
 
-                                ## Evaluation function
+ ##                                Evaluation function
 
 Our evaluation function consists of 5 features.
 f1 - simply count of how many player pieces currently on the board
@@ -86,7 +86,7 @@ f4 : (0,48)
 f5 : (0,48)
 ###############################################################################
 
-                              ## Creative techniques
+##                              Creative techniques
 
 We have made use of a variety of optimisations and techniques commonly found in
 game playing agents. Firstly the simplest optimisation is using a numpy array
