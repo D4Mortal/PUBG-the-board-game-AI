@@ -90,13 +90,13 @@ f4 : (0,48)
 f5 : (0,48)
 
 
-##                              Creative techniques:
+##                              Optimizations:
 
 We have made use of a variety of optimisations and techniques commonly found in
 game playing agents. Firstly the simplest optimisation is using a numpy array
 to represent the board. numpy has a C backend, and hence any operations
-(of which there are many) involving the board representation is likely to be
-faster. Another simple optimisation is the use of slots in the board() class
+involving the board representation is likely to be faster. 
+Another simple optimisation is the use of __slots__ in the board() class
 for faster attribute access. Loops were reused where possible to minimise
 any impact on performance, though readability suffers slightly.
 
@@ -140,7 +140,7 @@ horizon effect.
 
 We also incorporate strict move ordering into our placing phase by aggressively
 pruning nodes outside of our defined ORDERMAP. This ORDERMAP is based on the
-idea of centre control discussed below.
+idea of centre control discussed above.
 
 Again considering our evaluation function it is worth justifying our
 piece-square tables defined in constants.py. Firstly it can be argued that the
